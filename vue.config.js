@@ -48,22 +48,9 @@ module.exports = {
 			]);
 			config.plugin("lodash").use(LodashModuleReplacementPlugin, [
 				{
-					shorthands: true,
-					cloning: true,
-					currying: true,
-					caching: true,
+					
 					collections: true,
-					exotics: true,
-					guards: true,
-					metadata: true,
-					deburring: true,
-					unicode: true,
-					chaining: true,
-					memoizing: true,
-					coercions: true,
-					flattening: true,
-					paths: true,
-					placeholders: true
+					paths: true
 				}
 			]);
 		} else if (process.env.NODE_ENV === "test") {
