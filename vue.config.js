@@ -1,6 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
-const LodashModuleReplacementPlugin = require("lodash-webpack-plugin");
+// const LodashModuleReplacementPlugin = require("lodash-webpack-plugin");
 const version = require("./package.json").version;
 const banner = `
 /**
@@ -46,26 +46,26 @@ module.exports = {
 					entryOnly: true
 				}
 			]);
-			config.plugin("lodash").use(LodashModuleReplacementPlugin, [
-				{
-					shorthands: true,
-					cloning: true,
-					currying: true,
-					caching: true,
-					collections: true,
-					exotics: true,
-					guards: true,
-					metadata: true,
-					deburring: true,
-					unicode: true,
-					chaining: true,
-					memoizing: true,
-					coercions: true,
-					flattening: true,
-					paths: true,
-					placeholders: true
-				}
-			]);
+			// config.plugin("lodash").use(LodashModuleReplacementPlugin, [
+			// 	{
+			// 		shorthands: true,
+			// 		cloning: true,
+			// 		currying: true,
+			// 		caching: true,
+			// 		collections: true,
+			// 		exotics: true,
+			// 		guards: true,
+			// 		metadata: true,
+			// 		deburring: true,
+			// 		unicode: true,
+			// 		chaining: true,
+			// 		memoizing: true,
+			// 		coercions: true,
+			// 		flattening: true,
+			// 		paths: true,
+			// 		placeholders: true
+			// 	}
+			// ]);
 		} else if (process.env.NODE_ENV === "test") {
 			config.devtool("eval");
 			config.module
