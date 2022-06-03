@@ -42,7 +42,8 @@ module.exports = {
 		if (process.env.NODE_ENV === "production") {
 			console.log("@NODE_ENV production")
 			
-			//config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+
 			
 			config.plugin("banner").use(webpack.BannerPlugin, [
 				{
