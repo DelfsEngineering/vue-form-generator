@@ -38,35 +38,42 @@ module.exports = {
 	productionSourceMap: false,
 	pages: process.env.NODE_ENV !== "development" ? {} : generateDevProjects(),
 	chainWebpack: (config) => {
+		console.log("@chainWebpack")
 		if (process.env.NODE_ENV === "production") {
-			config.plugin("banner").use(webpack.BannerPlugin, [
-				{
-					banner,
-					raw: true,
-					entryOnly: true
-				}
-			]);
-			config.plugin("lodash").use(LodashModuleReplacementPlugin, [
-				{
-					shorthands: true,
-					cloning: true,
-					currying: true,
-					caching: true,
-					collections: true,
-					exotics: true,
-					guards: true,
-					metadata: true,
-					deburring: true,
-					unicode: true,
-					chaining: true,
-					memoizing: true,
-					coercions: true,
-					flattening: true,
-					paths: true,
-					placeholders: true
-				}
-			]);
+			console.log("@NODE_ENV production")
+			
+			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+			
+			// config.plugin("banner").use(webpack.BannerPlugin, [
+			// 	{
+			// 		banner,
+			// 		raw: true,
+			// 		entryOnly: true
+			// 	}
+			// ]);
+			// config.plugin("lodash").use(LodashModuleReplacementPlugin, [
+			// 	{
+			// 		shorthands: true,
+			// 		cloning: true,
+			// 		currying: true,
+			// 		caching: true,
+			// 		collections: false,
+			// 		exotics: true,
+			// 		guards: true,
+			// 		metadata: true,
+			// 		deburring: true,
+			// 		unicode: true,
+			// 		chaining: true,
+			// 		memoizing: true,
+			// 		coercions: true,
+			// 		flattening: true,
+			// 		paths: false,
+			// 		placeholders: true
+			// 	}
+			// ]);
+			
 		} else if (process.env.NODE_ENV === "test") {
+			console.log("@NODE_ENV test")
 			config.devtool("eval");
 			config.module
 				.rule("istanbul")
@@ -78,6 +85,7 @@ module.exports = {
 				.loader("istanbul-instrumenter-loader")
 				.options({ esModules: true });
 		} else {
+			console.log("@else")
 			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
 		}
 	},
