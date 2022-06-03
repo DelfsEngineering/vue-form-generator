@@ -42,35 +42,35 @@ module.exports = {
 		if (process.env.NODE_ENV === "production") {
 			console.log("@NODE_ENV production")
 			
-			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+			//config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
 			
-			// config.plugin("banner").use(webpack.BannerPlugin, [
-			// 	{
-			// 		banner,
-			// 		raw: true,
-			// 		entryOnly: true
-			// 	}
-			// ]);
-			// config.plugin("lodash").use(LodashModuleReplacementPlugin, [
-			// 	{
-			// 		shorthands: true,
-			// 		cloning: true,
-			// 		currying: true,
-			// 		caching: true,
-			// 		collections: false,
-			// 		exotics: true,
-			// 		guards: true,
-			// 		metadata: true,
-			// 		deburring: true,
-			// 		unicode: true,
-			// 		chaining: true,
-			// 		memoizing: true,
-			// 		coercions: true,
-			// 		flattening: true,
-			// 		paths: false,
-			// 		placeholders: true
-			// 	}
-			// ]);
+			config.plugin("banner").use(webpack.BannerPlugin, [
+				{
+					banner,
+					raw: true,
+					entryOnly: true
+				}
+			]);
+			config.plugin("lodash").use(LodashModuleReplacementPlugin, [
+				{
+					shorthands: true,
+					cloning: true,
+					currying: true,
+					caching: true,
+					collections: false,
+					exotics: true,
+					guards: true,
+					metadata: true,
+					deburring: true,
+					unicode: true,
+					chaining: true,
+					memoizing: true,
+					coercions: true,
+					flattening: true,
+					paths: false,
+					placeholders: true
+				}
+			]);
 			
 		} else if (process.env.NODE_ENV === "test") {
 			console.log("@NODE_ENV test")
