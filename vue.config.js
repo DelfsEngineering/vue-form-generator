@@ -31,8 +31,7 @@ const generateDevProjects = () => {
 
 module.exports = {
 	baseUrl: process.env.NODE_ENV === "production" ? "" : "/",
-	//outputDir: process.env.NODE_ENV === "production" ? "dist" : path.resolve("dev/projects"),
-	outputDir: process.env.NODE_ENV === "production" ? path.resolve("../vue-form-generatorx") : path.resolve("dev/projects"),
+	outputDir: process.env.NODE_ENV === "production" ? "dist" : path.resolve("dev/projects"),
 	lintOnSave: true,
 	runtimeCompiler: false,
 	transpileDependencies: [],
@@ -58,7 +57,7 @@ module.exports = {
 					cloning: true,
 					currying: true,
 					caching: true,
-					collections: false,
+					collections: true,
 					exotics: true,
 					guards: true,
 					metadata: true,
