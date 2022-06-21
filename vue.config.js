@@ -38,13 +38,7 @@ module.exports = {
 	productionSourceMap: false,
 	pages: process.env.NODE_ENV !== "development" ? {} : generateDevProjects(),
 	chainWebpack: (config) => {
-		console.log("@chainWebpack")
 		if (process.env.NODE_ENV === "production") {
-			console.log("@NODE_ENV production")
-			
-			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
-
-			
 			config.plugin("banner").use(webpack.BannerPlugin, [
 				{
 					banner,
@@ -68,13 +62,11 @@ module.exports = {
 					memoizing: true,
 					coercions: true,
 					flattening: true,
-					paths: false,
+					paths: true,
 					placeholders: true
 				}
 			]);
-			
 		} else if (process.env.NODE_ENV === "test") {
-			console.log("@NODE_ENV test")
 			config.devtool("eval");
 			config.module
 				.rule("istanbul")
@@ -86,7 +78,6 @@ module.exports = {
 				.loader("istanbul-instrumenter-loader")
 				.options({ esModules: true });
 		} else {
-			console.log("@else")
 			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
 		}
 	},

@@ -5,6 +5,7 @@
 	"homepage": "https://github.com/vue-generators/vue-form-generator/",
 	"main": "dist/vfg.umd.min.js",
 	"scripts": {
+	    "inspect": "vue-cli-service inspect",
 		"serve": "vue-cli-service serve",
 		"prebuild": "npm run test:unit",
 		"build": "vue-cli-service build --no-clean --target lib --name vfg src/index.js --report",
