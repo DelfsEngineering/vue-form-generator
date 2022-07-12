@@ -1,7 +1,9 @@
 <template>
 	<div
 		class="form-element"
-		:class="[fieldRowClasses]">
+		:class="[fieldRowClasses]"
+		v-bind="field.attributes.formElement"
+		>
 		<label
 			v-if="fieldTypeHasLabel"
 			:for="fieldID"
