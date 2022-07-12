@@ -101,6 +101,11 @@ export default {
 			childTouched: false
 		};
 	},
+	
+	mounted: function () {
+		console.log("##", this.field.attributes)
+    	console.log("##", this.field.attributes.formElement)
+    },
 	computed: {
 		fieldID() {
 			const idPrefix = objGet(this.options, "fieldIdPrefix", "");
