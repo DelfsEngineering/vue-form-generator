@@ -103,10 +103,7 @@ export default {
 	
 	computed: {
 		formElement(){
-			if (this.field.attributes === undefined || this.field.attributes.formElement === undefined) {
-				return {};
-			} 
-			return this.field.attributes.formElement;
+			return this.field?.attributes?.formElement || {};
 		},
 		fieldID() {
 			const idPrefix = objGet(this.options, "fieldIdPrefix", "");

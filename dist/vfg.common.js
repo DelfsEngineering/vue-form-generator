@@ -147,6 +147,260 @@ module.exports = getRawTag;
 
 /***/ }),
 
+/***/ "014b":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// ECMAScript 6 symbols shim
+var global = __webpack_require__("e53d");
+var has = __webpack_require__("07e3");
+var DESCRIPTORS = __webpack_require__("8e60");
+var $export = __webpack_require__("63b6");
+var redefine = __webpack_require__("9138");
+var META = __webpack_require__("ebfd").KEY;
+var $fails = __webpack_require__("294c");
+var shared = __webpack_require__("dbdb");
+var setToStringTag = __webpack_require__("45f2");
+var uid = __webpack_require__("62a0");
+var wks = __webpack_require__("5168");
+var wksExt = __webpack_require__("ccb9");
+var wksDefine = __webpack_require__("6718");
+var enumKeys = __webpack_require__("47ee");
+var isArray = __webpack_require__("9003");
+var anObject = __webpack_require__("e4ae");
+var isObject = __webpack_require__("f772");
+var toObject = __webpack_require__("241e");
+var toIObject = __webpack_require__("36c3");
+var toPrimitive = __webpack_require__("1bc3");
+var createDesc = __webpack_require__("aebd");
+var _create = __webpack_require__("a159");
+var gOPNExt = __webpack_require__("0395");
+var $GOPD = __webpack_require__("bf0b");
+var $GOPS = __webpack_require__("9aa9");
+var $DP = __webpack_require__("d9f6");
+var $keys = __webpack_require__("c3a1");
+var gOPD = $GOPD.f;
+var dP = $DP.f;
+var gOPN = gOPNExt.f;
+var $Symbol = global.Symbol;
+var $JSON = global.JSON;
+var _stringify = $JSON && $JSON.stringify;
+var PROTOTYPE = 'prototype';
+var HIDDEN = wks('_hidden');
+var TO_PRIMITIVE = wks('toPrimitive');
+var isEnum = {}.propertyIsEnumerable;
+var SymbolRegistry = shared('symbol-registry');
+var AllSymbols = shared('symbols');
+var OPSymbols = shared('op-symbols');
+var ObjectProto = Object[PROTOTYPE];
+var USE_NATIVE = typeof $Symbol == 'function' && !!$GOPS.f;
+var QObject = global.QObject;
+// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
+
+// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+var setSymbolDesc = DESCRIPTORS && $fails(function () {
+  return _create(dP({}, 'a', {
+    get: function () { return dP(this, 'a', { value: 7 }).a; }
+  })).a != 7;
+}) ? function (it, key, D) {
+  var protoDesc = gOPD(ObjectProto, key);
+  if (protoDesc) delete ObjectProto[key];
+  dP(it, key, D);
+  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
+} : dP;
+
+var wrap = function (tag) {
+  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
+  sym._k = tag;
+  return sym;
+};
+
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+  return typeof it == 'symbol';
+} : function (it) {
+  return it instanceof $Symbol;
+};
+
+var $defineProperty = function defineProperty(it, key, D) {
+  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
+  anObject(it);
+  key = toPrimitive(key, true);
+  anObject(D);
+  if (has(AllSymbols, key)) {
+    if (!D.enumerable) {
+      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
+      it[HIDDEN][key] = true;
+    } else {
+      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
+      D = _create(D, { enumerable: createDesc(0, false) });
+    } return setSymbolDesc(it, key, D);
+  } return dP(it, key, D);
+};
+var $defineProperties = function defineProperties(it, P) {
+  anObject(it);
+  var keys = enumKeys(P = toIObject(P));
+  var i = 0;
+  var l = keys.length;
+  var key;
+  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+  return it;
+};
+var $create = function create(it, P) {
+  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+  var E = isEnum.call(this, key = toPrimitive(key, true));
+  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
+  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
+  it = toIObject(it);
+  key = toPrimitive(key, true);
+  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
+  var D = gOPD(it, key);
+  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+  return D;
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it) {
+  var names = gOPN(toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+  } return result;
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
+  var IS_OP = it === ObjectProto;
+  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
+  } return result;
+};
+
+// 19.4.1.1 Symbol([description])
+if (!USE_NATIVE) {
+  $Symbol = function Symbol() {
+    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
+    var $set = function (value) {
+      if (this === ObjectProto) $set.call(OPSymbols, value);
+      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+      setSymbolDesc(this, tag, createDesc(1, value));
+    };
+    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
+    return wrap(tag);
+  };
+  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
+    return this._k;
+  });
+
+  $GOPD.f = $getOwnPropertyDescriptor;
+  $DP.f = $defineProperty;
+  __webpack_require__("6abf").f = gOPNExt.f = $getOwnPropertyNames;
+  __webpack_require__("355d").f = $propertyIsEnumerable;
+  $GOPS.f = $getOwnPropertySymbols;
+
+  if (DESCRIPTORS && !__webpack_require__("b8e3")) {
+    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+  }
+
+  wksExt.f = function (name) {
+    return wrap(wks(name));
+  };
+}
+
+$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
+
+for (var es6Symbols = (
+  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
+).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
+
+for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
+
+$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
+  // 19.4.2.1 Symbol.for(key)
+  'for': function (key) {
+    return has(SymbolRegistry, key += '')
+      ? SymbolRegistry[key]
+      : SymbolRegistry[key] = $Symbol(key);
+  },
+  // 19.4.2.5 Symbol.keyFor(sym)
+  keyFor: function keyFor(sym) {
+    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
+    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+  },
+  useSetter: function () { setter = true; },
+  useSimple: function () { setter = false; }
+});
+
+$export($export.S + $export.F * !USE_NATIVE, 'Object', {
+  // 19.1.2.2 Object.create(O [, Properties])
+  create: $create,
+  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+  defineProperty: $defineProperty,
+  // 19.1.2.3 Object.defineProperties(O, Properties)
+  defineProperties: $defineProperties,
+  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+  // 19.1.2.7 Object.getOwnPropertyNames(O)
+  getOwnPropertyNames: $getOwnPropertyNames,
+  // 19.1.2.8 Object.getOwnPropertySymbols(O)
+  getOwnPropertySymbols: $getOwnPropertySymbols
+});
+
+// Chrome 38 and 39 `Object.getOwnPropertySymbols` fails on primitives
+// https://bugs.chromium.org/p/v8/issues/detail?id=3443
+var FAILS_ON_PRIMITIVES = $fails(function () { $GOPS.f(1); });
+
+$export($export.S + $export.F * FAILS_ON_PRIMITIVES, 'Object', {
+  getOwnPropertySymbols: function getOwnPropertySymbols(it) {
+    return $GOPS.f(toObject(it));
+  }
+});
+
+// 24.3.2 JSON.stringify(value [, replacer [, space]])
+$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
+  var S = $Symbol();
+  // MS Edge converts symbol values to JSON as {}
+  // WebKit converts symbol values to JSON as null
+  // V8 throws on boxed symbols
+  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
+})), 'JSON', {
+  stringify: function stringify(it) {
+    var args = [it];
+    var i = 1;
+    var replacer, $replacer;
+    while (arguments.length > i) args.push(arguments[i++]);
+    $replacer = replacer = args[1];
+    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+      if (!isSymbol(value)) return value;
+    };
+    args[1] = replacer;
+    return _stringify.apply($JSON, args);
+  }
+});
+
+// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+$Symbol[PROTOTYPE][TO_PRIMITIVE] || __webpack_require__("35e8")($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
+// 19.4.3.5 Symbol.prototype[@@toStringTag]
+setToStringTag($Symbol, 'Symbol');
+// 20.2.1.9 Math[@@toStringTag]
+setToStringTag(Math, 'Math', true);
+// 24.3.3 JSON[@@toStringTag]
+setToStringTag(global.JSON, 'JSON', true);
+
+
+/***/ }),
+
 /***/ "01f9":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -224,6 +478,72 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 
 /***/ }),
 
+/***/ "02f4":
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__("4588");
+var defined = __webpack_require__("be13");
+// true  -> String#at
+// false -> String#codePointAt
+module.exports = function (TO_STRING) {
+  return function (that, pos) {
+    var s = String(defined(that));
+    var i = toInteger(pos);
+    var l = s.length;
+    var a, b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+
+/***/ }),
+
+/***/ "0390":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var at = __webpack_require__("02f4")(true);
+
+ // `AdvanceStringIndex` abstract operation
+// https://tc39.github.io/ecma262/#sec-advancestringindex
+module.exports = function (S, index, unicode) {
+  return index + (unicode ? at(S, index).length : 1);
+};
+
+
+/***/ }),
+
+/***/ "0395":
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+var toIObject = __webpack_require__("36c3");
+var gOPN = __webpack_require__("6abf").f;
+var toString = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function (it) {
+  try {
+    return gOPN(it);
+  } catch (e) {
+    return windowNames.slice();
+  }
+};
+
+module.exports.f = function getOwnPropertyNames(it) {
+  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
+};
+
+
+/***/ }),
+
 /***/ "03dd":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -258,6 +578,13 @@ function baseKeys(object) {
 
 module.exports = baseKeys;
 
+
+/***/ }),
+
+/***/ "05fd":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -318,6 +645,17 @@ function stubFalse() {
 }
 
 module.exports = stubFalse;
+
+
+/***/ }),
+
+/***/ "07e3":
+/***/ (function(module, exports) {
+
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
 
 
 /***/ }),
@@ -423,7 +761,7 @@ module.exports = function () {
     stubFalse = __webpack_require__("07c7");
 
 /** Detect free variable `exports`. */
-var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+var freeExports =  true && exports && !exports.nodeType && exports;
 
 /** Detect free variable `module`. */
 var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
@@ -542,6 +880,31 @@ module.exports = set;
 
 /***/ }),
 
+/***/ "0fc9":
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__("3a38");
+var max = Math.max;
+var min = Math.min;
+module.exports = function (index, length) {
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+
+
+/***/ }),
+
+/***/ "1005":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_id_13a76b9c_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("e41f");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_id_13a76b9c_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_id_13a76b9c_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "100e":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -630,6 +993,17 @@ function isKeyable(value) {
 }
 
 module.exports = isKeyable;
+
+
+/***/ }),
+
+/***/ "12e0":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_id_83c6591e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("89ec");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_id_83c6591e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_id_83c6591e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
 
 
 /***/ }),
@@ -802,13 +1176,6 @@ module.exports = isEmpty;
 
 /***/ }),
 
-/***/ "1437":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "1495":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -826,6 +1193,13 @@ module.exports = __webpack_require__("9e1e") ? Object.defineProperties : functio
   return O;
 };
 
+
+/***/ }),
+
+/***/ "14c0":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -863,6 +1237,10 @@ function baseSet(object, path, value, customizer) {
     var key = toKey(path[index]),
         newValue = value;
 
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      return object;
+    }
+
     if (index != lastIndex) {
       var objValue = nested[key];
       newValue = customizer ? customizer(objValue, key, nested) : undefined;
@@ -879,6 +1257,42 @@ function baseSet(object, path, value, customizer) {
 }
 
 module.exports = baseSet;
+
+
+/***/ }),
+
+/***/ "1654":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $at = __webpack_require__("71c1")(true);
+
+// 21.1.3.27 String.prototype[@@iterator]()
+__webpack_require__("30f1")(String, 'String', function (iterated) {
+  this._t = String(iterated); // target
+  this._i = 0;                // next index
+// 21.1.5.2.1 %StringIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var index = this._i;
+  var point;
+  if (index >= O.length) return { value: undefined, done: true };
+  point = $at(O, index);
+  this._i += point.length;
+  return { value: point, done: false };
+});
+
+
+/***/ }),
+
+/***/ "1691":
+/***/ (function(module, exports) {
+
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
 
 
 /***/ }),
@@ -954,17 +1368,6 @@ var stringToPath = memoizeCapped(function(string) {
 
 module.exports = stringToPath;
 
-
-/***/ }),
-
-/***/ "1958":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("2e12");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
 
 /***/ }),
 
@@ -1122,6 +1525,17 @@ module.exports = isObject;
 
 /***/ }),
 
+/***/ "1af6":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 22.1.2.2 / 15.4.3.2 Array.isArray(arg)
+var $export = __webpack_require__("63b6");
+
+$export($export.S, 'Array', { isArray: __webpack_require__("9003") });
+
+
+/***/ }),
+
 /***/ "1bac":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1142,6 +1556,25 @@ function getAllKeysIn(object) {
 }
 
 module.exports = getAllKeysIn;
+
+
+/***/ }),
+
+/***/ "1bc3":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__("f772");
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
 
 
 /***/ }),
@@ -1279,6 +1712,20 @@ module.exports = Promise;
 
 /***/ }),
 
+/***/ "1ec9":
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__("f772");
+var document = __webpack_require__("e53d").document;
+// typeof document.createElement is 'object' in old IE
+var is = isObject(document) && isObject(document.createElement);
+module.exports = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+
 /***/ "1efc":
 /***/ (function(module, exports) {
 
@@ -1378,14 +1825,19 @@ module.exports = matchesStrictComparable;
 
 /***/ }),
 
-/***/ "2149":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "20fd":
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("1437");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+var $defineProperty = __webpack_require__("d9f6");
+var createDesc = __webpack_require__("aebd");
+
+module.exports = function (object, index, value) {
+  if (index in object) $defineProperty.f(object, index, createDesc(0, value));
+  else object[index] = value;
+};
+
 
 /***/ }),
 
@@ -1394,22 +1846,90 @@ module.exports = matchesStrictComparable;
 
 "use strict";
 
-var hide = __webpack_require__("32e9");
+__webpack_require__("b0c5");
 var redefine = __webpack_require__("2aba");
+var hide = __webpack_require__("32e9");
 var fails = __webpack_require__("79e5");
 var defined = __webpack_require__("be13");
 var wks = __webpack_require__("2b4c");
+var regexpExec = __webpack_require__("520a");
+
+var SPECIES = wks('species');
+
+var REPLACE_SUPPORTS_NAMED_GROUPS = !fails(function () {
+  // #replace needs built-in support for named groups.
+  // #match works fine because it just return the exec results, even if it has
+  // a "grops" property.
+  var re = /./;
+  re.exec = function () {
+    var result = [];
+    result.groups = { a: '7' };
+    return result;
+  };
+  return ''.replace(re, '$<a>') !== '7';
+});
+
+var SPLIT_WORKS_WITH_OVERWRITTEN_EXEC = (function () {
+  // Chrome 51 has a buggy "split" implementation when RegExp#exec !== nativeExec
+  var re = /(?:)/;
+  var originalExec = re.exec;
+  re.exec = function () { return originalExec.apply(this, arguments); };
+  var result = 'ab'.split(re);
+  return result.length === 2 && result[0] === 'a' && result[1] === 'b';
+})();
 
 module.exports = function (KEY, length, exec) {
   var SYMBOL = wks(KEY);
-  var fns = exec(defined, SYMBOL, ''[KEY]);
-  var strfn = fns[0];
-  var rxfn = fns[1];
-  if (fails(function () {
+
+  var DELEGATES_TO_SYMBOL = !fails(function () {
+    // String methods call symbol-named RegEp methods
     var O = {};
     O[SYMBOL] = function () { return 7; };
     return ''[KEY](O) != 7;
-  })) {
+  });
+
+  var DELEGATES_TO_EXEC = DELEGATES_TO_SYMBOL ? !fails(function () {
+    // Symbol-named RegExp methods call .exec
+    var execCalled = false;
+    var re = /a/;
+    re.exec = function () { execCalled = true; return null; };
+    if (KEY === 'split') {
+      // RegExp[@@split] doesn't call the regex's exec method, but first creates
+      // a new one. We need to return the patched regex when creating the new one.
+      re.constructor = {};
+      re.constructor[SPECIES] = function () { return re; };
+    }
+    re[SYMBOL]('');
+    return !execCalled;
+  }) : undefined;
+
+  if (
+    !DELEGATES_TO_SYMBOL ||
+    !DELEGATES_TO_EXEC ||
+    (KEY === 'replace' && !REPLACE_SUPPORTS_NAMED_GROUPS) ||
+    (KEY === 'split' && !SPLIT_WORKS_WITH_OVERWRITTEN_EXEC)
+  ) {
+    var nativeRegExpMethod = /./[SYMBOL];
+    var fns = exec(
+      defined,
+      SYMBOL,
+      ''[KEY],
+      function maybeCallNative(nativeMethod, regexp, str, arg2, forceStringMethod) {
+        if (regexp.exec === regexpExec) {
+          if (DELEGATES_TO_SYMBOL && !forceStringMethod) {
+            // The native String method already delegates to @@method (this
+            // polyfilled function), leasing to infinite recursion.
+            // We avoid it by directly calling the native @@method method.
+            return { done: true, value: nativeRegExpMethod.call(regexp, str, arg2) };
+          }
+          return { done: true, value: nativeMethod.call(str, regexp, arg2) };
+        }
+        return { done: false };
+      }
+    );
+    var strfn = fns[0];
+    var rxfn = fns[1];
+
     redefine(String.prototype, KEY, strfn);
     hide(RegExp.prototype, SYMBOL, length == 2
       // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
@@ -1545,6 +2065,18 @@ module.exports = function (it) {
 
 /***/ }),
 
+/***/ "241e":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.13 ToObject(argument)
+var defined = __webpack_require__("25eb");
+module.exports = function (it) {
+  return Object(defined(it));
+};
+
+
+/***/ }),
+
 /***/ "242e":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1659,10 +2191,23 @@ module.exports = baseIsArguments;
 
 /***/ }),
 
-/***/ "260c":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "25eb":
+/***/ (function(module, exports) {
 
-// extracted by mini-css-extract-plugin
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+
+/***/ }),
+
+/***/ "2621":
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
 
 /***/ }),
 
@@ -1782,18 +2327,44 @@ module.exports = __webpack_require__("8378").getIteratorMethod = function (it) {
 
 /***/ }),
 
+/***/ "2867":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_id_928ea6b6_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("9356");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_id_928ea6b6_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_id_928ea6b6_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "28a5":
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
+var isRegExp = __webpack_require__("aae3");
+var anObject = __webpack_require__("cb7c");
+var speciesConstructor = __webpack_require__("ebd6");
+var advanceStringIndex = __webpack_require__("0390");
+var toLength = __webpack_require__("9def");
+var callRegExpExec = __webpack_require__("5f1b");
+var regexpExec = __webpack_require__("520a");
+var fails = __webpack_require__("79e5");
+var $min = Math.min;
+var $push = [].push;
+var $SPLIT = 'split';
+var LENGTH = 'length';
+var LAST_INDEX = 'lastIndex';
+var MAX_UINT32 = 0xffffffff;
+
+// babel-minify transpiles RegExp('x', 'y') -> /x/y and it causes SyntaxError
+var SUPPORTS_Y = !fails(function () { RegExp(MAX_UINT32, 'y'); });
+
 // @@split logic
-__webpack_require__("214f")('split', 2, function (defined, SPLIT, $split) {
-  'use strict';
-  var isRegExp = __webpack_require__("aae3");
-  var _split = $split;
-  var $push = [].push;
-  var $SPLIT = 'split';
-  var LENGTH = 'length';
-  var LAST_INDEX = 'lastIndex';
+__webpack_require__("214f")('split', 2, function (defined, SPLIT, $split, maybeCallNative) {
+  var internalSplit;
   if (
     'abbc'[$SPLIT](/(b)*/)[1] == 'c' ||
     'test'[$SPLIT](/(?:)/, -1)[LENGTH] != 4 ||
@@ -1802,35 +2373,26 @@ __webpack_require__("214f")('split', 2, function (defined, SPLIT, $split) {
     '.'[$SPLIT](/()()/)[LENGTH] > 1 ||
     ''[$SPLIT](/.?/)[LENGTH]
   ) {
-    var NPCG = /()??/.exec('')[1] === undefined; // nonparticipating capturing group
     // based on es5-shim implementation, need to rework it
-    $split = function (separator, limit) {
+    internalSplit = function (separator, limit) {
       var string = String(this);
       if (separator === undefined && limit === 0) return [];
       // If `separator` is not a regex, use native split
-      if (!isRegExp(separator)) return _split.call(string, separator, limit);
+      if (!isRegExp(separator)) return $split.call(string, separator, limit);
       var output = [];
       var flags = (separator.ignoreCase ? 'i' : '') +
                   (separator.multiline ? 'm' : '') +
                   (separator.unicode ? 'u' : '') +
                   (separator.sticky ? 'y' : '');
       var lastLastIndex = 0;
-      var splitLimit = limit === undefined ? 4294967295 : limit >>> 0;
+      var splitLimit = limit === undefined ? MAX_UINT32 : limit >>> 0;
       // Make `global` and avoid `lastIndex` issues by working with a copy
       var separatorCopy = new RegExp(separator.source, flags + 'g');
-      var separator2, match, lastIndex, lastLength, i;
-      // Doesn't need flags gy, but they don't hurt
-      if (!NPCG) separator2 = new RegExp('^' + separatorCopy.source + '$(?!\\s)', flags);
-      while (match = separatorCopy.exec(string)) {
-        // `separatorCopy.lastIndex` is not reliable cross-browser
-        lastIndex = match.index + match[0][LENGTH];
+      var match, lastIndex, lastLength;
+      while (match = regexpExec.call(separatorCopy, string)) {
+        lastIndex = separatorCopy[LAST_INDEX];
         if (lastIndex > lastLastIndex) {
           output.push(string.slice(lastLastIndex, match.index));
-          // Fix browsers whose `exec` methods don't consistently return `undefined` for NPCG
-          // eslint-disable-next-line no-loop-func
-          if (!NPCG && match[LENGTH] > 1) match[0].replace(separator2, function () {
-            for (i = 1; i < arguments[LENGTH] - 2; i++) if (arguments[i] === undefined) match[i] = undefined;
-          });
           if (match[LENGTH] > 1 && match.index < string[LENGTH]) $push.apply(output, match.slice(1));
           lastLength = match[0][LENGTH];
           lastLastIndex = lastIndex;
@@ -1845,16 +2407,74 @@ __webpack_require__("214f")('split', 2, function (defined, SPLIT, $split) {
     };
   // Chakra, V8
   } else if ('0'[$SPLIT](undefined, 0)[LENGTH]) {
-    $split = function (separator, limit) {
-      return separator === undefined && limit === 0 ? [] : _split.call(this, separator, limit);
+    internalSplit = function (separator, limit) {
+      return separator === undefined && limit === 0 ? [] : $split.call(this, separator, limit);
     };
+  } else {
+    internalSplit = $split;
   }
-  // 21.1.3.17 String.prototype.split(separator, limit)
-  return [function split(separator, limit) {
-    var O = defined(this);
-    var fn = separator == undefined ? undefined : separator[SPLIT];
-    return fn !== undefined ? fn.call(separator, O, limit) : $split.call(String(O), separator, limit);
-  }, $split];
+
+  return [
+    // `String.prototype.split` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.split
+    function split(separator, limit) {
+      var O = defined(this);
+      var splitter = separator == undefined ? undefined : separator[SPLIT];
+      return splitter !== undefined
+        ? splitter.call(separator, O, limit)
+        : internalSplit.call(String(O), separator, limit);
+    },
+    // `RegExp.prototype[@@split]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@split
+    //
+    // NOTE: This cannot be properly polyfilled in engines that don't support
+    // the 'y' flag.
+    function (regexp, limit) {
+      var res = maybeCallNative(internalSplit, regexp, this, limit, internalSplit !== $split);
+      if (res.done) return res.value;
+
+      var rx = anObject(regexp);
+      var S = String(this);
+      var C = speciesConstructor(rx, RegExp);
+
+      var unicodeMatching = rx.unicode;
+      var flags = (rx.ignoreCase ? 'i' : '') +
+                  (rx.multiline ? 'm' : '') +
+                  (rx.unicode ? 'u' : '') +
+                  (SUPPORTS_Y ? 'y' : 'g');
+
+      // ^(? + rx + ) is needed, in combination with some S slicing, to
+      // simulate the 'y' flag.
+      var splitter = new C(SUPPORTS_Y ? rx : '^(?:' + rx.source + ')', flags);
+      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
+      if (lim === 0) return [];
+      if (S.length === 0) return callRegExpExec(splitter, S) === null ? [S] : [];
+      var p = 0;
+      var q = 0;
+      var A = [];
+      while (q < S.length) {
+        splitter.lastIndex = SUPPORTS_Y ? q : 0;
+        var z = callRegExpExec(splitter, SUPPORTS_Y ? S : S.slice(q));
+        var e;
+        if (
+          z === null ||
+          (e = $min(toLength(splitter.lastIndex + (SUPPORTS_Y ? 0 : q)), S.length)) === p
+        ) {
+          q = advanceStringIndex(S, q, unicodeMatching);
+        } else {
+          A.push(S.slice(p, q));
+          if (A.length === lim) return A;
+          for (var i = 1; i <= z.length - 1; i++) {
+            A.push(z[i]);
+            if (A.length === lim) return A;
+          }
+          q = p = e;
+        }
+      }
+      A.push(S.slice(p));
+      return A;
+    }
+  ];
 });
 
 
@@ -1876,6 +2496,20 @@ function listCacheClear() {
 }
 
 module.exports = listCacheClear;
+
+
+/***/ }),
+
+/***/ "294c":
+/***/ (function(module, exports) {
+
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (e) {
+    return true;
+  }
+};
 
 
 /***/ }),
@@ -1916,8 +2550,8 @@ var global = __webpack_require__("7726");
 var hide = __webpack_require__("32e9");
 var has = __webpack_require__("69a8");
 var SRC = __webpack_require__("ca5a")('src');
+var $toString = __webpack_require__("fa5b");
 var TO_STRING = 'toString';
-var $toString = Function[TO_STRING];
 var TPL = ('' + $toString).split(TO_STRING);
 
 __webpack_require__("8378").inspectSource = function (it) {
@@ -2060,29 +2694,11 @@ $exports.store = store;
 
 /***/ }),
 
-/***/ "2c4d":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "2d00":
 /***/ (function(module, exports) {
 
 module.exports = false;
 
-
-/***/ }),
-
-/***/ "2d36":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("d302");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
 
 /***/ }),
 
@@ -2143,7 +2759,7 @@ module.exports = getPrototype;
 
 /***/ }),
 
-/***/ "2e12":
+/***/ "2ee0":
 /***/ (function(module, exports, __webpack_require__) {
 
 // extracted by mini-css-extract-plugin
@@ -2211,6 +2827,83 @@ function isArrayLike(value) {
 }
 
 module.exports = isArrayLike;
+
+
+/***/ }),
+
+/***/ "30f1":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var LIBRARY = __webpack_require__("b8e3");
+var $export = __webpack_require__("63b6");
+var redefine = __webpack_require__("9138");
+var hide = __webpack_require__("35e8");
+var Iterators = __webpack_require__("481b");
+var $iterCreate = __webpack_require__("8f60");
+var setToStringTag = __webpack_require__("45f2");
+var getPrototypeOf = __webpack_require__("53e2");
+var ITERATOR = __webpack_require__("5168")('iterator');
+var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
+var FF_ITERATOR = '@@iterator';
+var KEYS = 'keys';
+var VALUES = 'values';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function (kind) {
+    if (!BUGGY && kind in proto) return proto[kind];
+    switch (kind) {
+      case KEYS: return function keys() { return new Constructor(this, kind); };
+      case VALUES: return function values() { return new Constructor(this, kind); };
+    } return function entries() { return new Constructor(this, kind); };
+  };
+  var TAG = NAME + ' Iterator';
+  var DEF_VALUES = DEFAULT == VALUES;
+  var VALUES_BUG = false;
+  var proto = Base.prototype;
+  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
+  var $default = $native || getMethod(DEFAULT);
+  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
+  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
+  var methods, key, IteratorPrototype;
+  // Fix native
+  if ($anyNative) {
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
+    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEF_VALUES && $native && $native.name !== VALUES) {
+    VALUES_BUG = true;
+    $default = function values() { return $native.call(this); };
+  }
+  // Define iterator
+  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG] = returnThis;
+  if (DEFAULT) {
+    methods = {
+      values: DEF_VALUES ? $default : getMethod(VALUES),
+      keys: IS_SET ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if (FORCED) for (key in methods) {
+      if (!(key in proto)) redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
 
 
 /***/ }),
@@ -2325,6 +3018,28 @@ module.exports = getSymbols;
 
 /***/ }),
 
+/***/ "32fc":
+/***/ (function(module, exports, __webpack_require__) {
+
+var document = __webpack_require__("e53d").document;
+module.exports = document && document.documentElement;
+
+
+/***/ }),
+
+/***/ "335c":
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = __webpack_require__("6b4c");
+// eslint-disable-next-line no-prototype-builtins
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+
+/***/ }),
+
 /***/ "33a4":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2394,6 +3109,29 @@ module.exports = baseIsNative;
 
 /***/ }),
 
+/***/ "355d":
+/***/ (function(module, exports) {
+
+exports.f = {}.propertyIsEnumerable;
+
+
+/***/ }),
+
+/***/ "35e8":
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__("d9f6");
+var createDesc = __webpack_require__("aebd");
+module.exports = __webpack_require__("8e60") ? function (object, key, value) {
+  return dP.f(object, key, createDesc(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+
+/***/ }),
+
 /***/ "3698":
 /***/ (function(module, exports) {
 
@@ -2410,6 +3148,34 @@ function getValue(object, key) {
 }
 
 module.exports = getValue;
+
+
+/***/ }),
+
+/***/ "36c3":
+/***/ (function(module, exports, __webpack_require__) {
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+var IObject = __webpack_require__("335c");
+var defined = __webpack_require__("25eb");
+module.exports = function (it) {
+  return IObject(defined(it));
+};
+
+
+/***/ }),
+
+/***/ "3702":
+/***/ (function(module, exports, __webpack_require__) {
+
+// check on default Array iterator
+var Iterators = __webpack_require__("481b");
+var ITERATOR = __webpack_require__("5168")('iterator');
+var ArrayProto = Array.prototype;
+
+module.exports = function (it) {
+  return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
+};
 
 
 /***/ }),
@@ -2472,7 +3238,8 @@ var Stack = __webpack_require__("7e64"),
     isMap = __webpack_require__("cc45"),
     isObject = __webpack_require__("1a8c"),
     isSet = __webpack_require__("d7ee"),
-    keys = __webpack_require__("ec69");
+    keys = __webpack_require__("ec69"),
+    keysIn = __webpack_require__("9934");
 
 /** Used to compose bitmasks for cloning. */
 var CLONE_DEEP_FLAG = 1,
@@ -2594,16 +3361,10 @@ function baseClone(value, bitmask, customizer, key, object, stack) {
     value.forEach(function(subValue) {
       result.add(baseClone(subValue, bitmask, customizer, subValue, value, stack));
     });
-
-    return result;
-  }
-
-  if (isMap(value)) {
+  } else if (isMap(value)) {
     value.forEach(function(subValue, key) {
       result.set(key, baseClone(subValue, bitmask, customizer, key, value, stack));
     });
-
-    return result;
   }
 
   var keysFunc = isFull
@@ -2669,6 +3430,19 @@ var getNative = __webpack_require__("0b07"),
 var WeakMap = getNative(root, 'WeakMap');
 
 module.exports = WeakMap;
+
+
+/***/ }),
+
+/***/ "3a38":
+/***/ (function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+module.exports = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
 
 
 /***/ }),
@@ -2772,14 +3546,10 @@ module.exports = getMatchData;
 
 /***/ }),
 
-/***/ "3f6b":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "3ca6":
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("9ee4");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -2809,6 +3579,36 @@ var now = function() {
 };
 
 module.exports = now;
+
+
+/***/ }),
+
+/***/ "40c3":
+/***/ (function(module, exports, __webpack_require__) {
+
+// getting tag from 19.1.3.6 Object.prototype.toString()
+var cof = __webpack_require__("6b4c");
+var TAG = __webpack_require__("5168")('toStringTag');
+// ES3 wrong here
+var ARG = cof(function () { return arguments; }()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (e) { /* empty */ }
+};
+
+module.exports = function (it) {
+  var O, T, B;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
+    // builtinTag case
+    : ARG ? cof(O)
+    // ES3 arguments fallback
+    : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
+};
 
 
 /***/ }),
@@ -3021,6 +3821,18 @@ module.exports = copyArray;
 
 /***/ }),
 
+/***/ "454f":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("46a7");
+var $Object = __webpack_require__("584a").Object;
+module.exports = function defineProperty(it, key, desc) {
+  return $Object.defineProperty(it, key, desc);
+};
+
+
+/***/ }),
+
 /***/ "456d":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3050,6 +3862,20 @@ module.exports = function (it) {
 
 /***/ }),
 
+/***/ "45f2":
+/***/ (function(module, exports, __webpack_require__) {
+
+var def = __webpack_require__("d9f6").f;
+var has = __webpack_require__("07e3");
+var TAG = __webpack_require__("5168")('toStringTag');
+
+module.exports = function (it, tag, stat) {
+  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+};
+
+
+/***/ }),
+
 /***/ "4630":
 /***/ (function(module, exports) {
 
@@ -3061,6 +3887,68 @@ module.exports = function (bitmap, value) {
     value: value
   };
 };
+
+
+/***/ }),
+
+/***/ "46a7":
+/***/ (function(module, exports, __webpack_require__) {
+
+var $export = __webpack_require__("63b6");
+// 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
+$export($export.S + $export.F * !__webpack_require__("8e60"), 'Object', { defineProperty: __webpack_require__("d9f6").f });
+
+
+/***/ }),
+
+/***/ "473e":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_id_2a73e28d_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("50ca");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_id_2a73e28d_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_id_2a73e28d_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
+/***/ "47ee":
+/***/ (function(module, exports, __webpack_require__) {
+
+// all enumerable object keys, includes symbols
+var getKeys = __webpack_require__("c3a1");
+var gOPS = __webpack_require__("9aa9");
+var pIE = __webpack_require__("355d");
+module.exports = function (it) {
+  var result = getKeys(it);
+  var getSymbols = gOPS.f;
+  if (getSymbols) {
+    var symbols = getSymbols(it);
+    var isEnum = pIE.f;
+    var i = 0;
+    var key;
+    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+  } return result;
+};
+
+
+/***/ }),
+
+/***/ "481b":
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ "4849":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_id_abe7a6b8_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("a207");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_id_abe7a6b8_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_id_abe7a6b8_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
 
 
 /***/ }),
@@ -3195,6 +4083,61 @@ module.exports = function (it) {
 
 /***/ }),
 
+/***/ "4cef":
+/***/ (function(module, exports) {
+
+/** Used to match a single whitespace character. */
+var reWhitespace = /\s/;
+
+/**
+ * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+ * character of `string`.
+ *
+ * @private
+ * @param {string} string The string to inspect.
+ * @returns {number} Returns the index of the last non-whitespace character.
+ */
+function trimmedEndIndex(string) {
+  var index = string.length;
+
+  while (index-- && reWhitespace.test(string.charAt(index))) {}
+  return index;
+}
+
+module.exports = trimmedEndIndex;
+
+
+/***/ }),
+
+/***/ "4ee1":
+/***/ (function(module, exports, __webpack_require__) {
+
+var ITERATOR = __webpack_require__("5168")('iterator');
+var SAFE_CLOSING = false;
+
+try {
+  var riter = [7][ITERATOR]();
+  riter['return'] = function () { SAFE_CLOSING = true; };
+  // eslint-disable-next-line no-throw-literal
+  Array.from(riter, function () { throw 2; });
+} catch (e) { /* empty */ }
+
+module.exports = function (exec, skipClosing) {
+  if (!skipClosing && !SAFE_CLOSING) return false;
+  var safe = false;
+  try {
+    var arr = [7];
+    var iter = arr[ITERATOR]();
+    iter.next = function () { return { done: safe = true }; };
+    arr[ITERATOR] = function () { return iter; };
+    exec(arr);
+  } catch (e) { /* empty */ }
+  return safe;
+};
+
+
+/***/ }),
+
 /***/ "501e":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3240,6 +4183,13 @@ module.exports = isNumber;
 
 /***/ }),
 
+/***/ "50ca":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
 /***/ "50d8":
 /***/ (function(module, exports) {
 
@@ -3263,6 +4213,34 @@ function baseTimes(n, iteratee) {
 }
 
 module.exports = baseTimes;
+
+
+/***/ }),
+
+/***/ "50ed":
+/***/ (function(module, exports) {
+
+module.exports = function (done, value) {
+  return { value: value, done: !!done };
+};
+
+
+/***/ }),
+
+/***/ "5168":
+/***/ (function(module, exports, __webpack_require__) {
+
+var store = __webpack_require__("dbdb")('wks');
+var uid = __webpack_require__("62a0");
+var Symbol = __webpack_require__("e53d").Symbol;
+var USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function (name) {
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+$exports.store = store;
 
 
 /***/ }),
@@ -3329,10 +4307,141 @@ module.exports = findIndex;
 
 /***/ }),
 
+/***/ "520a":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var regexpFlags = __webpack_require__("0bfb");
+
+var nativeExec = RegExp.prototype.exec;
+// This always refers to the native implementation, because the
+// String#replace polyfill uses ./fix-regexp-well-known-symbol-logic.js,
+// which loads this file before patching the method.
+var nativeReplace = String.prototype.replace;
+
+var patchedExec = nativeExec;
+
+var LAST_INDEX = 'lastIndex';
+
+var UPDATES_LAST_INDEX_WRONG = (function () {
+  var re1 = /a/,
+      re2 = /b*/g;
+  nativeExec.call(re1, 'a');
+  nativeExec.call(re2, 'a');
+  return re1[LAST_INDEX] !== 0 || re2[LAST_INDEX] !== 0;
+})();
+
+// nonparticipating capturing group, copied from es5-shim's String#split patch.
+var NPCG_INCLUDED = /()??/.exec('')[1] !== undefined;
+
+var PATCH = UPDATES_LAST_INDEX_WRONG || NPCG_INCLUDED;
+
+if (PATCH) {
+  patchedExec = function exec(str) {
+    var re = this;
+    var lastIndex, reCopy, match, i;
+
+    if (NPCG_INCLUDED) {
+      reCopy = new RegExp('^' + re.source + '$(?!\\s)', regexpFlags.call(re));
+    }
+    if (UPDATES_LAST_INDEX_WRONG) lastIndex = re[LAST_INDEX];
+
+    match = nativeExec.call(re, str);
+
+    if (UPDATES_LAST_INDEX_WRONG && match) {
+      re[LAST_INDEX] = re.global ? match.index + match[0].length : lastIndex;
+    }
+    if (NPCG_INCLUDED && match && match.length > 1) {
+      // Fix browsers whose `exec` methods don't consistently return `undefined`
+      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
+      // eslint-disable-next-line no-loop-func
+      nativeReplace.call(match[0], reCopy, function () {
+        for (i = 1; i < arguments.length - 2; i++) {
+          if (arguments[i] === undefined) match[i] = undefined;
+        }
+      });
+    }
+
+    return match;
+  };
+}
+
+module.exports = patchedExec;
+
+
+/***/ }),
+
 /***/ "52a7":
 /***/ (function(module, exports) {
 
 exports.f = {}.propertyIsEnumerable;
+
+
+/***/ }),
+
+/***/ "53e2":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+var has = __webpack_require__("07e3");
+var toObject = __webpack_require__("241e");
+var IE_PROTO = __webpack_require__("5559")('IE_PROTO');
+var ObjectProto = Object.prototype;
+
+module.exports = Object.getPrototypeOf || function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+
+/***/ }),
+
+/***/ "549b":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var ctx = __webpack_require__("d864");
+var $export = __webpack_require__("63b6");
+var toObject = __webpack_require__("241e");
+var call = __webpack_require__("b0dc");
+var isArrayIter = __webpack_require__("3702");
+var toLength = __webpack_require__("b447");
+var createProperty = __webpack_require__("20fd");
+var getIterFn = __webpack_require__("7cd6");
+
+$export($export.S + $export.F * !__webpack_require__("4ee1")(function (iter) { Array.from(iter); }), 'Array', {
+  // 22.1.2.1 Array.from(arrayLike, mapfn = undefined, thisArg = undefined)
+  from: function from(arrayLike /* , mapfn = undefined, thisArg = undefined */) {
+    var O = toObject(arrayLike);
+    var C = typeof this == 'function' ? this : Array;
+    var aLen = arguments.length;
+    var mapfn = aLen > 1 ? arguments[1] : undefined;
+    var mapping = mapfn !== undefined;
+    var index = 0;
+    var iterFn = getIterFn(O);
+    var length, result, step, iterator;
+    if (mapping) mapfn = ctx(mapfn, aLen > 2 ? arguments[2] : undefined, 2);
+    // if object isn't iterable or it's array with default iterator - use simple case
+    if (iterFn != undefined && !(C == Array && isArrayIter(iterFn))) {
+      for (iterator = iterFn.call(O), result = new C(); !(step = iterator.next()).done; index++) {
+        createProperty(result, index, mapping ? call(iterator, mapfn, [step.value, index], true) : step.value);
+      }
+    } else {
+      length = toLength(O.length);
+      for (result = new C(length); length > index; index++) {
+        createProperty(result, index, mapping ? mapfn(O[index], index) : O[index]);
+      }
+    }
+    result.length = index;
+    return result;
+  }
+});
 
 
 /***/ }),
@@ -3667,8 +4776,20 @@ var store = global[SHARED] || (global[SHARED] = {});
 })('versions', []).push({
   version: core.version,
   mode: __webpack_require__("2d00") ? 'pure' : 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
 });
+
+
+/***/ }),
+
+/***/ "5559":
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__("dbdb")('keys');
+var uid = __webpack_require__("62a0");
+module.exports = function (key) {
+  return shared[key] || (shared[key] = uid(key));
+};
 
 
 /***/ }),
@@ -3694,13 +4815,6 @@ module.exports = stackHas;
 
 /***/ }),
 
-/***/ "574e":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "57a5":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3714,6 +4828,15 @@ module.exports = nativeKeys;
 
 /***/ }),
 
+/***/ "584a":
+/***/ (function(module, exports) {
+
+var core = module.exports = { version: '2.6.12' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+
+/***/ }),
+
 /***/ "585a":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3723,6 +4846,17 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 module.exports = freeGlobal;
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__("c8ba")))
+
+/***/ }),
+
+/***/ "5a04":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_id_82e5722e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("8a4a");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_id_82e5722e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldChecklist_vue_vue_type_style_index_0_id_82e5722e_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
 
 /***/ }),
 
@@ -3746,6 +4880,36 @@ function baseAssign(object, source) {
 }
 
 module.exports = baseAssign;
+
+
+/***/ }),
+
+/***/ "5b4e":
+/***/ (function(module, exports, __webpack_require__) {
+
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = __webpack_require__("36c3");
+var toLength = __webpack_require__("b447");
+var toAbsoluteIndex = __webpack_require__("0fc9");
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
 
 
 /***/ }),
@@ -3861,6 +5025,13 @@ module.exports = function (exec, skipClosing) {
 
 /***/ }),
 
+/***/ "5d58":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("d8d6");
+
+/***/ }),
+
 /***/ "5d89":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3896,6 +5067,31 @@ module.exports = function (that, target, C) {
     setPrototypeOf(that, P);
   } return that;
 };
+
+
+/***/ }),
+
+/***/ "5df3":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $at = __webpack_require__("02f4")(true);
+
+// 21.1.3.27 String.prototype[@@iterator]()
+__webpack_require__("01f9")(String, 'String', function (iterated) {
+  this._t = String(iterated); // target
+  this._i = 0;                // next index
+// 21.1.5.2.1 %StringIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var index = this._i;
+  var point;
+  if (index >= O.length) return { value: undefined, done: true };
+  point = $at(O, index);
+  this._i += point.length;
+  return { value: point, done: false };
+});
 
 
 /***/ }),
@@ -3956,21 +5152,32 @@ module.exports = function (KEY, exec) {
 
 /***/ }),
 
-/***/ "5ff7":
+/***/ "5f1b":
 /***/ (function(module, exports, __webpack_require__) {
 
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
-/***/ "602f":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
 "use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("260c");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRadios_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+
+var classof = __webpack_require__("23c6");
+var builtinExec = RegExp.prototype.exec;
+
+ // `RegExpExec` abstract operation
+// https://tc39.github.io/ecma262/#sec-regexpexec
+module.exports = function (R, S) {
+  var exec = R.exec;
+  if (typeof exec === 'function') {
+    var result = exec.call(R, S);
+    if (typeof result !== 'object') {
+      throw new TypeError('RegExp exec method returned something other than an Object or null');
+    }
+    return result;
+  }
+  if (classof(R) !== 'RegExp') {
+    throw new TypeError('RegExp#exec called on incompatible receiver');
+  }
+  return builtinExec.call(R, S);
+};
+
 
 /***/ }),
 
@@ -3999,13 +5206,6 @@ module.exports = function (key) {
 
 /***/ }),
 
-/***/ "6186":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "626a":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4014,6 +5214,18 @@ var cof = __webpack_require__("2d95");
 // eslint-disable-next-line no-prototype-builtins
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
   return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+
+/***/ }),
+
+/***/ "62a0":
+/***/ (function(module, exports) {
+
+var id = 0;
+var px = Math.random();
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
 
 
@@ -4044,6 +5256,75 @@ module.exports = function(module) {
 	}
 	return module;
 };
+
+
+/***/ }),
+
+/***/ "63b6":
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__("e53d");
+var core = __webpack_require__("584a");
+var ctx = __webpack_require__("d864");
+var hide = __webpack_require__("35e8");
+var has = __webpack_require__("07e3");
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var IS_WRAP = type & $export.W;
+  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
+  var expProto = exports[PROTOTYPE];
+  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
+  var key, own, out;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if (own && has(exports, key)) continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function (C) {
+      var F = function (a, b, c) {
+        if (this instanceof C) {
+          switch (arguments.length) {
+            case 0: return new C();
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if (IS_PROTO) {
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+module.exports = $export;
 
 
 /***/ }),
@@ -4157,6 +5438,22 @@ module.exports = baseGet;
 
 /***/ }),
 
+/***/ "6718":
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__("e53d");
+var core = __webpack_require__("584a");
+var LIBRARY = __webpack_require__("b8e3");
+var wksExt = __webpack_require__("ccb9");
+var defineProperty = __webpack_require__("d9f6").f;
+module.exports = function (name) {
+  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
+  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
+};
+
+
+/***/ }),
+
 /***/ "6747":
 /***/ (function(module, exports) {
 
@@ -4207,6 +5504,13 @@ $export($export.P, 'Array', {
 
 __webpack_require__("9c6c")('includes');
 
+
+/***/ }),
+
+/***/ "67bb":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("f921");
 
 /***/ }),
 
@@ -4307,6 +5611,14 @@ module.exports = function (it, key) {
 
 /***/ }),
 
+/***/ "69d3":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("6718")('asyncIterator');
+
+
+/***/ }),
+
 /***/ "69d5":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4368,6 +5680,32 @@ module.exports = function (it, S) {
 
 /***/ }),
 
+/***/ "6abf":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var $keys = __webpack_require__("e6f3");
+var hiddenKeys = __webpack_require__("1691").concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return $keys(O, hiddenKeys);
+};
+
+
+/***/ }),
+
+/***/ "6b4c":
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+
+/***/ }),
+
 /***/ "6b54":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4396,6 +5734,32 @@ if (__webpack_require__("79e5")(function () { return $toString.call({ source: 'a
   define(function toString() {
     return $toString.call(this);
   });
+}
+
+
+/***/ }),
+
+/***/ "6c1c":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("c367");
+var global = __webpack_require__("e53d");
+var hide = __webpack_require__("35e8");
+var Iterators = __webpack_require__("481b");
+var TO_STRING_TAG = __webpack_require__("5168")('toStringTag');
+
+var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
+  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
+  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
+  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
+  'TextTrackList,TouchList').split(',');
+
+for (var i = 0; i < DOMIterables.length; i++) {
+  var NAME = DOMIterables[i];
+  var Collection = global[NAME];
+  var proto = Collection && Collection.prototype;
+  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
+  Iterators[NAME] = Iterators.Array;
 }
 
 
@@ -4529,6 +5893,41 @@ module.exports = arrayLikeKeys;
 
 /***/ }),
 
+/***/ "71c1":
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__("3a38");
+var defined = __webpack_require__("25eb");
+// true  -> String#at
+// false -> String#codePointAt
+module.exports = function (TO_STRING) {
+  return function (that, pos) {
+    var s = String(defined(that));
+    var i = toInteger(pos);
+    var l = s.length;
+    var a, b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+
+/***/ }),
+
+/***/ "7291":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_id_31fb0474_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("3ca6");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_id_31fb0474_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSelectEx_vue_vue_type_style_index_0_id_31fb0474_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "72af":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4582,13 +5981,6 @@ function constant(value) {
 
 module.exports = constant;
 
-
-/***/ }),
-
-/***/ "7375":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -4693,13 +6085,6 @@ module.exports = baseIsTypedArray;
 
 /***/ }),
 
-/***/ "74d5":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "7530":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4737,10 +6122,11 @@ module.exports = baseCreate;
 
 /***/ }),
 
-/***/ "76c3":
+/***/ "765d":
 /***/ (function(module, exports, __webpack_require__) {
 
-// extracted by mini-css-extract-plugin
+__webpack_require__("6718")('observable');
+
 
 /***/ }),
 
@@ -4792,10 +6178,10 @@ if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 
 /***/ }),
 
-/***/ "77cf":
+/***/ "774e":
 /***/ (function(module, exports, __webpack_require__) {
 
-// extracted by mini-css-extract-plugin
+module.exports = __webpack_require__("d2d5");
 
 /***/ }),
 
@@ -4837,6 +6223,27 @@ function arrayMap(array, iteratee) {
 }
 
 module.exports = arrayMap;
+
+
+/***/ }),
+
+/***/ "794b":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__("8e60") && !__webpack_require__("294c")(function () {
+  return Object.defineProperty(__webpack_require__("1ec9")('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "79aa":
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
 
 
 /***/ }),
@@ -5077,6 +6484,21 @@ module.exports = mapCacheClear;
 
 /***/ }),
 
+/***/ "7cd6":
+/***/ (function(module, exports, __webpack_require__) {
+
+var classof = __webpack_require__("40c3");
+var ITERATOR = __webpack_require__("5168")('iterator');
+var Iterators = __webpack_require__("481b");
+module.exports = __webpack_require__("584a").getIteratorMethod = function (it) {
+  if (it != undefined) return it[ITERATOR]
+    || it['@@iterator']
+    || Iterators[classof(it)];
+};
+
+
+/***/ }),
+
 /***/ "7d1f":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5134,6 +6556,26 @@ Stack.prototype.has = stackHas;
 Stack.prototype.set = stackSet;
 
 module.exports = Stack;
+
+
+/***/ }),
+
+/***/ "7e90":
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__("d9f6");
+var anObject = __webpack_require__("e4ae");
+var getKeys = __webpack_require__("c3a1");
+
+module.exports = __webpack_require__("8e60") ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = getKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
 
 
 /***/ }),
@@ -5330,8 +6772,16 @@ module.exports = function () {
 /***/ "8378":
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.7' };
+var core = module.exports = { version: '2.6.12' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+
+/***/ }),
+
+/***/ "8436":
+/***/ (function(module, exports) {
+
+module.exports = function () { /* empty */ };
 
 
 /***/ }),
@@ -5369,6 +6819,13 @@ function apply(func, thisArg, args) {
 
 module.exports = apply;
 
+
+/***/ }),
+
+/***/ "85f2":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("454f");
 
 /***/ }),
 
@@ -5468,14 +6925,28 @@ module.exports = baseAssignValue;
 
 /***/ }),
 
-/***/ "8a23":
+/***/ "8847":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("6186");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_id_1d02c396_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("14c0");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_id_1d02c396_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_id_1d02c396_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
 /* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldInput_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+
+/***/ }),
+
+/***/ "89ec":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
+/***/ "8a4a":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -5515,6 +6986,72 @@ module.exports = {
 /***/ (function(module, exports) {
 
 module.exports = require("vue");
+
+/***/ }),
+
+/***/ "8d74":
+/***/ (function(module, exports, __webpack_require__) {
+
+var trimmedEndIndex = __webpack_require__("4cef");
+
+/** Used to match leading whitespace. */
+var reTrimStart = /^\s+/;
+
+/**
+ * The base implementation of `_.trim`.
+ *
+ * @private
+ * @param {string} string The string to trim.
+ * @returns {string} Returns the trimmed string.
+ */
+function baseTrim(string) {
+  return string
+    ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+    : string;
+}
+
+module.exports = baseTrim;
+
+
+/***/ }),
+
+/***/ "8e60":
+/***/ (function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__("294c")(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "8e6e":
+/***/ (function(module, exports, __webpack_require__) {
+
+// https://github.com/tc39/proposal-object-getownpropertydescriptors
+var $export = __webpack_require__("5ca1");
+var ownKeys = __webpack_require__("990b");
+var toIObject = __webpack_require__("6821");
+var gOPD = __webpack_require__("11e9");
+var createProperty = __webpack_require__("f1ae");
+
+$export($export.S, 'Object', {
+  getOwnPropertyDescriptors: function getOwnPropertyDescriptors(object) {
+    var O = toIObject(object);
+    var getDesc = gOPD.f;
+    var keys = ownKeys(O);
+    var result = {};
+    var i = 0;
+    var key, desc;
+    while (keys.length > i) {
+      desc = getDesc(O, key = keys[i++]);
+      if (desc !== undefined) createProperty(result, key, desc);
+    }
+    return result;
+  }
+});
+
 
 /***/ }),
 
@@ -5565,6 +7102,39 @@ module.exports = copyObject;
 
 /***/ }),
 
+/***/ "8f60":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var create = __webpack_require__("a159");
+var descriptor = __webpack_require__("aebd");
+var setToStringTag = __webpack_require__("45f2");
+var IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+__webpack_require__("35e8")(IteratorPrototype, __webpack_require__("5168")('iterator'), function () { return this; });
+
+module.exports = function (Constructor, NAME, next) {
+  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
+  setToStringTag(Constructor, NAME + ' Iterator');
+};
+
+
+/***/ }),
+
+/***/ "9003":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.2.2 IsArray(argument)
+var cof = __webpack_require__("6b4c");
+module.exports = Array.isArray || function isArray(arg) {
+  return cof(arg) == 'Array';
+};
+
+
+/***/ }),
+
 /***/ "9093":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5575,6 +7145,14 @@ var hiddenKeys = __webpack_require__("e11e").concat('length', 'prototype');
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
 };
+
+
+/***/ }),
+
+/***/ "9138":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("35e8");
 
 
 /***/ }),
@@ -5598,6 +7176,13 @@ function overArg(func, transform) {
 
 module.exports = overArg;
 
+
+/***/ }),
+
+/***/ "9356":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -5824,6 +7409,17 @@ module.exports = eq;
 
 /***/ }),
 
+/***/ "9666":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_id_1d199458_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("2ee0");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_id_1d199458_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldImage_vue_vue_type_style_index_0_id_1d199458_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "966f":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5928,6 +7524,23 @@ module.exports = uniqueId;
 
 /***/ }),
 
+/***/ "990b":
+/***/ (function(module, exports, __webpack_require__) {
+
+// all object keys, includes non-enumerable and symbols
+var gOPN = __webpack_require__("9093");
+var gOPS = __webpack_require__("2621");
+var anObject = __webpack_require__("cb7c");
+var Reflect = __webpack_require__("7726").Reflect;
+module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
+  var keys = gOPN.f(anObject(it));
+  var getSymbols = gOPS.f;
+  return getSymbols ? keys.concat(getSymbols(it)) : keys;
+};
+
+
+/***/ }),
+
 /***/ "9934":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6005,7 +7618,7 @@ module.exports = createBaseFor;
 /* WEBPACK VAR INJECTION */(function(module) {var freeGlobal = __webpack_require__("585a");
 
 /** Detect free variable `exports`. */
-var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+var freeExports =  true && exports && !exports.nodeType && exports;
 
 /** Detect free variable `module`. */
 var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
@@ -6034,6 +7647,28 @@ var nodeUtil = (function() {
 module.exports = nodeUtil;
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__("62e4")(module)))
+
+/***/ }),
+
+/***/ "9a2b":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
+/***/ "9a5f":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
+/***/ "9aa9":
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
 
 /***/ }),
 
@@ -6137,6 +7772,17 @@ module.exports = function (fn, that, length) {
     return fn.apply(that, arguments);
   };
 };
+
+
+/***/ }),
+
+/***/ "9b8c":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_id_59362445_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("fa66");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_id_59362445_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_id_59362445_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
 
 
 /***/ }),
@@ -6533,7 +8179,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;(function (main) {
   };
 
   /* istanbul ignore next */
-  if (typeof module !== 'undefined' && module.exports) {
+  if ( true && module.exports) {
     module.exports = fecha;
   } else if (true) {
     !(__WEBPACK_AMD_DEFINE_RESULT__ = (function () {
@@ -6543,13 +8189,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;(function (main) {
   } else {}
 })(this);
 
-
-/***/ }),
-
-/***/ "9ee4":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -6582,6 +8221,61 @@ var getSymbolsIn = !nativeGetSymbols ? stubArray : function(object) {
 
 module.exports = getSymbolsIn;
 
+
+/***/ }),
+
+/***/ "a159":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+var anObject = __webpack_require__("e4ae");
+var dPs = __webpack_require__("7e90");
+var enumBugKeys = __webpack_require__("1691");
+var IE_PROTO = __webpack_require__("5559")('IE_PROTO');
+var Empty = function () { /* empty */ };
+var PROTOTYPE = 'prototype';
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = __webpack_require__("1ec9")('iframe');
+  var i = enumBugKeys.length;
+  var lt = '<';
+  var gt = '>';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  __webpack_require__("32fc").appendChild(iframe);
+  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
+  // createDict = iframe.contentWindow.Object;
+  // html.removeChild(iframe);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
+  return createDict();
+};
+
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty();
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : dPs(result, Properties);
+};
+
+
+/***/ }),
+
+/***/ "a207":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -6628,10 +8322,11 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
     return false;
   }
-  // Assume cyclic values are equal.
-  var stacked = stack.get(array);
-  if (stacked && stack.get(other)) {
-    return stacked == other;
+  // Check that cyclic values are equal.
+  var arrStacked = stack.get(array);
+  var othStacked = stack.get(other);
+  if (arrStacked && othStacked) {
+    return arrStacked == other && othStacked == array;
   }
   var index = -1,
       result = true,
@@ -6711,6 +8406,13 @@ module.exports = cloneSymbol;
 
 /***/ }),
 
+/***/ "a447":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
 /***/ "a454":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -6743,17 +8445,124 @@ module.exports = baseSetToString;
 /***/ "a481":
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
+var anObject = __webpack_require__("cb7c");
+var toObject = __webpack_require__("4bf8");
+var toLength = __webpack_require__("9def");
+var toInteger = __webpack_require__("4588");
+var advanceStringIndex = __webpack_require__("0390");
+var regExpExec = __webpack_require__("5f1b");
+var max = Math.max;
+var min = Math.min;
+var floor = Math.floor;
+var SUBSTITUTION_SYMBOLS = /\$([$&`']|\d\d?|<[^>]*>)/g;
+var SUBSTITUTION_SYMBOLS_NO_NAMED = /\$([$&`']|\d\d?)/g;
+
+var maybeToString = function (it) {
+  return it === undefined ? it : String(it);
+};
+
 // @@replace logic
-__webpack_require__("214f")('replace', 2, function (defined, REPLACE, $replace) {
-  // 21.1.3.14 String.prototype.replace(searchValue, replaceValue)
-  return [function replace(searchValue, replaceValue) {
-    'use strict';
-    var O = defined(this);
-    var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
-    return fn !== undefined
-      ? fn.call(searchValue, O, replaceValue)
-      : $replace.call(String(O), searchValue, replaceValue);
-  }, $replace];
+__webpack_require__("214f")('replace', 2, function (defined, REPLACE, $replace, maybeCallNative) {
+  return [
+    // `String.prototype.replace` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.replace
+    function replace(searchValue, replaceValue) {
+      var O = defined(this);
+      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
+      return fn !== undefined
+        ? fn.call(searchValue, O, replaceValue)
+        : $replace.call(String(O), searchValue, replaceValue);
+    },
+    // `RegExp.prototype[@@replace]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@replace
+    function (regexp, replaceValue) {
+      var res = maybeCallNative($replace, regexp, this, replaceValue);
+      if (res.done) return res.value;
+
+      var rx = anObject(regexp);
+      var S = String(this);
+      var functionalReplace = typeof replaceValue === 'function';
+      if (!functionalReplace) replaceValue = String(replaceValue);
+      var global = rx.global;
+      if (global) {
+        var fullUnicode = rx.unicode;
+        rx.lastIndex = 0;
+      }
+      var results = [];
+      while (true) {
+        var result = regExpExec(rx, S);
+        if (result === null) break;
+        results.push(result);
+        if (!global) break;
+        var matchStr = String(result[0]);
+        if (matchStr === '') rx.lastIndex = advanceStringIndex(S, toLength(rx.lastIndex), fullUnicode);
+      }
+      var accumulatedResult = '';
+      var nextSourcePosition = 0;
+      for (var i = 0; i < results.length; i++) {
+        result = results[i];
+        var matched = String(result[0]);
+        var position = max(min(toInteger(result.index), S.length), 0);
+        var captures = [];
+        // NOTE: This is equivalent to
+        //   captures = result.slice(1).map(maybeToString)
+        // but for some reason `nativeSlice.call(result, 1, result.length)` (called in
+        // the slice polyfill when slicing native arrays) "doesn't work" in safari 9 and
+        // causes a crash (https://pastebin.com/N21QzeQA) when trying to debug it.
+        for (var j = 1; j < result.length; j++) captures.push(maybeToString(result[j]));
+        var namedCaptures = result.groups;
+        if (functionalReplace) {
+          var replacerArgs = [matched].concat(captures, position, S);
+          if (namedCaptures !== undefined) replacerArgs.push(namedCaptures);
+          var replacement = String(replaceValue.apply(undefined, replacerArgs));
+        } else {
+          replacement = getSubstitution(matched, S, position, captures, namedCaptures, replaceValue);
+        }
+        if (position >= nextSourcePosition) {
+          accumulatedResult += S.slice(nextSourcePosition, position) + replacement;
+          nextSourcePosition = position + matched.length;
+        }
+      }
+      return accumulatedResult + S.slice(nextSourcePosition);
+    }
+  ];
+
+    // https://tc39.github.io/ecma262/#sec-getsubstitution
+  function getSubstitution(matched, str, position, captures, namedCaptures, replacement) {
+    var tailPos = position + matched.length;
+    var m = captures.length;
+    var symbols = SUBSTITUTION_SYMBOLS_NO_NAMED;
+    if (namedCaptures !== undefined) {
+      namedCaptures = toObject(namedCaptures);
+      symbols = SUBSTITUTION_SYMBOLS;
+    }
+    return $replace.call(replacement, symbols, function (match, ch) {
+      var capture;
+      switch (ch.charAt(0)) {
+        case '$': return '$';
+        case '&': return matched;
+        case '`': return str.slice(0, position);
+        case "'": return str.slice(tailPos);
+        case '<':
+          capture = namedCaptures[ch.slice(1, -1)];
+          break;
+        default: // \d\d?
+          var n = +ch;
+          if (n === 0) return match;
+          if (n > m) {
+            var f = floor(n / 10);
+            if (f === 0) return match;
+            if (f <= m) return captures[f - 1] === undefined ? ch.charAt(1) : captures[f - 1] + ch.charAt(1);
+            return match;
+          }
+          capture = captures[n - 1];
+      }
+      return capture === undefined ? '' : capture;
+    });
+  }
 });
 
 
@@ -6805,6 +8614,24 @@ module.exports.f = function (C) {
   return new PromiseCapability(C);
 };
 
+
+/***/ }),
+
+/***/ "a726":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_id_2b2a70a2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("9a2b");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_id_2b2a70a2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_id_2b2a70a2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
+/***/ "a745":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("f410");
 
 /***/ }),
 
@@ -6973,14 +8800,18 @@ for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++
 
 /***/ }),
 
-/***/ "b018":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "aebd":
+/***/ (function(module, exports) {
 
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("2c4d");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldUpload_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
 
 /***/ }),
 
@@ -7162,6 +8993,7 @@ function debounce(func, wait, options) {
       }
       if (maxing) {
         // Handle invocations in a tight loop.
+        clearTimeout(timerId);
         timerId = setTimeout(timerExpired, wait);
         return invokeFunc(lastCallTime);
       }
@@ -7198,6 +9030,42 @@ function baseUnary(func) {
 }
 
 module.exports = baseUnary;
+
+
+/***/ }),
+
+/***/ "b0c5":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var regexpExec = __webpack_require__("520a");
+__webpack_require__("5ca1")({
+  target: 'RegExp',
+  proto: true,
+  forced: regexpExec !== /./.exec
+}, {
+  exec: regexpExec
+});
+
+
+/***/ }),
+
+/***/ "b0dc":
+/***/ (function(module, exports, __webpack_require__) {
+
+// call something on iterator step with safe closing on error
+var anObject = __webpack_require__("e4ae");
+module.exports = function (iterator, fn, value, entries) {
+  try {
+    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
+  // 7.4.6 IteratorClose(iterator, completion)
+  } catch (e) {
+    var ret = iterator['return'];
+    if (ret !== undefined) anObject(ret.call(iterator));
+    throw e;
+  }
+};
 
 
 /***/ }),
@@ -7246,10 +9114,11 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
       return false;
     }
   }
-  // Assume cyclic values are equal.
-  var stacked = stack.get(object);
-  if (stacked && stack.get(other)) {
-    return stacked == other;
+  // Check that cyclic values are equal.
+  var objStacked = stack.get(object);
+  var othStacked = stack.get(other);
+  if (objStacked && othStacked) {
+    return objStacked == other && othStacked == object;
   }
   var result = true;
   stack.set(object, other);
@@ -7340,17 +9209,39 @@ module.exports = isLength;
 
 /***/ }),
 
+/***/ "b447":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.15 ToLength
+var toInteger = __webpack_require__("3a38");
+var min = Math.min;
+module.exports = function (it) {
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+
+/***/ }),
+
+/***/ "b44a":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_id_04983600_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("9a5f");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_id_04983600_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldStaticMap_vue_vue_type_style_index_0_id_04983600_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "b4b0":
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__("1a8c"),
+var baseTrim = __webpack_require__("8d74"),
+    isObject = __webpack_require__("1a8c"),
     isSymbol = __webpack_require__("ffd6");
 
 /** Used as references for various `Number` constants. */
 var NAN = 0 / 0;
-
-/** Used to match leading and trailing whitespace. */
-var reTrim = /^\s+|\s+$/g;
 
 /** Used to detect bad signed hexadecimal string values. */
 var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
@@ -7401,7 +9292,7 @@ function toNumber(value) {
   if (typeof value != 'string') {
     return value === 0 ? value : +value;
   }
-  value = value.replace(reTrim, '');
+  value = baseTrim(value);
   var isBinary = reIsBinary.test(value);
   return (isBinary || reIsOctal.test(value))
     ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
@@ -7453,35 +9344,6 @@ module.exports = DataView;
 
 /***/ }),
 
-/***/ "b72b":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("b828");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldLabel_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
-
-/***/ }),
-
-/***/ "b7fb":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("74d5");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formElement_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
-
-/***/ }),
-
-/***/ "b828":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
-
-/***/ }),
-
 /***/ "b8ce":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7521,6 +9383,14 @@ function clone(value) {
 }
 
 module.exports = clone;
+
+
+/***/ }),
+
+/***/ "b8e3":
+/***/ (function(module, exports) {
+
+module.exports = true;
 
 
 /***/ }),
@@ -7600,6 +9470,13 @@ module.exports = hashGet;
 
 /***/ }),
 
+/***/ "bc8d":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
 /***/ "bcaa":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7631,25 +9508,37 @@ module.exports = function (it) {
 
 /***/ }),
 
-/***/ "bf23":
+/***/ "be9d":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("77cf");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_id_280726e2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("bc8d");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_id_280726e2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_id_280726e2_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
 /* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
 
 /***/ }),
 
-/***/ "bfd2":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "bf0b":
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("e279");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+var pIE = __webpack_require__("355d");
+var createDesc = __webpack_require__("aebd");
+var toIObject = __webpack_require__("36c3");
+var toPrimitive = __webpack_require__("1bc3");
+var has = __webpack_require__("07e3");
+var IE8_DOM_DEFINE = __webpack_require__("794b");
+var gOPD = Object.getOwnPropertyDescriptor;
+
+exports.f = __webpack_require__("8e60") ? gOPD : function getOwnPropertyDescriptor(O, P) {
+  O = toIObject(O);
+  P = toPrimitive(P, true);
+  if (IE8_DOM_DEFINE) try {
+    return gOPD(O, P);
+  } catch (e) { /* empty */ }
+  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
+};
+
 
 /***/ }),
 
@@ -7737,6 +9626,13 @@ var baseSetToString = __webpack_require__("a454"),
 var setToString = shortOut(baseSetToString);
 
 module.exports = setToString;
+
+
+/***/ }),
+
+/***/ "c207":
+/***/ (function(module, exports) {
+
 
 
 /***/ }),
@@ -7855,6 +9751,62 @@ module.exports = function (IS_INCLUDES) {
 
 /***/ }),
 
+/***/ "c367":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var addToUnscopables = __webpack_require__("8436");
+var step = __webpack_require__("50ed");
+var Iterators = __webpack_require__("481b");
+var toIObject = __webpack_require__("36c3");
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+module.exports = __webpack_require__("30f1")(Array, 'Array', function (iterated, kind) {
+  this._t = toIObject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return step(1);
+  }
+  if (kind == 'keys') return step(0, index);
+  if (kind == 'values') return step(0, O[index]);
+  return step(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+Iterators.Arguments = Iterators.Array;
+
+addToUnscopables('keys');
+addToUnscopables('values');
+addToUnscopables('entries');
+
+
+/***/ }),
+
+/***/ "c3a1":
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys = __webpack_require__("e6f3");
+var enumBugKeys = __webpack_require__("1691");
+
+module.exports = Object.keys || function keys(O) {
+  return $keys(O, enumBugKeys);
+};
+
+
+/***/ }),
+
 /***/ "c3fc":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7880,14 +9832,14 @@ module.exports = baseIsSet;
 
 /***/ }),
 
-/***/ "c495":
+/***/ "c512":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("574e");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_id_d75421da_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("05fd");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_id_d75421da_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_formGenerator_vue_vue_type_style_index_0_id_d75421da_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
 /* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldCheckbox_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
 
 /***/ }),
 
@@ -8065,7 +10017,7 @@ g = (function() {
 
 try {
 	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
+	g = g || new Function("return this")();
 } catch (e) {
 	// This works if the window reference is available
 	if (typeof window === "object") g = window;
@@ -8231,6 +10183,14 @@ module.exports = isMap;
 
 /***/ }),
 
+/***/ "ccb9":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports.f = __webpack_require__("5168");
+
+
+/***/ }),
+
 /***/ "cd9d":
 /***/ (function(module, exports) {
 
@@ -8368,10 +10328,13 @@ module.exports = stackSet;
 
 /***/ }),
 
-/***/ "d302":
+/***/ "d2d5":
 /***/ (function(module, exports, __webpack_require__) {
 
-// extracted by mini-css-extract-plugin
+__webpack_require__("1654");
+__webpack_require__("549b");
+module.exports = __webpack_require__("584a").Array.from;
+
 
 /***/ }),
 
@@ -8458,17 +10421,6 @@ module.exports = function (it) {
 
 /***/ }),
 
-/***/ "d474":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("7375");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldRangeSlider_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
-
-/***/ }),
-
 /***/ "d53b":
 /***/ (function(module, exports) {
 
@@ -8547,12 +10499,72 @@ module.exports = isSet;
 
 /***/ }),
 
+/***/ "d864":
+/***/ (function(module, exports, __webpack_require__) {
+
+// optional / simple context binding
+var aFunction = __webpack_require__("79aa");
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+
+/***/ "d8d6":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("1654");
+__webpack_require__("6c1c");
+module.exports = __webpack_require__("ccb9").f('iterator');
+
+
+/***/ }),
+
 /***/ "d8e8":
 /***/ (function(module, exports) {
 
 module.exports = function (it) {
   if (typeof it != 'function') throw TypeError(it + ' is not a function!');
   return it;
+};
+
+
+/***/ }),
+
+/***/ "d9f6":
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject = __webpack_require__("e4ae");
+var IE8_DOM_DEFINE = __webpack_require__("794b");
+var toPrimitive = __webpack_require__("1bc3");
+var dP = Object.defineProperty;
+
+exports.f = __webpack_require__("8e60") ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return dP(O, P, Attributes);
+  } catch (e) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
 };
 
 
@@ -8567,6 +10579,25 @@ var root = __webpack_require__("2b3e");
 var coreJsData = root['__core-js_shared__'];
 
 module.exports = coreJsData;
+
+
+/***/ }),
+
+/***/ "dbdb":
+/***/ (function(module, exports, __webpack_require__) {
+
+var core = __webpack_require__("584a");
+var global = __webpack_require__("e53d");
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: __webpack_require__("b8e3") ? 'pure' : 'global',
+  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
+});
 
 
 /***/ }),
@@ -8637,17 +10668,6 @@ module.exports = function (target, src, safe) {
 
 /***/ }),
 
-/***/ "e0bf":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("76c3");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSwitch_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
-
-/***/ }),
-
 /***/ "e11e":
 /***/ (function(module, exports) {
 
@@ -8695,13 +10715,6 @@ Hash.prototype.set = hashSet;
 
 module.exports = Hash;
 
-
-/***/ }),
-
-/***/ "e279":
-/***/ (function(module, exports, __webpack_require__) {
-
-// extracted by mini-css-extract-plugin
 
 /***/ }),
 
@@ -8919,13 +10932,32 @@ module.exports = basePropertyDeep;
 
 /***/ }),
 
+/***/ "e41f":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
+/***/ "e4ae":
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__("f772");
+module.exports = function (it) {
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+
+/***/ }),
+
 /***/ "e538":
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var root = __webpack_require__("2b3e");
 
 /** Detect free variable `exports`. */
-var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+var freeExports =  true && exports && !exports.nodeType && exports;
 
 /** Detect free variable `module`. */
 var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
@@ -8962,6 +10994,43 @@ module.exports = cloneBuffer;
 
 /***/ }),
 
+/***/ "e53d":
+/***/ (function(module, exports) {
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self
+  // eslint-disable-next-line no-new-func
+  : Function('return this')();
+if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
+
+
+/***/ }),
+
+/***/ "e6f3":
+/***/ (function(module, exports, __webpack_require__) {
+
+var has = __webpack_require__("07e3");
+var toIObject = __webpack_require__("36c3");
+var arrayIndexOf = __webpack_require__("5b4e")(false);
+var IE_PROTO = __webpack_require__("5559")('IE_PROTO');
+
+module.exports = function (object, names) {
+  var O = toIObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+
+/***/ }),
+
 /***/ "eac5":
 /***/ (function(module, exports) {
 
@@ -8987,17 +11056,6 @@ module.exports = isPrototype;
 
 /***/ }),
 
-/***/ "eb5d":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("5ff7");
-/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
-/* unused harmony reexport * */
- /* unused harmony default export */ var _unused_webpack_default_export = (_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldSubmit_vue_vue_type_style_index_0_lang_scss___WEBPACK_IMPORTED_MODULE_0___default.a); 
-
-/***/ }),
-
 /***/ "ebd6":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9009,6 +11067,66 @@ module.exports = function (O, D) {
   var C = anObject(O).constructor;
   var S;
   return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
+};
+
+
+/***/ }),
+
+/***/ "ebfd":
+/***/ (function(module, exports, __webpack_require__) {
+
+var META = __webpack_require__("62a0")('meta');
+var isObject = __webpack_require__("f772");
+var has = __webpack_require__("07e3");
+var setDesc = __webpack_require__("d9f6").f;
+var id = 0;
+var isExtensible = Object.isExtensible || function () {
+  return true;
+};
+var FREEZE = !__webpack_require__("294c")(function () {
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function (it) {
+  setDesc(it, META, { value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  } });
+};
+var fastKey = function (it, create) {
+  // return primitive with prefix
+  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function (it, create) {
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY: META,
+  NEED: false,
+  fastKey: fastKey,
+  getWeak: getWeak,
+  onFreeze: onFreeze
 };
 
 
@@ -9153,6 +11271,33 @@ module.exports = stackClear;
 
 /***/ }),
 
+/***/ "f1ae":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $defineProperty = __webpack_require__("86cc");
+var createDesc = __webpack_require__("4630");
+
+module.exports = function (object, index, value) {
+  if (index in object) $defineProperty.f(object, index, createDesc(0, value));
+  else object[index] = value;
+};
+
+
+/***/ }),
+
+/***/ "f207":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_id_42f42504_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__("a447");
+/* harmony import */ var _node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_id_42f42504_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_mini_css_extract_plugin_dist_loader_js_ref_8_oneOf_1_0_node_modules_css_loader_index_js_ref_8_oneOf_1_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_lib_index_js_ref_8_oneOf_1_2_node_modules_sass_loader_lib_loader_js_ref_8_oneOf_1_3_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fieldNoUiSlider_vue_vue_type_style_index_0_id_42f42504_prod_lang_scss___WEBPACK_IMPORTED_MODULE_0__);
+/* unused harmony reexport * */
+
+
+/***/ }),
+
 /***/ "f3c1":
 /***/ (function(module, exports) {
 
@@ -9193,6 +11338,15 @@ function shortOut(func) {
 }
 
 module.exports = shortOut;
+
+
+/***/ }),
+
+/***/ "f410":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("1af6");
+module.exports = __webpack_require__("584a").Array.isArray;
 
 
 /***/ }),
@@ -9273,6 +11427,16 @@ module.exports = isKey;
 
 /***/ }),
 
+/***/ "f772":
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+
 /***/ "f8af":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9292,6 +11456,18 @@ function cloneArrayBuffer(arrayBuffer) {
 }
 
 module.exports = cloneArrayBuffer;
+
+
+/***/ }),
+
+/***/ "f921":
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__("014b");
+__webpack_require__("c207");
+__webpack_require__("69d3");
+__webpack_require__("765d");
+module.exports = __webpack_require__("584a").Symbol;
 
 
 /***/ }),
@@ -9360,6 +11536,21 @@ module.exports = initCloneObject;
 
 /***/ }),
 
+/***/ "fa5b":
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__("5537")('native-function-to-string', Function.toString);
+
+
+/***/ }),
+
+/***/ "fa66":
+/***/ (function(module, exports, __webpack_require__) {
+
+// extracted by mini-css-extract-plugin
+
+/***/ }),
+
 /***/ "fab2":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9373,7 +11564,10 @@ module.exports = document && document.documentElement;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
+
+// NAMESPACE OBJECT: ./src/utils/schema.js
 var schema_namespaceObject = {};
 __webpack_require__.r(schema_namespaceObject);
 __webpack_require__.d(schema_namespaceObject, "createDefaultObject", function() { return schema_createDefaultObject; });
@@ -9381,6 +11575,8 @@ __webpack_require__.d(schema_namespaceObject, "getMultipleFields", function() { 
 __webpack_require__.d(schema_namespaceObject, "mergeMultiObjectFields", function() { return schema_mergeMultiObjectFields; });
 __webpack_require__.d(schema_namespaceObject, "slugifyFormID", function() { return schema_slugifyFormID; });
 __webpack_require__.d(schema_namespaceObject, "slugify", function() { return slugify; });
+
+// NAMESPACE OBJECT: ./src/utils/fieldsLoader.js
 var fieldsLoader_namespaceObject = {};
 __webpack_require__.r(fieldsLoader_namespaceObject);
 __webpack_require__.d(fieldsLoader_namespaceObject, "fieldCheckbox", function() { return fieldCheckbox; });
@@ -9425,7 +11621,7 @@ var es6_function_name = __webpack_require__("7f7f");
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom.iterable.js
 var web_dom_iterable = __webpack_require__("ac6a");
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=d75421da&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=d75421da&
 var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (_vm.schema != null)?_c('div',{staticClass:"vue-form-generator"},[_c('form-group',{attrs:{"tag":_vm.tag,"fields":_vm.fields,"model":_vm.model,"options":_vm.options,"errors":_vm.errors,"event-bus":_vm.eventBus},scopedSlots:_vm._u([{key:"group-legend",fn:function(ref){
 var group = ref.group;
 var groupLegend = ref.groupLegend;
@@ -9465,17 +11661,22 @@ var get_default = /*#__PURE__*/__webpack_require__.n(lodash_get);
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 var external_commonjs_vue_commonjs2_vue_root_Vue_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_vue_commonjs2_vue_root_Vue_);
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGroup.vue?vue&type=template&id=1d624d19&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGroup.vue?vue&type=template&id=1d624d19&
 var formGroupvue_type_template_id_1d624d19_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (_vm.fields)?_c(_vm.tag,{ref:"group",tag:"fieldset",class:[_vm.groupRowClasses, _vm.validationClass]},[_vm._t("group-legend",null,{group:_vm.group,groupLegend:_vm.groupLegend}),_vm._t("group-help",null,{group:_vm.group}),_vm._l((_vm.fields),function(field,index){return [(_vm.fieldVisible(field))?[(field.type === 'group')?[_c('form-group',{key:index,attrs:{"fields":field.fields,"group":field,"tag":_vm.getGroupTag(field),"model":_vm.model,"options":_vm.options,"errors":_vm.errors,"event-bus":_vm.eventBus},scopedSlots:_vm._u([{key:"group-legend",fn:function(slotProps){return [_vm._t("group-legend",null,{group:slotProps.group,groupLegend:slotProps.groupLegend})]}},{key:"group-help",fn:function(slotProps){return [_vm._t("group-help",null,{group:slotProps.group})]}},{key:"element",fn:function(slotProps){return [_vm._t("element",null,{field:slotProps.field,model:slotProps.model,options:slotProps.options,errors:slotProps.errors,eventBus:slotProps.eventBus})]}}])})]:[_vm._t("element",null,{field:field,model:_vm.model,options:_vm.options,errors:_vm.errors,eventBus:_vm.eventBus})]]:_vm._e()]})],2):_vm._e()}
 var formGroupvue_type_template_id_1d624d19_staticRenderFns = []
 
 
 // CONCATENATED MODULE: ./src/formGroup.vue?vue&type=template&id=1d624d19&
 
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/defineProperty.js
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/object/define-property.js
+var define_property = __webpack_require__("85f2");
+var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/defineProperty.js
+
 function _defineProperty(obj, key, value) {
   if (key in obj) {
-    Object.defineProperty(obj, key, {
+    define_property_default()(obj, key, {
       value: value,
       enumerable: true,
       configurable: true,
@@ -9521,903 +11722,6 @@ var isString_default = /*#__PURE__*/__webpack_require__.n(isString);
   }
 });
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGroup.vue?vue&type=script&lang=js&
-var cov_lh5r7ul7u = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formGroup.vue",
-      hash = "eb4d81e044ef8eb32d409509baf09c91456a5b29",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formGroup.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 74,
-          column: 4
-        },
-        end: {
-          line: 74,
-          column: 14
-        }
-      },
-      "1": {
-        start: {
-          line: 80,
-          column: 4
-        },
-        end: {
-          line: 80,
-          column: 14
-        }
-      },
-      "2": {
-        start: {
-          line: 87,
-          column: 4
-        },
-        end: {
-          line: 87,
-          column: 28
-        }
-      },
-      "3": {
-        start: {
-          line: 94,
-          column: 4
-        },
-        end: {
-          line: 94,
-          column: 14
-        }
-      },
-      "4": {
-        start: {
-          line: 100,
-          column: 4
-        },
-        end: {
-          line: 100,
-          column: 14
-        }
-      },
-      "5": {
-        start: {
-          line: 106,
-          column: 4
-        },
-        end: {
-          line: 106,
-          column: 14
-        }
-      },
-      "6": {
-        start: {
-          line: 112,
-          column: 4
-        },
-        end: {
-          line: 112,
-          column: 14
-        }
-      },
-      "7": {
-        start: {
-          line: 117,
-          column: 2
-        },
-        end: {
-          line: 119,
-          column: 4
-        }
-      },
-      "8": {
-        start: {
-          line: 123,
-          column: 3
-        },
-        end: {
-          line: 125,
-          column: 4
-        }
-      },
-      "9": {
-        start: {
-          line: 124,
-          column: 4
-        },
-        end: {
-          line: 124,
-          column: 29
-        }
-      },
-      "10": {
-        start: {
-          line: 129,
-          column: 21
-        },
-        end: {
-          line: 131,
-          column: 4
-        }
-      },
-      "11": {
-        start: {
-          line: 132,
-          column: 3
-        },
-        end: {
-          line: 134,
-          column: 4
-        }
-      },
-      "12": {
-        start: {
-          line: 133,
-          column: 4
-        },
-        end: {
-          line: 133,
-          column: 64
-        }
-      },
-      "13": {
-        start: {
-          line: 135,
-          column: 3
-        },
-        end: {
-          line: 135,
-          column: 22
-        }
-      },
-      "14": {
-        start: {
-          line: 141,
-          column: 3
-        },
-        end: {
-          line: 143,
-          column: 4
-        }
-      },
-      "15": {
-        start: {
-          line: 142,
-          column: 4
-        },
-        end: {
-          line: 142,
-          column: 61
-        }
-      },
-      "16": {
-        start: {
-          line: 145,
-          column: 3
-        },
-        end: {
-          line: 147,
-          column: 4
-        }
-      },
-      "17": {
-        start: {
-          line: 146,
-          column: 4
-        },
-        end: {
-          line: 146,
-          column: 16
-        }
-      },
-      "18": {
-        start: {
-          line: 149,
-          column: 3
-        },
-        end: {
-          line: 149,
-          column: 24
-        }
-      },
-      "19": {
-        start: {
-          line: 153,
-          column: 3
-        },
-        end: {
-          line: 157,
-          column: 4
-        }
-      },
-      "20": {
-        start: {
-          line: 154,
-          column: 4
-        },
-        end: {
-          line: 154,
-          column: 21
-        }
-      },
-      "21": {
-        start: {
-          line: 156,
-          column: 4
-        },
-        end: {
-          line: 156,
-          column: 20
-        }
-      },
-      "22": {
-        start: {
-          line: 161,
-          column: 2
-        },
-        end: {
-          line: 172,
-          column: 5
-        }
-      },
-      "23": {
-        start: {
-          line: 162,
-          column: 3
-        },
-        end: {
-          line: 171,
-          column: 6
-        }
-      },
-      "24": {
-        start: {
-          line: 164,
-          column: 5
-        },
-        end: {
-          line: 166,
-          column: 15
-        }
-      },
-      "25": {
-        start: {
-          line: 167,
-          column: 4
-        },
-        end: {
-          line: 170,
-          column: 6
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 73,
-            column: 3
-          },
-          end: {
-            line: 73,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 73,
-            column: 13
-          },
-          end: {
-            line: 75,
-            column: 4
-          }
-        },
-        line: 73
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 79,
-            column: 3
-          },
-          end: {
-            line: 79,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 79,
-            column: 13
-          },
-          end: {
-            line: 81,
-            column: 4
-          }
-        },
-        line: 79
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 86,
-            column: 3
-          },
-          end: {
-            line: 86,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 86,
-            column: 20
-          },
-          end: {
-            line: 88,
-            column: 4
-          }
-        },
-        line: 86
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 93,
-            column: 3
-          },
-          end: {
-            line: 93,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 93,
-            column: 13
-          },
-          end: {
-            line: 95,
-            column: 4
-          }
-        },
-        line: 93
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 99,
-            column: 3
-          },
-          end: {
-            line: 99,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 99,
-            column: 13
-          },
-          end: {
-            line: 101,
-            column: 4
-          }
-        },
-        line: 99
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 105,
-            column: 3
-          },
-          end: {
-            line: 105,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 105,
-            column: 13
-          },
-          end: {
-            line: 107,
-            column: 4
-          }
-        },
-        line: 105
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 111,
-            column: 3
-          },
-          end: {
-            line: 111,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 111,
-            column: 13
-          },
-          end: {
-            line: 113,
-            column: 4
-          }
-        },
-        line: 111
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 116,
-            column: 1
-          },
-          end: {
-            line: 116,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 116,
-            column: 8
-          },
-          end: {
-            line: 120,
-            column: 2
-          }
-        },
-        line: 116
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 122,
-            column: 2
-          },
-          end: {
-            line: 122,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 122,
-            column: 16
-          },
-          end: {
-            line: 126,
-            column: 3
-          }
-        },
-        line: 122
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 127,
-            column: 2
-          },
-          end: {
-            line: 127,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 127,
-            column: 20
-          },
-          end: {
-            line: 136,
-            column: 3
-          }
-        },
-        line: 127
-      },
-      "10": {
-        name: "(anonymous_10)",
-        decl: {
-          start: {
-            line: 140,
-            column: 2
-          },
-          end: {
-            line: 140,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 140,
-            column: 22
-          },
-          end: {
-            line: 150,
-            column: 3
-          }
-        },
-        line: 140
-      },
-      "11": {
-        name: "(anonymous_11)",
-        decl: {
-          start: {
-            line: 152,
-            column: 2
-          },
-          end: {
-            line: 152,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 152,
-            column: 21
-          },
-          end: {
-            line: 158,
-            column: 3
-          }
-        },
-        line: 152
-      },
-      "12": {
-        name: "(anonymous_12)",
-        decl: {
-          start: {
-            line: 160,
-            column: 1
-          },
-          end: {
-            line: 160,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 160,
-            column: 11
-          },
-          end: {
-            line: 173,
-            column: 2
-          }
-        },
-        line: 160
-      },
-      "13": {
-        name: "(anonymous_13)",
-        decl: {
-          start: {
-            line: 161,
-            column: 39
-          },
-          end: {
-            line: 161,
-            column: 40
-          }
-        },
-        loc: {
-          start: {
-            line: 161,
-            column: 45
-          },
-          end: {
-            line: 172,
-            column: 3
-          }
-        },
-        line: 161
-      },
-      "14": {
-        name: "(anonymous_14)",
-        decl: {
-          start: {
-            line: 162,
-            column: 18
-          },
-          end: {
-            line: 162,
-            column: 19
-          }
-        },
-        loc: {
-          start: {
-            line: 162,
-            column: 24
-          },
-          end: {
-            line: 171,
-            column: 4
-          }
-        },
-        line: 162
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 123,
-            column: 3
-          },
-          end: {
-            line: 125,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 123,
-            column: 3
-          },
-          end: {
-            line: 125,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 123,
-            column: 3
-          },
-          end: {
-            line: 125,
-            column: 4
-          }
-        }],
-        line: 123
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 123,
-            column: 7
-          },
-          end: {
-            line: 123,
-            column: 38
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 123,
-            column: 7
-          },
-          end: {
-            line: 123,
-            column: 17
-          }
-        }, {
-          start: {
-            line: 123,
-            column: 21
-          },
-          end: {
-            line: 123,
-            column: 38
-          }
-        }],
-        line: 123
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 132,
-            column: 3
-          },
-          end: {
-            line: 134,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 132,
-            column: 3
-          },
-          end: {
-            line: 134,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 132,
-            column: 3
-          },
-          end: {
-            line: 134,
-            column: 4
-          }
-        }],
-        line: 132
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 141,
-            column: 3
-          },
-          end: {
-            line: 143,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 141,
-            column: 3
-          },
-          end: {
-            line: 143,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 141,
-            column: 3
-          },
-          end: {
-            line: 143,
-            column: 4
-          }
-        }],
-        line: 141
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 145,
-            column: 3
-          },
-          end: {
-            line: 147,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 145,
-            column: 3
-          },
-          end: {
-            line: 147,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 145,
-            column: 3
-          },
-          end: {
-            line: 147,
-            column: 4
-          }
-        }],
-        line: 145
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 153,
-            column: 3
-          },
-          end: {
-            line: 157,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 153,
-            column: 3
-          },
-          end: {
-            line: 157,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 153,
-            column: 3
-          },
-          end: {
-            line: 157,
-            column: 4
-          }
-        }],
-        line: 153
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -10492,16 +11796,12 @@ var cov_lh5r7ul7u = function () {
     fields: {
       type: Array,
       default: function _default() {
-        cov_lh5r7ul7u.f[0]++;
-        cov_lh5r7ul7u.s[0]++;
         return [];
       }
     },
     group: {
       type: Object,
       default: function _default() {
-        cov_lh5r7ul7u.f[1]++;
-        cov_lh5r7ul7u.s[1]++;
         return {};
       }
     },
@@ -10509,122 +11809,75 @@ var cov_lh5r7ul7u = function () {
       type: String,
       default: "fieldset",
       validator: function validator(value) {
-        cov_lh5r7ul7u.f[2]++;
-        cov_lh5r7ul7u.s[2]++;
         return value.length > 0;
       }
     },
     model: {
       type: Object,
       default: function _default() {
-        cov_lh5r7ul7u.f[3]++;
-        cov_lh5r7ul7u.s[3]++;
         return {};
       }
     },
     options: {
       type: Object,
       default: function _default() {
-        cov_lh5r7ul7u.f[4]++;
-        cov_lh5r7ul7u.s[4]++;
         return {};
       }
     },
     errors: {
       type: Array,
       default: function _default() {
-        cov_lh5r7ul7u.f[5]++;
-        cov_lh5r7ul7u.s[5]++;
         return [];
       }
     },
     eventBus: {
       type: Object,
       default: function _default() {
-        cov_lh5r7ul7u.f[6]++;
-        cov_lh5r7ul7u.s[6]++;
         return {};
       }
     }
   },
   data: function data() {
-    cov_lh5r7ul7u.f[7]++;
-    cov_lh5r7ul7u.s[7]++;
     return {
       validationClass: {}
     };
   },
   computed: {
     groupLegend: function groupLegend() {
-      cov_lh5r7ul7u.f[8]++;
-      cov_lh5r7ul7u.s[8]++;
-
-      if ((cov_lh5r7ul7u.b[1][0]++, this.group) && (cov_lh5r7ul7u.b[1][1]++, this.group.legend)) {
-        cov_lh5r7ul7u.b[0][0]++;
-        cov_lh5r7ul7u.s[9]++;
+      if (this.group && this.group.legend) {
         return this.group.legend;
-      } else {
-        cov_lh5r7ul7u.b[0][1]++;
       }
     },
     groupRowClasses: function groupRowClasses() {
-      cov_lh5r7ul7u.f[9]++;
       // TODO find a way to detect errors in child to add some classes (error/valid/etc)
-      var baseClasses = (cov_lh5r7ul7u.s[10]++, {
+      var baseClasses = {
         "field-group": true
-      });
-      cov_lh5r7ul7u.s[11]++;
+      };
 
       if (!isNil_default()(this.group)) {
-        cov_lh5r7ul7u.b[2][0]++;
-        cov_lh5r7ul7u.s[12]++;
         baseClasses = this.getStyleClasses(this.group, baseClasses);
-      } else {
-        cov_lh5r7ul7u.b[2][1]++;
       }
 
-      cov_lh5r7ul7u.s[13]++;
       return baseClasses;
     }
   },
   methods: {
     // Get visible prop of field
     fieldVisible: function fieldVisible(field) {
-      cov_lh5r7ul7u.f[10]++;
-      cov_lh5r7ul7u.s[14]++;
-
       if (isFunction_default()(field.visible)) {
-        cov_lh5r7ul7u.b[3][0]++;
-        cov_lh5r7ul7u.s[15]++;
         return field.visible.call(this, this.model, field, this);
-      } else {
-        cov_lh5r7ul7u.b[3][1]++;
       }
-
-      cov_lh5r7ul7u.s[16]++;
 
       if (isNil_default()(field.visible)) {
-        cov_lh5r7ul7u.b[4][0]++;
-        cov_lh5r7ul7u.s[17]++;
         return true;
-      } else {
-        cov_lh5r7ul7u.b[4][1]++;
       }
 
-      cov_lh5r7ul7u.s[18]++;
       return field.visible;
     },
     getGroupTag: function getGroupTag(field) {
-      cov_lh5r7ul7u.f[11]++;
-      cov_lh5r7ul7u.s[19]++;
-
       if (!isNil_default()(field.tag)) {
-        cov_lh5r7ul7u.b[5][0]++;
-        cov_lh5r7ul7u.s[20]++;
         return field.tag;
       } else {
-        cov_lh5r7ul7u.b[5][1]++;
-        cov_lh5r7ul7u.s[21]++;
         return this.tag;
       }
     }
@@ -10632,18 +11885,11 @@ var cov_lh5r7ul7u = function () {
   created: function created() {
     var _this = this;
 
-    cov_lh5r7ul7u.f[12]++;
-    cov_lh5r7ul7u.s[22]++;
     this.eventBus.$on("field-validated", function () {
-      cov_lh5r7ul7u.f[13]++;
-      cov_lh5r7ul7u.s[23]++;
-
       _this.$nextTick(function () {
         var _this$validationClass;
 
-        cov_lh5r7ul7u.f[14]++;
-        var containFieldWithError = (cov_lh5r7ul7u.s[24]++, _this.$refs.group.querySelector(".form-element." + get_default()(_this.options, "validationErrorClass", "error")) !== null);
-        cov_lh5r7ul7u.s[25]++;
+        var containFieldWithError = _this.$refs.group.querySelector(".form-element." + get_default()(_this.options, "validationErrorClass", "error")) !== null;
         _this.validationClass = (_this$validationClass = {}, _defineProperty(_this$validationClass, get_default()(_this.options, "validationErrorClass", "error"), containFieldWithError), _defineProperty(_this$validationClass, get_default()(_this.options, "validationSuccessClass", "valid"), !containFieldWithError), _this$validationClass);
       });
     });
@@ -10658,20 +11904,19 @@ var cov_lh5r7ul7u = function () {
 // This module is a runtime utility for cleaner component module output and will
 // be included in the final webpack user bundle.
 
-function normalizeComponent (
+function normalizeComponent(
   scriptExports,
   render,
   staticRenderFns,
   functionalTemplate,
   injectStyles,
   scopeId,
-  moduleIdentifier, /* server only */
+  moduleIdentifier /* server only */,
   shadowMode /* vue-cli only */
 ) {
   // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
+  var options =
+    typeof scriptExports === 'function' ? scriptExports.options : scriptExports
 
   // render functions
   if (render) {
@@ -10691,7 +11936,8 @@ function normalizeComponent (
   }
 
   var hook
-  if (moduleIdentifier) { // server build
+  if (moduleIdentifier) {
+    // server build
     hook = function (context) {
       // 2.3 injection
       context =
@@ -10716,7 +11962,12 @@ function normalizeComponent (
     options._ssrRegister = hook
   } else if (injectStyles) {
     hook = shadowMode
-      ? function () { injectStyles.call(this, this.$root.$options.shadowRoot) }
+      ? function () {
+          injectStyles.call(
+            this,
+            (options.functional ? this.parent : this).$root.$options.shadowRoot
+          )
+        }
       : injectStyles
   }
 
@@ -10725,18 +11976,16 @@ function normalizeComponent (
       // for template-only hot-reload because in that case the render fn doesn't
       // go through the normalizer
       options._injectStyles = hook
-      // register for functioal component in vue file
+      // register for functional component in vue file
       var originalRender = options.render
-      options.render = function renderWithStyleInjection (h, context) {
+      options.render = function renderWithStyleInjection(h, context) {
         hook.call(context)
         return originalRender(h, context)
       }
     } else {
       // inject component registration as beforeCreate hook
       var existing = options.beforeCreate
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
+      options.beforeCreate = existing ? [].concat(existing, hook) : [hook]
     }
   }
 
@@ -10765,14 +12014,13 @@ var component = normalizeComponent(
   
 )
 
-component.options.__file = "formGroup.vue"
 /* harmony default export */ var formGroup = (component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=template&id=3a9d4efb&
-var formElementvue_type_template_id_3a9d4efb_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',_vm._b({staticClass:"form-element",class:[_vm.fieldRowClasses]},'div',_vm.formElement,false),[(_vm.fieldTypeHasLabel)?_c('label',{class:_vm.field.labelClasses,attrs:{"for":_vm.fieldID}},[_vm._t("label",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption}),_vm._t("help",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})],2):_vm._e(),_c('div',{staticClass:"field-wrap"},[_c(_vm.fieldType,{ref:"child",tag:"component",attrs:{"model":_vm.model,"schema":_vm.field,"form-options":_vm.options,"event-bus":_vm.eventBus,"field-id":_vm.fieldID},on:{"field-touched":_vm.onFieldTouched,"errors-updated":_vm.onChildValidated}}),(_vm.buttonsAreVisible)?_c('div',{staticClass:"buttons"},_vm._l((_vm.field.buttons),function(btn,index){return _c('button',{key:index,class:btn.classes,domProps:{"textContent":_vm._s(btn.label)},on:{"click":function($event){_vm.buttonClickHandler(btn, _vm.field, $event)}}})})):_vm._e()],1),(_vm.fieldHasHint)?[_vm._t("hint",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e(),(_vm.fieldHasErrors)?[_vm._t("errors",null,{childErrors:_vm.childErrors,field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e()],2)}
-var formElementvue_type_template_id_3a9d4efb_staticRenderFns = []
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=template&id=abe7a6b8&
+var formElementvue_type_template_id_abe7a6b8_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',_vm._b({staticClass:"form-element",class:[_vm.fieldRowClasses]},'div',_vm.formElement,false),[(_vm.fieldTypeHasLabel)?_c('label',{class:_vm.field.labelClasses,attrs:{"for":_vm.fieldID}},[_vm._t("label",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption}),_vm._t("help",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})],2):_vm._e(),_c('div',{staticClass:"field-wrap"},[_c(_vm.fieldType,{ref:"child",tag:"component",attrs:{"model":_vm.model,"schema":_vm.field,"form-options":_vm.options,"event-bus":_vm.eventBus,"field-id":_vm.fieldID},on:{"field-touched":_vm.onFieldTouched,"errors-updated":_vm.onChildValidated}}),(_vm.buttonsAreVisible)?_c('div',{staticClass:"buttons"},_vm._l((_vm.field.buttons),function(btn,index){return _c('button',{key:index,class:btn.classes,domProps:{"textContent":_vm._s(btn.label)},on:{"click":function($event){_vm.buttonClickHandler(btn, _vm.field, $event)}}})})):_vm._e()],1),(_vm.fieldHasHint)?[_vm._t("hint",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e(),(_vm.fieldHasErrors)?[_vm._t("errors",null,{childErrors:_vm.childErrors,field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e()],2)}
+var formElementvue_type_template_id_abe7a6b8_staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./src/formElement.vue?vue&type=template&id=3a9d4efb&
+// CONCATENATED MODULE: ./src/formElement.vue?vue&type=template&id=abe7a6b8&
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es7.array.includes.js
 var es7_array_includes = __webpack_require__("6762");
@@ -10801,12 +12049,11 @@ var set_default = /*#__PURE__*/__webpack_require__.n(lodash_set);
 
 // CONCATENATED MODULE: ./src/utils/schema.js
 var cov_2qovtueif = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/schema.js",
-      hash = "155c0b65313b82e43fc68281acfd13f3ef73d76b",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
+  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/schema.js";
+  var hash = "155c0b65313b82e43fc68281acfd13f3ef73d76b";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
     path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/schema.js",
     statementMap: {
       "0": {
@@ -11874,15 +13121,15 @@ var cov_2qovtueif = function () {
       "11": [0, 0, 0, 0],
       "12": [0]
     },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
+    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
+    hash: "155c0b65313b82e43fc68281acfd13f3ef73d76b"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
 
   if (coverage[path] && coverage[path].hash === hash) {
     return coverage[path];
   }
 
-  coverageData.hash = hash;
   return coverage[path] = coverageData;
 }();
 
@@ -12035,9 +13282,9 @@ var schema_slugifyFormID = function slugifyFormID(schema) {
     cov_2qovtueif.b[10][1]++;
     cov_2qovtueif.s[33]++;
     // Return the slugified version of either:
-    return prefix + ((cov_2qovtueif.b[11][0]++, schema.inputName) || (cov_2qovtueif.b[11][1]++, schema.label) || (cov_2qovtueif.b[11][2]++, schema.model) || (cov_2qovtueif.b[11][3]++, "")). // NB: This is a very simple, conservative, slugify function,
+    return prefix + ((cov_2qovtueif.b[11][0]++, schema.inputName) || (cov_2qovtueif.b[11][1]++, schema.label) || (cov_2qovtueif.b[11][2]++, schema.model) || (cov_2qovtueif.b[11][3]++, "") // NB: This is a very simple, conservative, slugify function,
     // avoiding extra dependencies.
-    toString().trim().toLowerCase() // Spaces & underscores to dashes
+    ).toString().trim().toLowerCase() // Spaces & underscores to dashes
     .replace(/ |_/g, "-") // Multiple dashes to one
     .replace(/-{2,}/g, "-") // Remove leading & trailing dashes
     .replace(/^-+|-+$/g, "") // Remove anything that isn't a (English/ASCII) letter, number or dash.
@@ -12064,1236 +13311,6 @@ var slugify = function slugify() {
 
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=script&lang=js&
-var cov_7c8vxy7ok = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formElement.vue",
-      hash = "2232caa824ff3fed73125e3d6254635609a911e4",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formElement.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 71,
-          column: 4
-        },
-        end: {
-          line: 71,
-          column: 14
-        }
-      },
-      "1": {
-        start: {
-          line: 77,
-          column: 4
-        },
-        end: {
-          line: 77,
-          column: 14
-        }
-      },
-      "2": {
-        start: {
-          line: 87,
-          column: 4
-        },
-        end: {
-          line: 87,
-          column: 14
-        }
-      },
-      "3": {
-        start: {
-          line: 93,
-          column: 4
-        },
-        end: {
-          line: 93,
-          column: 14
-        }
-      },
-      "4": {
-        start: {
-          line: 98,
-          column: 2
-        },
-        end: {
-          line: 101,
-          column: 4
-        }
-      },
-      "5": {
-        start: {
-          line: 106,
-          column: 3
-        },
-        end: {
-          line: 108,
-          column: 4
-        }
-      },
-      "6": {
-        start: {
-          line: 107,
-          column: 4
-        },
-        end: {
-          line: 107,
-          column: 14
-        }
-      },
-      "7": {
-        start: {
-          line: 109,
-          column: 3
-        },
-        end: {
-          line: 109,
-          column: 44
-        }
-      },
-      "8": {
-        start: {
-          line: 112,
-          column: 20
-        },
-        end: {
-          line: 112,
-          column: 61
-        }
-      },
-      "9": {
-        start: {
-          line: 113,
-          column: 3
-        },
-        end: {
-          line: 113,
-          column: 46
-        }
-      },
-      "10": {
-        start: {
-          line: 117,
-          column: 3
-        },
-        end: {
-          line: 117,
-          column: 37
-        }
-      },
-      "11": {
-        start: {
-          line: 121,
-          column: 3
-        },
-        end: {
-          line: 123,
-          column: 4
-        }
-      },
-      "12": {
-        start: {
-          line: 122,
-          column: 4
-        },
-        end: {
-          line: 122,
-          column: 17
-        }
-      },
-      "13": {
-        start: {
-          line: 124,
-          column: 22
-        },
-        end: {
-          line: 124,
-          column: 73
-        }
-      },
-      "14": {
-        start: {
-          line: 125,
-          column: 19
-        },
-        end: {
-          line: 125,
-          column: 70
-        }
-      },
-      "15": {
-        start: {
-          line: 126,
-          column: 22
-        },
-        end: {
-          line: 126,
-          column: 74
-        }
-      },
-      "16": {
-        start: {
-          line: 127,
-          column: 28
-        },
-        end: {
-          line: 127,
-          column: 57
-        }
-      },
-      "17": {
-        start: {
-          line: 129,
-          column: 3
-        },
-        end: {
-          line: 129,
-          column: 51
-        }
-      },
-      "18": {
-        start: {
-          line: 132,
-          column: 3
-        },
-        end: {
-          line: 132,
-          column: 34
-        }
-      },
-      "19": {
-        start: {
-          line: 135,
-          column: 3
-        },
-        end: {
-          line: 135,
-          column: 38
-        }
-      },
-      "20": {
-        start: {
-          line: 138,
-          column: 21
-        },
-        end: {
-          line: 146,
-          column: 4
-        }
-      },
-      "21": {
-        start: {
-          line: 148,
-          column: 3
-        },
-        end: {
-          line: 148,
-          column: 63
-        }
-      },
-      "22": {
-        start: {
-          line: 150,
-          column: 3
-        },
-        end: {
-          line: 152,
-          column: 4
-        }
-      },
-      "23": {
-        start: {
-          line: 151,
-          column: 4
-        },
-        end: {
-          line: 151,
-          column: 51
-        }
-      },
-      "24": {
-        start: {
-          line: 154,
-          column: 3
-        },
-        end: {
-          line: 154,
-          column: 22
-        }
-      },
-      "25": {
-        start: {
-          line: 157,
-          column: 3
-        },
-        end: {
-          line: 157,
-          column: 71
-        }
-      },
-      "26": {
-        start: {
-          line: 162,
-          column: 3
-        },
-        end: {
-          line: 164,
-          column: 4
-        }
-      },
-      "27": {
-        start: {
-          line: 163,
-          column: 4
-        },
-        end: {
-          line: 163,
-          column: 61
-        }
-      },
-      "28": {
-        start: {
-          line: 166,
-          column: 3
-        },
-        end: {
-          line: 168,
-          column: 4
-        }
-      },
-      "29": {
-        start: {
-          line: 167,
-          column: 4
-        },
-        end: {
-          line: 167,
-          column: 24
-        }
-      },
-      "30": {
-        start: {
-          line: 170,
-          column: 3
-        },
-        end: {
-          line: 170,
-          column: 24
-        }
-      },
-      "31": {
-        start: {
-          line: 174,
-          column: 3
-        },
-        end: {
-          line: 174,
-          column: 65
-        }
-      },
-      "32": {
-        start: {
-          line: 177,
-          column: 3
-        },
-        end: {
-          line: 177,
-          column: 28
-        }
-      },
-      "33": {
-        start: {
-          line: 180,
-          column: 3
-        },
-        end: {
-          line: 180,
-          column: 29
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 70,
-            column: 3
-          },
-          end: {
-            line: 70,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 70,
-            column: 13
-          },
-          end: {
-            line: 72,
-            column: 4
-          }
-        },
-        line: 70
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 76,
-            column: 3
-          },
-          end: {
-            line: 76,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 76,
-            column: 13
-          },
-          end: {
-            line: 78,
-            column: 4
-          }
-        },
-        line: 76
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 86,
-            column: 3
-          },
-          end: {
-            line: 86,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 86,
-            column: 13
-          },
-          end: {
-            line: 88,
-            column: 4
-          }
-        },
-        line: 86
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 92,
-            column: 3
-          },
-          end: {
-            line: 92,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 92,
-            column: 13
-          },
-          end: {
-            line: 94,
-            column: 4
-          }
-        },
-        line: 92
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 97,
-            column: 1
-          },
-          end: {
-            line: 97,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 97,
-            column: 8
-          },
-          end: {
-            line: 102,
-            column: 2
-          }
-        },
-        line: 97
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 105,
-            column: 2
-          },
-          end: {
-            line: 105,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 105,
-            column: 15
-          },
-          end: {
-            line: 110,
-            column: 3
-          }
-        },
-        line: 105
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 111,
-            column: 2
-          },
-          end: {
-            line: 111,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 111,
-            column: 12
-          },
-          end: {
-            line: 114,
-            column: 3
-          }
-        },
-        line: 111
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 116,
-            column: 2
-          },
-          end: {
-            line: 116,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 116,
-            column: 14
-          },
-          end: {
-            line: 118,
-            column: 3
-          }
-        },
-        line: 116
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 120,
-            column: 2
-          },
-          end: {
-            line: 120,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 120,
-            column: 22
-          },
-          end: {
-            line: 130,
-            column: 3
-          }
-        },
-        line: 120
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 131,
-            column: 2
-          },
-          end: {
-            line: 131,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 131,
-            column: 17
-          },
-          end: {
-            line: 133,
-            column: 3
-          }
-        },
-        line: 131
-      },
-      "10": {
-        name: "(anonymous_10)",
-        decl: {
-          start: {
-            line: 134,
-            column: 2
-          },
-          end: {
-            line: 134,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 134,
-            column: 19
-          },
-          end: {
-            line: 136,
-            column: 3
-          }
-        },
-        line: 134
-      },
-      "11": {
-        name: "(anonymous_11)",
-        decl: {
-          start: {
-            line: 137,
-            column: 2
-          },
-          end: {
-            line: 137,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 137,
-            column: 20
-          },
-          end: {
-            line: 155,
-            column: 3
-          }
-        },
-        line: 137
-      },
-      "12": {
-        name: "(anonymous_12)",
-        decl: {
-          start: {
-            line: 156,
-            column: 2
-          },
-          end: {
-            line: 156,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 156,
-            column: 22
-          },
-          end: {
-            line: 158,
-            column: 3
-          }
-        },
-        line: 156
-      },
-      "13": {
-        name: "(anonymous_13)",
-        decl: {
-          start: {
-            line: 161,
-            column: 2
-          },
-          end: {
-            line: 161,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 161,
-            column: 58
-          },
-          end: {
-            line: 171,
-            column: 3
-          }
-        },
-        line: 161
-      },
-      "14": {
-        name: "(anonymous_14)",
-        decl: {
-          start: {
-            line: 173,
-            column: 2
-          },
-          end: {
-            line: 173,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 173,
-            column: 40
-          },
-          end: {
-            line: 175,
-            column: 3
-          }
-        },
-        line: 173
-      },
-      "15": {
-        name: "(anonymous_15)",
-        decl: {
-          start: {
-            line: 176,
-            column: 2
-          },
-          end: {
-            line: 176,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 176,
-            column: 19
-          },
-          end: {
-            line: 178,
-            column: 3
-          }
-        },
-        line: 176
-      },
-      "16": {
-        name: "(anonymous_16)",
-        decl: {
-          start: {
-            line: 179,
-            column: 2
-          },
-          end: {
-            line: 179,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 179,
-            column: 27
-          },
-          end: {
-            line: 181,
-            column: 3
-          }
-        },
-        line: 179
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 106,
-            column: 3
-          },
-          end: {
-            line: 108,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 106,
-            column: 3
-          },
-          end: {
-            line: 108,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 106,
-            column: 3
-          },
-          end: {
-            line: 108,
-            column: 4
-          }
-        }],
-        line: 106
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 106,
-            column: 7
-          },
-          end: {
-            line: 106,
-            column: 93
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 106,
-            column: 7
-          },
-          end: {
-            line: 106,
-            column: 42
-          }
-        }, {
-          start: {
-            line: 106,
-            column: 46
-          },
-          end: {
-            line: 106,
-            column: 93
-          }
-        }],
-        line: 106
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 121,
-            column: 3
-          },
-          end: {
-            line: 123,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 121,
-            column: 3
-          },
-          end: {
-            line: 123,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 121,
-            column: 3
-          },
-          end: {
-            line: 123,
-            column: 4
-          }
-        }],
-        line: 121
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 125,
-            column: 19
-          },
-          end: {
-            line: 125,
-            column: 70
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 125,
-            column: 19
-          },
-          end: {
-            line: 125,
-            column: 46
-          }
-        }, {
-          start: {
-            line: 125,
-            column: 50
-          },
-          end: {
-            line: 125,
-            column: 70
-          }
-        }],
-        line: 125
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 126,
-            column: 22
-          },
-          end: {
-            line: 126,
-            column: 74
-          }
-        },
-        type: "cond-expr",
-        locations: [{
-          start: {
-            line: 126,
-            column: 34
-          },
-          end: {
-            line: 126,
-            column: 56
-          }
-        }, {
-          start: {
-            line: 126,
-            column: 59
-          },
-          end: {
-            line: 126,
-            column: 74
-          }
-        }],
-        line: 126
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 140,
-            column: 63
-          },
-          end: {
-            line: 140,
-            column: 104
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 140,
-            column: 63
-          },
-          end: {
-            line: 140,
-            column: 83
-          }
-        }, {
-          start: {
-            line: 140,
-            column: 87
-          },
-          end: {
-            line: 140,
-            column: 104
-          }
-        }],
-        line: 140
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 141,
-            column: 61
-          },
-          end: {
-            line: 141,
-            column: 103
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 141,
-            column: 61
-          },
-          end: {
-            line: 141,
-            column: 81
-          }
-        }, {
-          start: {
-            line: 141,
-            column: 85
-          },
-          end: {
-            line: 141,
-            column: 103
-          }
-        }],
-        line: 141
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 150,
-            column: 3
-          },
-          end: {
-            line: 152,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 150,
-            column: 3
-          },
-          end: {
-            line: 152,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 150,
-            column: 3
-          },
-          end: {
-            line: 152,
-            column: 4
-          }
-        }],
-        line: 150
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 157,
-            column: 10
-          },
-          end: {
-            line: 157,
-            column: 70
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 157,
-            column: 10
-          },
-          end: {
-            line: 157,
-            column: 37
-          }
-        }, {
-          start: {
-            line: 157,
-            column: 41
-          },
-          end: {
-            line: 157,
-            column: 70
-          }
-        }],
-        line: 157
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 161,
-            column: 36
-          },
-          end: {
-            line: 161,
-            column: 56
-          }
-        },
-        type: "default-arg",
-        locations: [{
-          start: {
-            line: 161,
-            column: 51
-          },
-          end: {
-            line: 161,
-            column: 56
-          }
-        }],
-        line: 161
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 162,
-            column: 3
-          },
-          end: {
-            line: 164,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 162,
-            column: 3
-          },
-          end: {
-            line: 164,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 162,
-            column: 3
-          },
-          end: {
-            line: 164,
-            column: 4
-          }
-        }],
-        line: 162
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 166,
-            column: 3
-          },
-          end: {
-            line: 168,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 166,
-            column: 3
-          },
-          end: {
-            line: 168,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 166,
-            column: 3
-          },
-          end: {
-            line: 168,
-            column: 4
-          }
-        }],
-        line: 166
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0,
-      "27": 0,
-      "28": 0,
-      "29": 0,
-      "30": 0,
-      "31": 0,
-      "32": 0,
-      "33": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0],
-      "10": [0, 0],
-      "11": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -13309,16 +13326,12 @@ var cov_7c8vxy7ok = function () {
     model: {
       type: Object,
       default: function _default() {
-        cov_7c8vxy7ok.f[0]++;
-        cov_7c8vxy7ok.s[0]++;
         return {};
       }
     },
     options: {
       type: Object,
       default: function _default() {
-        cov_7c8vxy7ok.f[1]++;
-        cov_7c8vxy7ok.s[1]++;
         return {};
       }
     },
@@ -13329,23 +13342,17 @@ var cov_7c8vxy7ok = function () {
     errors: {
       type: Array,
       default: function _default() {
-        cov_7c8vxy7ok.f[2]++;
-        cov_7c8vxy7ok.s[2]++;
         return [];
       }
     },
     eventBus: {
       type: Object,
       default: function _default() {
-        cov_7c8vxy7ok.f[3]++;
-        cov_7c8vxy7ok.s[3]++;
         return {};
       }
     }
   },
   data: function data() {
-    cov_7c8vxy7ok.f[4]++;
-    cov_7c8vxy7ok.s[4]++;
     return {
       childErrors: [],
       childTouched: false
@@ -13353,136 +13360,82 @@ var cov_7c8vxy7ok = function () {
   },
   computed: {
     formElement: function formElement() {
-      cov_7c8vxy7ok.f[5]++;
-      cov_7c8vxy7ok.s[5]++;
+      var _this$field, _this$field$attribute;
 
-      if ((cov_7c8vxy7ok.b[1][0]++, this.field.attributes === undefined) || (cov_7c8vxy7ok.b[1][1]++, this.field.attributes.formElement === undefined)) {
-        cov_7c8vxy7ok.b[0][0]++;
-        cov_7c8vxy7ok.s[6]++;
-        return {};
-      } else {
-        cov_7c8vxy7ok.b[0][1]++;
-      }
-
-      cov_7c8vxy7ok.s[7]++;
-      return this.field.attributes.formElement;
+      return ((_this$field = this.field) === null || _this$field === void 0 ? void 0 : (_this$field$attribute = _this$field.attributes) === null || _this$field$attribute === void 0 ? void 0 : _this$field$attribute.formElement) || {};
     },
     fieldID: function fieldID() {
-      cov_7c8vxy7ok.f[6]++;
-      var idPrefix = (cov_7c8vxy7ok.s[8]++, get_default()(this.options, "fieldIdPrefix", ""));
-      cov_7c8vxy7ok.s[9]++;
+      var idPrefix = get_default()(this.options, "fieldIdPrefix", "");
+
       return schema_slugifyFormID(this.field, idPrefix);
     },
     // Get type of field 'field-xxx'. It'll be the name of HTML element
     fieldType: function fieldType() {
-      cov_7c8vxy7ok.f[7]++;
-      cov_7c8vxy7ok.s[10]++;
       return "field-" + this.field.type;
     },
     // Should field type have a label?
     fieldTypeHasLabel: function fieldTypeHasLabel() {
-      cov_7c8vxy7ok.f[8]++;
-      cov_7c8vxy7ok.s[11]++;
-
       if (isNil_default()(this.field.label)) {
-        cov_7c8vxy7ok.b[2][0]++;
-        cov_7c8vxy7ok.s[12]++;
         return false;
-      } else {
-        cov_7c8vxy7ok.b[2][1]++;
       }
 
-      var fieldOptions = (cov_7c8vxy7ok.s[13]++, this.getValueFromOption(this.field, "fieldOptions"));
-      var condition = (cov_7c8vxy7ok.s[14]++, (cov_7c8vxy7ok.b[3][0]++, this.field.type === "input") && (cov_7c8vxy7ok.b[3][1]++, !isNil_default()(fieldOptions)));
-      var relevantType = (cov_7c8vxy7ok.s[15]++, condition ? (cov_7c8vxy7ok.b[4][0]++, fieldOptions.inputType) : (cov_7c8vxy7ok.b[4][1]++, this.field.type));
-      var typeWithoutLabel = (cov_7c8vxy7ok.s[16]++, ["button", "submit", "reset"]);
-      cov_7c8vxy7ok.s[17]++;
+      var fieldOptions = this.getValueFromOption(this.field, "fieldOptions");
+      var condition = this.field.type === "input" && !isNil_default()(fieldOptions);
+      var relevantType = condition ? fieldOptions.inputType : this.field.type;
+      var typeWithoutLabel = ["button", "submit", "reset"];
       return !typeWithoutLabel.includes(relevantType);
     },
     fieldHasHint: function fieldHasHint() {
-      cov_7c8vxy7ok.f[9]++;
-      cov_7c8vxy7ok.s[18]++;
       return !isNil_default()(this.field.hint);
     },
     fieldHasErrors: function fieldHasErrors() {
-      cov_7c8vxy7ok.f[10]++;
-      cov_7c8vxy7ok.s[19]++;
       return this.childErrors.length > 0;
     },
     fieldRowClasses: function fieldRowClasses() {
-      var _ref;
+      var _baseClasses;
 
-      cov_7c8vxy7ok.f[11]++;
-      var baseClasses = (cov_7c8vxy7ok.s[20]++, (_ref = {}, _defineProperty(_ref, get_default()(this.options, "validationErrorClass", "error"), this.fieldHasErrors), _defineProperty(_ref, get_default()(this.options, "validationSuccessClass", "valid"), (cov_7c8vxy7ok.b[5][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[5][1]++, this.childTouched)), _defineProperty(_ref, get_default()(this.options, "validationCleanClass", "clean"), (cov_7c8vxy7ok.b[6][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[6][1]++, !this.childTouched)), _defineProperty(_ref, "disabled", this.getValueFromOption(this.field, "disabled")), _defineProperty(_ref, "readonly", this.getValueFromOption(this.field, "readonly")), _defineProperty(_ref, "featured", this.getValueFromOption(this.field, "featured")), _defineProperty(_ref, "required", this.getValueFromOption(this.field, "required")), _ref));
-      cov_7c8vxy7ok.s[21]++;
+      var baseClasses = (_baseClasses = {}, _defineProperty(_baseClasses, get_default()(this.options, "validationErrorClass", "error"), this.fieldHasErrors), _defineProperty(_baseClasses, get_default()(this.options, "validationSuccessClass", "valid"), !this.fieldHasErrors && this.childTouched), _defineProperty(_baseClasses, get_default()(this.options, "validationCleanClass", "clean"), !this.fieldHasErrors && !this.childTouched), _defineProperty(_baseClasses, "disabled", this.getValueFromOption(this.field, "disabled")), _defineProperty(_baseClasses, "readonly", this.getValueFromOption(this.field, "readonly")), _defineProperty(_baseClasses, "featured", this.getValueFromOption(this.field, "featured")), _defineProperty(_baseClasses, "required", this.getValueFromOption(this.field, "required")), _baseClasses);
       baseClasses = this.getStyleClasses(this.field, baseClasses);
-      cov_7c8vxy7ok.s[22]++;
 
       if (!isNil_default()(this.field.type)) {
-        cov_7c8vxy7ok.b[7][0]++;
-        cov_7c8vxy7ok.s[23]++;
         baseClasses["field-" + this.field.type] = true;
-      } else {
-        cov_7c8vxy7ok.b[7][1]++;
       }
 
-      cov_7c8vxy7ok.s[24]++;
       return baseClasses;
     },
     buttonsAreVisible: function buttonsAreVisible() {
-      cov_7c8vxy7ok.f[12]++;
-      cov_7c8vxy7ok.s[25]++;
-      return (cov_7c8vxy7ok.b[8][0]++, isArray_default()(this.field.buttons)) && (cov_7c8vxy7ok.b[8][1]++, this.field.buttons.length > 0);
+      return isArray_default()(this.field.buttons) && this.field.buttons.length > 0;
     }
   },
   methods: {
     getValueFromOption: function getValueFromOption(field, option) {
-      var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : (cov_7c8vxy7ok.b[9][0]++, false);
-      cov_7c8vxy7ok.f[13]++;
-      cov_7c8vxy7ok.s[26]++;
+      var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
       if (isFunction_default()(field[option])) {
-        cov_7c8vxy7ok.b[10][0]++;
-        cov_7c8vxy7ok.s[27]++;
         return field[option].call(this, this.model, field, this);
-      } else {
-        cov_7c8vxy7ok.b[10][1]++;
       }
-
-      cov_7c8vxy7ok.s[28]++;
 
       if (isNil_default()(field[option])) {
-        cov_7c8vxy7ok.b[11][0]++;
-        cov_7c8vxy7ok.s[29]++;
         return defaultValue;
-      } else {
-        cov_7c8vxy7ok.b[11][1]++;
       }
 
-      cov_7c8vxy7ok.s[30]++;
       return field[option];
     },
     buttonClickHandler: function buttonClickHandler(btn, field, event) {
-      cov_7c8vxy7ok.f[14]++;
-      cov_7c8vxy7ok.s[31]++;
       return btn.onclick.call(this, this.model, field, event, this);
     },
     onFieldTouched: function onFieldTouched() {
-      cov_7c8vxy7ok.f[15]++;
-      cov_7c8vxy7ok.s[32]++;
       this.childTouched = true;
     },
     onChildValidated: function onChildValidated(errors) {
-      cov_7c8vxy7ok.f[16]++;
-      cov_7c8vxy7ok.s[33]++;
       this.childErrors = errors;
     }
   }
 });
 // CONCATENATED MODULE: ./src/formElement.vue?vue&type=script&lang=js&
  /* harmony default export */ var src_formElementvue_type_script_lang_js_ = (formElementvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/formElement.vue?vue&type=style&index=0&lang=scss&
-var formElementvue_type_style_index_0_lang_scss_ = __webpack_require__("b7fb");
+// EXTERNAL MODULE: ./src/formElement.vue?vue&type=style&index=0&id=abe7a6b8&prod&lang=scss&
+var formElementvue_type_style_index_0_id_abe7a6b8_prod_lang_scss_ = __webpack_require__("4849");
 
 // CONCATENATED MODULE: ./src/formElement.vue
 
@@ -13495,8 +13448,8 @@ var formElementvue_type_style_index_0_lang_scss_ = __webpack_require__("b7fb");
 
 var formElement_component = normalizeComponent(
   src_formElementvue_type_script_lang_js_,
-  formElementvue_type_template_id_3a9d4efb_render,
-  formElementvue_type_template_id_3a9d4efb_staticRenderFns,
+  formElementvue_type_template_id_abe7a6b8_render,
+  formElementvue_type_template_id_abe7a6b8_staticRenderFns,
   false,
   null,
   null,
@@ -13504,1823 +13457,8 @@ var formElement_component = normalizeComponent(
   
 )
 
-formElement_component.options.__file = "formElement.vue"
 /* harmony default export */ var formElement = (formElement_component.exports);
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGenerator.vue?vue&type=script&lang=js&
-var cov_189pqzbv0v = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formGenerator.vue",
-      hash = "e495566421c417f5c24c9b80e5c46738d36adc6b",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formGenerator.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 127,
-          column: 4
-        },
-        end: {
-          line: 127,
-          column: 14
-        }
-      },
-      "1": {
-        start: {
-          line: 134,
-          column: 4
-        },
-        end: {
-          line: 134,
-          column: 14
-        }
-      },
-      "2": {
-        start: {
-          line: 141,
-          column: 4
-        },
-        end: {
-          line: 147,
-          column: 6
-        }
-      },
-      "3": {
-        start: {
-          line: 160,
-          column: 4
-        },
-        end: {
-          line: 160,
-          column: 28
-        }
-      },
-      "4": {
-        start: {
-          line: 166,
-          column: 19
-        },
-        end: {
-          line: 166,
-          column: 28
-        }
-      },
-      "5": {
-        start: {
-          line: 167,
-          column: 2
-        },
-        end: {
-          line: 171,
-          column: 4
-        }
-      },
-      "6": {
-        start: {
-          line: 176,
-          column: 3
-        },
-        end: {
-          line: 178,
-          column: 4
-        }
-      },
-      "7": {
-        start: {
-          line: 177,
-          column: 4
-        },
-        end: {
-          line: 177,
-          column: 30
-        }
-      },
-      "8": {
-        start: {
-          line: 186,
-          column: 4
-        },
-        end: {
-          line: 189,
-          column: 5
-        }
-      },
-      "9": {
-        start: {
-          line: 188,
-          column: 5
-        },
-        end: {
-          line: 188,
-          column: 12
-        }
-      },
-      "10": {
-        start: {
-          line: 191,
-          column: 4
-        },
-        end: {
-          line: 200,
-          column: 5
-        }
-      },
-      "11": {
-        start: {
-          line: 192,
-          column: 5
-        },
-        end: {
-          line: 199,
-          column: 8
-        }
-      },
-      "12": {
-        start: {
-          line: 194,
-          column: 6
-        },
-        end: {
-          line: 198,
-          column: 7
-        }
-      },
-      "13": {
-        start: {
-          line: 195,
-          column: 7
-        },
-        end: {
-          line: 195,
-          column: 48
-        }
-      },
-      "14": {
-        start: {
-          line: 197,
-          column: 7
-        },
-        end: {
-          line: 197,
-          column: 36
-        }
-      },
-      "15": {
-        start: {
-          line: 203,
-          column: 4
-        },
-        end: {
-          line: 203,
-          column: 16
-        }
-      },
-      "16": {
-        start: {
-          line: 210,
-          column: 3
-        },
-        end: {
-          line: 217,
-          column: 4
-        }
-      },
-      "17": {
-        start: {
-          line: 211,
-          column: 4
-        },
-        end: {
-          line: 216,
-          column: 7
-        }
-      },
-      "18": {
-        start: {
-          line: 212,
-          column: 5
-        },
-        end: {
-          line: 215,
-          column: 8
-        }
-      },
-      "19": {
-        start: {
-          line: 223,
-          column: 3
-        },
-        end: {
-          line: 223,
-          column: 58
-        }
-      },
-      "20": {
-        start: {
-          line: 223,
-          column: 43
-        },
-        end: {
-          line: 223,
-          column: 56
-        }
-      },
-      "21": {
-        start: {
-          line: 225,
-          column: 3
-        },
-        end: {
-          line: 225,
-          column: 50
-        }
-      },
-      "22": {
-        start: {
-          line: 227,
-          column: 17
-        },
-        end: {
-          line: 227,
-          column: 41
-        }
-      },
-      "23": {
-        start: {
-          line: 228,
-          column: 3
-        },
-        end: {
-          line: 228,
-          column: 55
-        }
-      },
-      "24": {
-        start: {
-          line: 232,
-          column: 3
-        },
-        end: {
-          line: 232,
-          column: 47
-        }
-      },
-      "25": {
-        start: {
-          line: 237,
-          column: 3
-        },
-        end: {
-          line: 277,
-          column: 6
-        }
-      },
-      "26": {
-        start: {
-          line: 238,
-          column: 4
-        },
-        end: {
-          line: 238,
-          column: 33
-        }
-      },
-      "27": {
-        start: {
-          line: 240,
-          column: 26
-        },
-        end: {
-          line: 240,
-          column: 27
-        }
-      },
-      "28": {
-        start: {
-          line: 242,
-          column: 21
-        },
-        end: {
-          line: 242,
-          column: 23
-        }
-      },
-      "29": {
-        start: {
-          line: 244,
-          column: 4
-        },
-        end: {
-          line: 248,
-          column: 7
-        }
-      },
-      "30": {
-        start: {
-          line: 246,
-          column: 5
-        },
-        end: {
-          line: 246,
-          column: 69
-        }
-      },
-      "31": {
-        start: {
-          line: 247,
-          column: 5
-        },
-        end: {
-          line: 247,
-          column: 24
-        }
-      },
-      "32": {
-        start: {
-          line: 250,
-          column: 20
-        },
-        end: {
-          line: 271,
-          column: 5
-        }
-      },
-      "33": {
-        start: {
-          line: 251,
-          column: 5
-        },
-        end: {
-          line: 251,
-          column: 23
-        }
-      },
-      "34": {
-        start: {
-          line: 253,
-          column: 5
-        },
-        end: {
-          line: 253,
-          column: 51
-        }
-      },
-      "35": {
-        start: {
-          line: 255,
-          column: 5
-        },
-        end: {
-          line: 270,
-          column: 6
-        }
-      },
-      "36": {
-        start: {
-          line: 256,
-          column: 6
-        },
-        end: {
-          line: 256,
-          column: 53
-        }
-      },
-      "37": {
-        start: {
-          line: 257,
-          column: 6
-        },
-        end: {
-          line: 259,
-          column: 7
-        }
-      },
-      "38": {
-        start: {
-          line: 258,
-          column: 7
-        },
-        end: {
-          line: 258,
-          column: 67
-        }
-      },
-      "39": {
-        start: {
-          line: 260,
-          column: 6
-        },
-        end: {
-          line: 260,
-          column: 31
-        }
-      },
-      "40": {
-        start: {
-          line: 261,
-          column: 20
-        },
-        end: {
-          line: 261,
-          column: 43
-        }
-      },
-      "41": {
-        start: {
-          line: 262,
-          column: 6
-        },
-        end: {
-          line: 262,
-          column: 57
-        }
-      },
-      "42": {
-        start: {
-          line: 263,
-          column: 6
-        },
-        end: {
-          line: 263,
-          column: 70
-        }
-      },
-      "43": {
-        start: {
-          line: 265,
-          column: 6
-        },
-        end: {
-          line: 269,
-          column: 7
-        }
-      },
-      "44": {
-        start: {
-          line: 266,
-          column: 7
-        },
-        end: {
-          line: 266,
-          column: 17
-        }
-      },
-      "45": {
-        start: {
-          line: 268,
-          column: 7
-        },
-        end: {
-          line: 268,
-          column: 26
-        }
-      },
-      "46": {
-        start: {
-          line: 272,
-          column: 4
-        },
-        end: {
-          line: 274,
-          column: 5
-        }
-      },
-      "47": {
-        start: {
-          line: 273,
-          column: 5
-        },
-        end: {
-          line: 273,
-          column: 66
-        }
-      },
-      "48": {
-        start: {
-          line: 275,
-          column: 4
-        },
-        end: {
-          line: 275,
-          column: 50
-        }
-      },
-      "49": {
-        start: {
-          line: 276,
-          column: 4
-        },
-        end: {
-          line: 276,
-          column: 49
-        }
-      },
-      "50": {
-        start: {
-          line: 282,
-          column: 3
-        },
-        end: {
-          line: 282,
-          column: 25
-        }
-      },
-      "51": {
-        start: {
-          line: 283,
-          column: 3
-        },
-        end: {
-          line: 283,
-          column: 78
-        }
-      },
-      "52": {
-        start: {
-          line: 288,
-          column: 2
-        },
-        end: {
-          line: 290,
-          column: 3
-        }
-      },
-      "53": {
-        start: {
-          line: 289,
-          column: 3
-        },
-        end: {
-          line: 289,
-          column: 63
-        }
-      },
-      "54": {
-        start: {
-          line: 291,
-          column: 2
-        },
-        end: {
-          line: 291,
-          column: 58
-        }
-      },
-      "55": {
-        start: {
-          line: 292,
-          column: 2
-        },
-        end: {
-          line: 292,
-          column: 64
-        }
-      },
-      "56": {
-        start: {
-          line: 293,
-          column: 2
-        },
-        end: {
-          line: 295,
-          column: 5
-        }
-      },
-      "57": {
-        start: {
-          line: 294,
-          column: 3
-        },
-        end: {
-          line: 294,
-          column: 59
-        }
-      },
-      "58": {
-        start: {
-          line: 296,
-          column: 2
-        },
-        end: {
-          line: 298,
-          column: 5
-        }
-      },
-      "59": {
-        start: {
-          line: 297,
-          column: 3
-        },
-        end: {
-          line: 297,
-          column: 59
-        }
-      },
-      "60": {
-        start: {
-          line: 301,
-          column: 2
-        },
-        end: {
-          line: 301,
-          column: 40
-        }
-      },
-      "61": {
-        start: {
-          line: 302,
-          column: 2
-        },
-        end: {
-          line: 302,
-          column: 38
-        }
-      },
-      "62": {
-        start: {
-          line: 303,
-          column: 2
-        },
-        end: {
-          line: 303,
-          column: 50
-        }
-      },
-      "63": {
-        start: {
-          line: 304,
-          column: 2
-        },
-        end: {
-          line: 304,
-          column: 42
-        }
-      },
-      "64": {
-        start: {
-          line: 305,
-          column: 2
-        },
-        end: {
-          line: 305,
-          column: 44
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 126,
-            column: 3
-          },
-          end: {
-            line: 126,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 126,
-            column: 13
-          },
-          end: {
-            line: 128,
-            column: 4
-          }
-        },
-        line: 126
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 133,
-            column: 3
-          },
-          end: {
-            line: 133,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 133,
-            column: 13
-          },
-          end: {
-            line: 135,
-            column: 4
-          }
-        },
-        line: 133
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 140,
-            column: 3
-          },
-          end: {
-            line: 140,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 140,
-            column: 13
-          },
-          end: {
-            line: 148,
-            column: 4
-          }
-        },
-        line: 140
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 159,
-            column: 3
-          },
-          end: {
-            line: 159,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 159,
-            column: 20
-          },
-          end: {
-            line: 161,
-            column: 4
-          }
-        },
-        line: 159
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 165,
-            column: 1
-          },
-          end: {
-            line: 165,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 165,
-            column: 8
-          },
-          end: {
-            line: 172,
-            column: 2
-          }
-        },
-        line: 165
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 175,
-            column: 2
-          },
-          end: {
-            line: 175,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 175,
-            column: 11
-          },
-          end: {
-            line: 179,
-            column: 3
-          }
-        },
-        line: 175
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 185,
-            column: 3
-          },
-          end: {
-            line: 185,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 185,
-            column: 31
-          },
-          end: {
-            line: 201,
-            column: 4
-          }
-        },
-        line: 185
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 192,
-            column: 20
-          },
-          end: {
-            line: 192,
-            column: 21
-          }
-        },
-        loc: {
-          start: {
-            line: 192,
-            column: 26
-          },
-          end: {
-            line: 199,
-            column: 6
-          }
-        },
-        line: 192
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 195,
-            column: 28
-          },
-          end: {
-            line: 195,
-            column: 29
-          }
-        },
-        loc: {
-          start: {
-            line: 195,
-            column: 34
-          },
-          end: {
-            line: 195,
-            column: 36
-          }
-        },
-        line: 195
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 195,
-            column: 38
-          },
-          end: {
-            line: 195,
-            column: 39
-          }
-        },
-        loc: {
-          start: {
-            line: 195,
-            column: 44
-          },
-          end: {
-            line: 195,
-            column: 46
-          }
-        },
-        line: 195
-      },
-      "10": {
-        name: "(anonymous_10)",
-        decl: {
-          start: {
-            line: 202,
-            column: 14
-          },
-          end: {
-            line: 202,
-            column: 15
-          }
-        },
-        loc: {
-          start: {
-            line: 202,
-            column: 20
-          },
-          end: {
-            line: 204,
-            column: 4
-          }
-        },
-        line: 202
-      },
-      "11": {
-        name: "(anonymous_11)",
-        decl: {
-          start: {
-            line: 209,
-            column: 2
-          },
-          end: {
-            line: 209,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 209,
-            column: 39
-          },
-          end: {
-            line: 218,
-            column: 3
-          }
-        },
-        line: 209
-      },
-      "12": {
-        name: "(anonymous_12)",
-        decl: {
-          start: {
-            line: 211,
-            column: 24
-          },
-          end: {
-            line: 211,
-            column: 25
-          }
-        },
-        loc: {
-          start: {
-            line: 211,
-            column: 35
-          },
-          end: {
-            line: 216,
-            column: 5
-          }
-        },
-        line: 211
-      },
-      "13": {
-        name: "(anonymous_13)",
-        decl: {
-          start: {
-            line: 221,
-            column: 2
-          },
-          end: {
-            line: 221,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 221,
-            column: 51
-          },
-          end: {
-            line: 229,
-            column: 3
-          }
-        },
-        line: 221
-      },
-      "14": {
-        name: "(anonymous_14)",
-        decl: {
-          start: {
-            line: 223,
-            column: 36
-          },
-          end: {
-            line: 223,
-            column: 37
-          }
-        },
-        loc: {
-          start: {
-            line: 223,
-            column: 43
-          },
-          end: {
-            line: 223,
-            column: 56
-          }
-        },
-        line: 223
-      },
-      "15": {
-        name: "(anonymous_15)",
-        decl: {
-          start: {
-            line: 231,
-            column: 2
-          },
-          end: {
-            line: 231,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 231,
-            column: 33
-          },
-          end: {
-            line: 233,
-            column: 3
-          }
-        },
-        line: 231
-      },
-      "16": {
-        name: "(anonymous_16)",
-        decl: {
-          start: {
-            line: 236,
-            column: 2
-          },
-          end: {
-            line: 236,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 236,
-            column: 13
-          },
-          end: {
-            line: 278,
-            column: 3
-          }
-        },
-        line: 236
-      },
-      "17": {
-        name: "(anonymous_17)",
-        decl: {
-          start: {
-            line: 237,
-            column: 22
-          },
-          end: {
-            line: 237,
-            column: 23
-          }
-        },
-        loc: {
-          start: {
-            line: 237,
-            column: 43
-          },
-          end: {
-            line: 277,
-            column: 4
-          }
-        },
-        line: 237
-      },
-      "18": {
-        name: "(anonymous_18)",
-        decl: {
-          start: {
-            line: 244,
-            column: 45
-          },
-          end: {
-            line: 244,
-            column: 46
-          }
-        },
-        loc: {
-          start: {
-            line: 244,
-            column: 51
-          },
-          end: {
-            line: 248,
-            column: 5
-          }
-        },
-        line: 244
-      },
-      "19": {
-        name: "(anonymous_19)",
-        decl: {
-          start: {
-            line: 250,
-            column: 20
-          },
-          end: {
-            line: 250,
-            column: 21
-          }
-        },
-        loc: {
-          start: {
-            line: 250,
-            column: 51
-          },
-          end: {
-            line: 271,
-            column: 5
-          }
-        },
-        line: 250
-      },
-      "20": {
-        name: "(anonymous_20)",
-        decl: {
-          start: {
-            line: 281,
-            column: 2
-          },
-          end: {
-            line: 281,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 281,
-            column: 26
-          },
-          end: {
-            line: 284,
-            column: 3
-          }
-        },
-        line: 281
-      },
-      "21": {
-        name: "(anonymous_21)",
-        decl: {
-          start: {
-            line: 287,
-            column: 1
-          },
-          end: {
-            line: 287,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 287,
-            column: 11
-          },
-          end: {
-            line: 299,
-            column: 2
-          }
-        },
-        line: 287
-      },
-      "22": {
-        name: "(anonymous_22)",
-        decl: {
-          start: {
-            line: 293,
-            column: 41
-          },
-          end: {
-            line: 293,
-            column: 42
-          }
-        },
-        loc: {
-          start: {
-            line: 293,
-            column: 47
-          },
-          end: {
-            line: 295,
-            column: 3
-          }
-        },
-        line: 293
-      },
-      "23": {
-        name: "(anonymous_23)",
-        decl: {
-          start: {
-            line: 296,
-            column: 43
-          },
-          end: {
-            line: 296,
-            column: 44
-          }
-        },
-        loc: {
-          start: {
-            line: 296,
-            column: 49
-          },
-          end: {
-            line: 298,
-            column: 3
-          }
-        },
-        line: 296
-      },
-      "24": {
-        name: "(anonymous_24)",
-        decl: {
-          start: {
-            line: 300,
-            column: 1
-          },
-          end: {
-            line: 300,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 300,
-            column: 17
-          },
-          end: {
-            line: 306,
-            column: 2
-          }
-        },
-        line: 300
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 176,
-            column: 3
-          },
-          end: {
-            line: 178,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 176,
-            column: 3
-          },
-          end: {
-            line: 178,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 176,
-            column: 3
-          },
-          end: {
-            line: 178,
-            column: 4
-          }
-        }],
-        line: 176
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 176,
-            column: 7
-          },
-          end: {
-            line: 176,
-            column: 40
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 176,
-            column: 7
-          },
-          end: {
-            line: 176,
-            column: 18
-          }
-        }, {
-          start: {
-            line: 176,
-            column: 22
-          },
-          end: {
-            line: 176,
-            column: 40
-          }
-        }],
-        line: 176
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 186,
-            column: 4
-          },
-          end: {
-            line: 189,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 186,
-            column: 4
-          },
-          end: {
-            line: 189,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 186,
-            column: 4
-          },
-          end: {
-            line: 189,
-            column: 5
-          }
-        }],
-        line: 186
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 191,
-            column: 4
-          },
-          end: {
-            line: 200,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 191,
-            column: 4
-          },
-          end: {
-            line: 200,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 191,
-            column: 4
-          },
-          end: {
-            line: 200,
-            column: 5
-          }
-        }],
-        line: 191
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 194,
-            column: 6
-          },
-          end: {
-            line: 198,
-            column: 7
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 194,
-            column: 6
-          },
-          end: {
-            line: 198,
-            column: 7
-          }
-        }, {
-          start: {
-            line: 194,
-            column: 6
-          },
-          end: {
-            line: 198,
-            column: 7
-          }
-        }],
-        line: 194
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 194,
-            column: 10
-          },
-          end: {
-            line: 194,
-            column: 77
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 194,
-            column: 10
-          },
-          end: {
-            line: 194,
-            column: 49
-          }
-        }, {
-          start: {
-            line: 194,
-            column: 53
-          },
-          end: {
-            line: 194,
-            column: 77
-          }
-        }],
-        line: 194
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 210,
-            column: 3
-          },
-          end: {
-            line: 217,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 210,
-            column: 3
-          },
-          end: {
-            line: 217,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 210,
-            column: 3
-          },
-          end: {
-            line: 217,
-            column: 4
-          }
-        }],
-        line: 210
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 210,
-            column: 7
-          },
-          end: {
-            line: 210,
-            column: 53
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 210,
-            column: 7
-          },
-          end: {
-            line: 210,
-            column: 27
-          }
-        }, {
-          start: {
-            line: 210,
-            column: 31
-          },
-          end: {
-            line: 210,
-            column: 53
-          }
-        }],
-        line: 210
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 255,
-            column: 5
-          },
-          end: {
-            line: 270,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 255,
-            column: 5
-          },
-          end: {
-            line: 270,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 255,
-            column: 5
-          },
-          end: {
-            line: 270,
-            column: 6
-          }
-        }],
-        line: 255
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 257,
-            column: 6
-          },
-          end: {
-            line: 259,
-            column: 7
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 257,
-            column: 6
-          },
-          end: {
-            line: 259,
-            column: 7
-          }
-        }, {
-          start: {
-            line: 257,
-            column: 6
-          },
-          end: {
-            line: 259,
-            column: 7
-          }
-        }],
-        line: 257
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 265,
-            column: 6
-          },
-          end: {
-            line: 269,
-            column: 7
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 265,
-            column: 6
-          },
-          end: {
-            line: 269,
-            column: 7
-          }
-        }, {
-          start: {
-            line: 265,
-            column: 6
-          },
-          end: {
-            line: 269,
-            column: 7
-          }
-        }],
-        line: 265
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 272,
-            column: 4
-          },
-          end: {
-            line: 274,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 272,
-            column: 4
-          },
-          end: {
-            line: 274,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 272,
-            column: 4
-          },
-          end: {
-            line: 274,
-            column: 5
-          }
-        }],
-        line: 272
-      },
-      "12": {
-        loc: {
-          start: {
-            line: 288,
-            column: 2
-          },
-          end: {
-            line: 290,
-            column: 3
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 288,
-            column: 2
-          },
-          end: {
-            line: 290,
-            column: 3
-          }
-        }, {
-          start: {
-            line: 288,
-            column: 2
-          },
-          end: {
-            line: 290,
-            column: 3
-          }
-        }],
-        line: 288
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0,
-      "27": 0,
-      "28": 0,
-      "29": 0,
-      "30": 0,
-      "31": 0,
-      "32": 0,
-      "33": 0,
-      "34": 0,
-      "35": 0,
-      "36": 0,
-      "37": 0,
-      "38": 0,
-      "39": 0,
-      "40": 0,
-      "41": 0,
-      "42": 0,
-      "43": 0,
-      "44": 0,
-      "45": 0,
-      "46": 0,
-      "47": 0,
-      "48": 0,
-      "49": 0,
-      "50": 0,
-      "51": 0,
-      "52": 0,
-      "53": 0,
-      "54": 0,
-      "55": 0,
-      "56": 0,
-      "57": 0,
-      "58": 0,
-      "59": 0,
-      "60": 0,
-      "61": 0,
-      "62": 0,
-      "63": 0,
-      "64": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0],
-      "10": [0, 0],
-      "11": [0, 0],
-      "12": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -15451,24 +13589,18 @@ var cov_189pqzbv0v = function () {
     schema: {
       type: Object,
       default: function _default() {
-        cov_189pqzbv0v.f[0]++;
-        cov_189pqzbv0v.s[0]++;
         return {};
       }
     },
     model: {
       type: Object,
       default: function _default() {
-        cov_189pqzbv0v.f[1]++;
-        cov_189pqzbv0v.s[1]++;
         return {};
       }
     },
     options: {
       type: Object,
       default: function _default() {
-        cov_189pqzbv0v.f[2]++;
-        cov_189pqzbv0v.s[2]++;
         return {
           validateAfterLoad: false,
           validateAsync: false,
@@ -15486,16 +13618,12 @@ var cov_189pqzbv0v = function () {
       type: String,
       default: "fieldset",
       validator: function validator(value) {
-        cov_189pqzbv0v.f[3]++;
-        cov_189pqzbv0v.s[3]++;
         return value.length > 0;
       }
     }
   },
   data: function data() {
-    cov_189pqzbv0v.f[4]++;
-    var eventBus = (cov_189pqzbv0v.s[4]++, new external_commonjs_vue_commonjs2_vue_root_Vue_default.a());
-    cov_189pqzbv0v.s[5]++;
+    var eventBus = new external_commonjs_vue_commonjs2_vue_root_Vue_default.a();
     return {
       eventBus: eventBus,
       totalNumberOfFields: 0,
@@ -15505,15 +13633,8 @@ var cov_189pqzbv0v = function () {
   },
   computed: {
     fields: function fields() {
-      cov_189pqzbv0v.f[5]++;
-      cov_189pqzbv0v.s[6]++;
-
-      if ((cov_189pqzbv0v.b[1][0]++, this.schema) && (cov_189pqzbv0v.b[1][1]++, this.schema.fields)) {
-        cov_189pqzbv0v.b[0][0]++;
-        cov_189pqzbv0v.s[7]++;
+      if (this.schema && this.schema.fields) {
         return this.schema.fields;
-      } else {
-        cov_189pqzbv0v.b[0][1]++;
       }
     }
   },
@@ -15523,259 +13644,139 @@ var cov_189pqzbv0v = function () {
       handler: function handler(newModel, oldModel) {
         var _this = this;
 
-        cov_189pqzbv0v.f[6]++;
-        cov_189pqzbv0v.s[8]++;
-
         if (oldModel === newModel) {
-          cov_189pqzbv0v.b[2][0]++;
-          cov_189pqzbv0v.s[9]++;
           // model property changed, skip
           return;
-        } else {
-          cov_189pqzbv0v.b[2][1]++;
         }
 
-        cov_189pqzbv0v.s[10]++;
-
         if (newModel != null) {
-          cov_189pqzbv0v.b[3][0]++;
-          cov_189pqzbv0v.s[11]++;
           this.$nextTick(function () {
-            cov_189pqzbv0v.f[7]++;
-            cov_189pqzbv0v.s[12]++;
-
             // Model changed!
-            if ((cov_189pqzbv0v.b[5][0]++, _this.options.validateAfterLoad === true) && (cov_189pqzbv0v.b[5][1]++, _this.isNewModel !== true)) {
-              cov_189pqzbv0v.b[4][0]++;
-              cov_189pqzbv0v.s[13]++;
-
-              _this.validate().then(function () {
-                cov_189pqzbv0v.f[8]++;
-              }, function () {
-                cov_189pqzbv0v.f[9]++;
-              });
+            if (_this.options.validateAfterLoad === true && _this.isNewModel !== true) {
+              _this.validate().then(function () {}, function () {});
             } else {
-              cov_189pqzbv0v.b[4][1]++;
-              cov_189pqzbv0v.s[14]++;
-
               _this.clearValidationErrors();
             }
           });
-        } else {
-          cov_189pqzbv0v.b[3][1]++;
         }
       },
       immediate: function immediate() {
-        cov_189pqzbv0v.f[10]++;
-        cov_189pqzbv0v.s[15]++;
         return true;
       }
     }
   },
   methods: {
     fillErrors: function fillErrors(fieldErrors, errors, uid) {
-      cov_189pqzbv0v.f[11]++;
-      cov_189pqzbv0v.s[16]++;
-
-      if ((cov_189pqzbv0v.b[7][0]++, isArray_default()(fieldErrors)) && (cov_189pqzbv0v.b[7][1]++, fieldErrors.length > 0)) {
-        cov_189pqzbv0v.b[6][0]++;
-        cov_189pqzbv0v.s[17]++;
+      if (isArray_default()(fieldErrors) && fieldErrors.length > 0) {
         fieldErrors.forEach(function (error) {
-          cov_189pqzbv0v.f[12]++;
-          cov_189pqzbv0v.s[18]++;
           errors.push({
             uid: uid,
             error: error
           });
         });
-      } else {
-        cov_189pqzbv0v.b[6][1]++;
       }
     },
     // Child field executed validation
     onFieldValidated: function onFieldValidated(fieldIsValid, fieldErrors, uid) {
-      cov_189pqzbv0v.f[13]++;
-      cov_189pqzbv0v.s[19]++;
       // Remove old errors for this field
       this.errors = this.errors.filter(function (e) {
-        cov_189pqzbv0v.f[14]++;
-        cov_189pqzbv0v.s[20]++;
         return e.uid !== uid;
       });
-      cov_189pqzbv0v.s[21]++;
       this.fillErrors(fieldErrors, this.errors, uid);
-      var isValid = (cov_189pqzbv0v.s[22]++, this.errors.length === 0);
-      cov_189pqzbv0v.s[23]++;
+      var isValid = this.errors.length === 0;
       this.$emit("validated", isValid, this.errors, this);
     },
     onModelUpdated: function onModelUpdated(newVal, schema) {
-      cov_189pqzbv0v.f[15]++;
-      cov_189pqzbv0v.s[24]++;
       this.$emit("model-updated", newVal, schema);
     },
     // Validating the model properties
     validate: function validate() {
       var _this2 = this;
 
-      cov_189pqzbv0v.f[16]++;
-      cov_189pqzbv0v.s[25]++;
       return new Promise(function (resolve, reject) {
-        cov_189pqzbv0v.f[17]++;
-        cov_189pqzbv0v.s[26]++;
-
         _this2.clearValidationErrors();
 
-        var fieldsValidated = (cov_189pqzbv0v.s[27]++, 0);
-        var formErrors = (cov_189pqzbv0v.s[28]++, []);
-        cov_189pqzbv0v.s[29]++;
+        var fieldsValidated = 0;
+        var formErrors = [];
 
         _this2.eventBus.$on("field-deregistering", function () {
-          cov_189pqzbv0v.f[18]++;
-          cov_189pqzbv0v.s[30]++;
-
           // console.warn("Fields were deleted during validation process");
           _this2.eventBus.$emit("fields-validation-terminated", formErrors);
 
-          cov_189pqzbv0v.s[31]++;
           reject(formErrors);
         });
 
-        cov_189pqzbv0v.s[32]++;
-
         var counter = function counter(isValid, fieldErrors, uid) {
-          cov_189pqzbv0v.f[19]++;
-          cov_189pqzbv0v.s[33]++;
           fieldsValidated++;
-          cov_189pqzbv0v.s[34]++;
 
           _this2.fillErrors(fieldErrors, formErrors, uid);
 
-          cov_189pqzbv0v.s[35]++;
-
           if (fieldsValidated === _this2.totalNumberOfFields) {
-            cov_189pqzbv0v.b[8][0]++;
-            cov_189pqzbv0v.s[36]++;
-
             _this2.eventBus.$off("field-validated", counter);
 
-            cov_189pqzbv0v.s[37]++;
-
             if (get_default()(_this2.options, "validateAfterChanged", false)) {
-              cov_189pqzbv0v.b[9][0]++;
-              cov_189pqzbv0v.s[38]++;
-
               _this2.eventBus.$on("field-validated", _this2.onFieldValidated);
-            } else {
-              cov_189pqzbv0v.b[9][1]++;
             }
 
-            cov_189pqzbv0v.s[39]++;
             _this2.errors = formErrors;
 
-            var _isValid = (cov_189pqzbv0v.s[40]++, formErrors.length === 0);
-
-            cov_189pqzbv0v.s[41]++;
+            var _isValid = formErrors.length === 0;
 
             _this2.$emit("validated", _isValid, formErrors, _this2);
 
-            cov_189pqzbv0v.s[42]++;
-
             _this2.eventBus.$emit("fields-validation-terminated", formErrors);
 
-            cov_189pqzbv0v.s[43]++;
-
             if (_isValid) {
-              cov_189pqzbv0v.b[10][0]++;
-              cov_189pqzbv0v.s[44]++;
               resolve();
             } else {
-              cov_189pqzbv0v.b[10][1]++;
-              cov_189pqzbv0v.s[45]++;
               reject(formErrors);
             }
-          } else {
-            cov_189pqzbv0v.b[8][1]++;
           }
         };
 
-        cov_189pqzbv0v.s[46]++;
-
         if (get_default()(_this2.options, "validateAfterChanged", false)) {
-          cov_189pqzbv0v.b[11][0]++;
-          cov_189pqzbv0v.s[47]++;
-
           _this2.eventBus.$off("field-validated", _this2.onFieldValidated);
-        } else {
-          cov_189pqzbv0v.b[11][1]++;
         }
 
-        cov_189pqzbv0v.s[48]++;
-
         _this2.eventBus.$on("field-validated", counter);
-
-        cov_189pqzbv0v.s[49]++;
 
         _this2.eventBus.$emit("validate-fields", _this2);
       });
     },
     // Clear validation errors
     clearValidationErrors: function clearValidationErrors() {
-      cov_189pqzbv0v.f[20]++;
-      cov_189pqzbv0v.s[50]++;
       this.errors.splice(0);
-      cov_189pqzbv0v.s[51]++;
       this.eventBus.$emit("clear-validation-errors", this.clearValidationErrors);
     }
   },
   created: function created() {
     var _this3 = this;
 
-    cov_189pqzbv0v.f[21]++;
-    cov_189pqzbv0v.s[52]++;
-
     if (get_default()(this.options, "validateAfterChanged", false)) {
-      cov_189pqzbv0v.b[12][0]++;
-      cov_189pqzbv0v.s[53]++;
       this.eventBus.$on("field-validated", this.onFieldValidated);
-    } else {
-      cov_189pqzbv0v.b[12][1]++;
     }
 
-    cov_189pqzbv0v.s[54]++;
     this.eventBus.$on("model-updated", this.onModelUpdated);
-    cov_189pqzbv0v.s[55]++;
     this.eventBus.$on("fields-validation-trigger", this.validate);
-    cov_189pqzbv0v.s[56]++;
     this.eventBus.$on("field-registering", function () {
-      cov_189pqzbv0v.f[22]++;
-      cov_189pqzbv0v.s[57]++;
       _this3.totalNumberOfFields = _this3.totalNumberOfFields + 1;
     });
-    cov_189pqzbv0v.s[58]++;
     this.eventBus.$on("field-deregistering", function () {
-      cov_189pqzbv0v.f[23]++;
-      cov_189pqzbv0v.s[59]++;
       _this3.totalNumberOfFields = _this3.totalNumberOfFields - 1;
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_189pqzbv0v.f[24]++;
-    cov_189pqzbv0v.s[60]++;
     this.eventBus.$off("field-validated");
-    cov_189pqzbv0v.s[61]++;
     this.eventBus.$off("model-updated");
-    cov_189pqzbv0v.s[62]++;
     this.eventBus.$off("fields-validation-trigger");
-    cov_189pqzbv0v.s[63]++;
     this.eventBus.$off("field-registering");
-    cov_189pqzbv0v.s[64]++;
     this.eventBus.$off("field-deregistering");
   }
 });
 // CONCATENATED MODULE: ./src/formGenerator.vue?vue&type=script&lang=js&
  /* harmony default export */ var src_formGeneratorvue_type_script_lang_js_ = (formGeneratorvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/formGenerator.vue?vue&type=style&index=0&lang=scss&
-var formGeneratorvue_type_style_index_0_lang_scss_ = __webpack_require__("bfd2");
+// EXTERNAL MODULE: ./src/formGenerator.vue?vue&type=style&index=0&id=d75421da&prod&lang=scss&
+var formGeneratorvue_type_style_index_0_id_d75421da_prod_lang_scss_ = __webpack_require__("c512");
 
 // CONCATENATED MODULE: ./src/formGenerator.vue
 
@@ -15797,7 +13798,6 @@ var formGenerator_component = normalizeComponent(
   
 )
 
-formGenerator_component.options.__file = "formGenerator.vue"
 /* harmony default export */ var formGenerator = (formGenerator_component.exports);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es6.array.iterator.js
 var es6_array_iterator = __webpack_require__("cadf");
@@ -15826,12 +13826,11 @@ var fecha_default = /*#__PURE__*/__webpack_require__.n(fecha);
 
 // CONCATENATED MODULE: ./src/utils/validators.js
 var cov_15b6ke9kxw = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/validators.js",
-      hash = "665d0a8a74839b63b2e3e1184cb95f53db7a1459",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
+  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/validators.js";
+  var hash = "9162e56d44f58cc0069f5aaa25904032790674fd";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
     path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/validators.js",
     statementMap: {
       "0": {
@@ -15916,6 +13915,16 @@ var cov_15b6ke9kxw = function () {
       },
       "8": {
         start: {
+          line: 49,
+          column: 15
+        },
+        end: {
+          line: 49,
+          column: 16
+        }
+      },
+      "9": {
+        start: {
           line: 50,
           column: 3
         },
@@ -15924,7 +13933,7 @@ var cov_15b6ke9kxw = function () {
           column: 58
         }
       },
-      "9": {
+      "10": {
         start: {
           line: 54,
           column: 1
@@ -15934,7 +13943,7 @@ var cov_15b6ke9kxw = function () {
           column: 13
         }
       },
-      "10": {
+      "11": {
         start: {
           line: 57,
           column: 19
@@ -15944,7 +13953,7 @@ var cov_15b6ke9kxw = function () {
           column: 1
         }
       },
-      "11": {
+      "12": {
         start: {
           line: 61,
           column: 2
@@ -15954,7 +13963,7 @@ var cov_15b6ke9kxw = function () {
           column: 53
         }
       },
-      "12": {
+      "13": {
         start: {
           line: 65,
           column: 12
@@ -15964,7 +13973,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "13": {
+      "14": {
         start: {
           line: 66,
           column: 2
@@ -15974,7 +13983,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "14": {
+      "15": {
         start: {
           line: 67,
           column: 3
@@ -15984,7 +13993,7 @@ var cov_15b6ke9kxw = function () {
           column: 14
         }
       },
-      "15": {
+      "16": {
         start: {
           line: 70,
           column: 12
@@ -15994,7 +14003,7 @@ var cov_15b6ke9kxw = function () {
           column: 14
         }
       },
-      "16": {
+      "17": {
         start: {
           line: 71,
           column: 2
@@ -16004,7 +14013,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "17": {
+      "18": {
         start: {
           line: 72,
           column: 3
@@ -16014,7 +14023,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "18": {
+      "19": {
         start: {
           line: 73,
           column: 4
@@ -16024,7 +14033,7 @@ var cov_15b6ke9kxw = function () {
           column: 67
         }
       },
-      "19": {
+      "20": {
         start: {
           line: 76,
           column: 3
@@ -16034,7 +14043,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "20": {
+      "21": {
         start: {
           line: 77,
           column: 4
@@ -16044,7 +14053,7 @@ var cov_15b6ke9kxw = function () {
           column: 65
         }
       },
-      "21": {
+      "22": {
         start: {
           line: 80,
           column: 3
@@ -16054,7 +14063,7 @@ var cov_15b6ke9kxw = function () {
           column: 41
         }
       },
-      "22": {
+      "23": {
         start: {
           line: 83,
           column: 2
@@ -16064,7 +14073,7 @@ var cov_15b6ke9kxw = function () {
           column: 13
         }
       },
-      "23": {
+      "24": {
         start: {
           line: 87,
           column: 12
@@ -16074,7 +14083,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "24": {
+      "25": {
         start: {
           line: 88,
           column: 2
@@ -16084,7 +14093,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "25": {
+      "26": {
         start: {
           line: 88,
           column: 19
@@ -16094,7 +14103,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "26": {
+      "27": {
         start: {
           line: 89,
           column: 13
@@ -16104,7 +14113,7 @@ var cov_15b6ke9kxw = function () {
           column: 61
         }
       },
-      "27": {
+      "28": {
         start: {
           line: 91,
           column: 2
@@ -16114,7 +14123,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "28": {
+      "29": {
         start: {
           line: 92,
           column: 3
@@ -16124,7 +14133,7 @@ var cov_15b6ke9kxw = function () {
           column: 43
         }
       },
-      "29": {
+      "30": {
         start: {
           line: 95,
           column: 2
@@ -16134,7 +14143,7 @@ var cov_15b6ke9kxw = function () {
           column: 14
         }
       },
-      "30": {
+      "31": {
         start: {
           line: 99,
           column: 12
@@ -16144,7 +14153,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "31": {
+      "32": {
         start: {
           line: 100,
           column: 2
@@ -16154,7 +14163,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "32": {
+      "33": {
         start: {
           line: 100,
           column: 19
@@ -16164,7 +14173,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "33": {
+      "34": {
         start: {
           line: 102,
           column: 2
@@ -16174,7 +14183,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "34": {
+      "35": {
         start: {
           line: 103,
           column: 3
@@ -16184,7 +14193,7 @@ var cov_15b6ke9kxw = function () {
           column: 40
         }
       },
-      "35": {
+      "36": {
         start: {
           line: 108,
           column: 12
@@ -16194,7 +14203,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "36": {
+      "37": {
         start: {
           line: 109,
           column: 2
@@ -16204,7 +14213,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "37": {
+      "38": {
         start: {
           line: 109,
           column: 19
@@ -16214,7 +14223,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "38": {
+      "39": {
         start: {
           line: 111,
           column: 12
@@ -16224,7 +14233,7 @@ var cov_15b6ke9kxw = function () {
           column: 14
         }
       },
-      "39": {
+      "40": {
         start: {
           line: 112,
           column: 2
@@ -16234,7 +14243,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "40": {
+      "41": {
         start: {
           line: 113,
           column: 3
@@ -16244,7 +14253,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "41": {
+      "42": {
         start: {
           line: 114,
           column: 4
@@ -16254,7 +14263,7 @@ var cov_15b6ke9kxw = function () {
           column: 79
         }
       },
-      "42": {
+      "43": {
         start: {
           line: 117,
           column: 3
@@ -16264,7 +14273,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "43": {
+      "44": {
         start: {
           line: 118,
           column: 4
@@ -16274,7 +14283,7 @@ var cov_15b6ke9kxw = function () {
           column: 77
         }
       },
-      "44": {
+      "45": {
         start: {
           line: 121,
           column: 3
@@ -16284,7 +14293,7 @@ var cov_15b6ke9kxw = function () {
           column: 39
         }
       },
-      "45": {
+      "46": {
         start: {
           line: 124,
           column: 2
@@ -16294,7 +14303,7 @@ var cov_15b6ke9kxw = function () {
           column: 13
         }
       },
-      "46": {
+      "47": {
         start: {
           line: 128,
           column: 2
@@ -16304,7 +14313,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "47": {
+      "48": {
         start: {
           line: 129,
           column: 3
@@ -16314,7 +14323,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "48": {
+      "49": {
         start: {
           line: 130,
           column: 4
@@ -16324,7 +14333,7 @@ var cov_15b6ke9kxw = function () {
           column: 40
         }
       },
-      "49": {
+      "50": {
         start: {
           line: 133,
           column: 3
@@ -16334,7 +14343,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "50": {
+      "51": {
         start: {
           line: 134,
           column: 4
@@ -16344,7 +14353,7 @@ var cov_15b6ke9kxw = function () {
           column: 43
         }
       },
-      "51": {
+      "52": {
         start: {
           line: 138,
           column: 2
@@ -16354,7 +14363,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "52": {
+      "53": {
         start: {
           line: 139,
           column: 3
@@ -16364,7 +14373,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "53": {
+      "54": {
         start: {
           line: 140,
           column: 4
@@ -16374,7 +14383,7 @@ var cov_15b6ke9kxw = function () {
           column: 66
         }
       },
-      "54": {
+      "55": {
         start: {
           line: 143,
           column: 3
@@ -16384,7 +14393,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "55": {
+      "56": {
         start: {
           line: 144,
           column: 4
@@ -16394,7 +14403,7 @@ var cov_15b6ke9kxw = function () {
           column: 66
         }
       },
-      "56": {
+      "57": {
         start: {
           line: 150,
           column: 12
@@ -16404,7 +14413,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "57": {
+      "58": {
         start: {
           line: 151,
           column: 2
@@ -16414,7 +14423,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "58": {
+      "59": {
         start: {
           line: 151,
           column: 19
@@ -16424,7 +14433,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "59": {
+      "60": {
         start: {
           line: 153,
           column: 10
@@ -16434,7 +14443,7 @@ var cov_15b6ke9kxw = function () {
           column: 25
         }
       },
-      "60": {
+      "61": {
         start: {
           line: 154,
           column: 2
@@ -16444,7 +14453,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "61": {
+      "62": {
         start: {
           line: 155,
           column: 3
@@ -16454,7 +14463,7 @@ var cov_15b6ke9kxw = function () {
           column: 38
         }
       },
-      "62": {
+      "63": {
         start: {
           line: 158,
           column: 12
@@ -16464,7 +14473,7 @@ var cov_15b6ke9kxw = function () {
           column: 14
         }
       },
-      "63": {
+      "64": {
         start: {
           line: 160,
           column: 2
@@ -16474,7 +14483,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "64": {
+      "65": {
         start: {
           line: 161,
           column: 13
@@ -16484,7 +14493,7 @@ var cov_15b6ke9kxw = function () {
           column: 45
         }
       },
-      "65": {
+      "66": {
         start: {
           line: 162,
           column: 3
@@ -16494,7 +14503,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "66": {
+      "67": {
         start: {
           line: 163,
           column: 4
@@ -16504,7 +14513,7 @@ var cov_15b6ke9kxw = function () {
           column: 76
         }
       },
-      "67": {
+      "68": {
         start: {
           line: 167,
           column: 2
@@ -16514,7 +14523,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "68": {
+      "69": {
         start: {
           line: 168,
           column: 13
@@ -16524,7 +14533,7 @@ var cov_15b6ke9kxw = function () {
           column: 45
         }
       },
-      "69": {
+      "70": {
         start: {
           line: 169,
           column: 3
@@ -16534,7 +14543,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "70": {
+      "71": {
         start: {
           line: 170,
           column: 4
@@ -16544,7 +14553,7 @@ var cov_15b6ke9kxw = function () {
           column: 75
         }
       },
-      "71": {
+      "72": {
         start: {
           line: 174,
           column: 2
@@ -16554,7 +14563,7 @@ var cov_15b6ke9kxw = function () {
           column: 13
         }
       },
-      "72": {
+      "73": {
         start: {
           line: 178,
           column: 12
@@ -16564,7 +14573,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "73": {
+      "74": {
         start: {
           line: 179,
           column: 2
@@ -16574,7 +14583,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "74": {
+      "75": {
         start: {
           line: 179,
           column: 19
@@ -16584,7 +14593,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "75": {
+      "76": {
         start: {
           line: 181,
           column: 2
@@ -16594,7 +14603,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "76": {
+      "77": {
         start: {
           line: 182,
           column: 12
@@ -16604,7 +14613,7 @@ var cov_15b6ke9kxw = function () {
           column: 37
         }
       },
-      "77": {
+      "78": {
         start: {
           line: 183,
           column: 3
@@ -16614,7 +14623,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "78": {
+      "79": {
         start: {
           line: 184,
           column: 4
@@ -16624,7 +14633,7 @@ var cov_15b6ke9kxw = function () {
           column: 41
         }
       },
-      "79": {
+      "80": {
         start: {
           line: 190,
           column: 12
@@ -16634,7 +14643,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "80": {
+      "81": {
         start: {
           line: 191,
           column: 2
@@ -16644,7 +14653,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "81": {
+      "82": {
         start: {
           line: 191,
           column: 19
@@ -16654,7 +14663,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "82": {
+      "83": {
         start: {
           line: 193,
           column: 11
@@ -16664,7 +14673,7 @@ var cov_15b6ke9kxw = function () {
           column: 163
         }
       },
-      "83": {
+      "84": {
         start: {
           line: 194,
           column: 2
@@ -16674,7 +14683,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "84": {
+      "85": {
         start: {
           line: 195,
           column: 3
@@ -16684,7 +14693,7 @@ var cov_15b6ke9kxw = function () {
           column: 39
         }
       },
-      "85": {
+      "86": {
         start: {
           line: 200,
           column: 12
@@ -16694,7 +14703,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "86": {
+      "87": {
         start: {
           line: 201,
           column: 2
@@ -16704,7 +14713,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "87": {
+      "88": {
         start: {
           line: 201,
           column: 19
@@ -16714,7 +14723,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "88": {
+      "89": {
         start: {
           line: 203,
           column: 11
@@ -16724,7 +14733,7 @@ var cov_15b6ke9kxw = function () {
           column: 105
         }
       },
-      "89": {
+      "90": {
         start: {
           line: 204,
           column: 2
@@ -16734,7 +14743,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "90": {
+      "91": {
         start: {
           line: 205,
           column: 3
@@ -16744,7 +14753,7 @@ var cov_15b6ke9kxw = function () {
           column: 37
         }
       },
-      "91": {
+      "92": {
         start: {
           line: 210,
           column: 12
@@ -16754,7 +14763,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "92": {
+      "93": {
         start: {
           line: 211,
           column: 2
@@ -16764,7 +14773,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "93": {
+      "94": {
         start: {
           line: 211,
           column: 19
@@ -16774,7 +14783,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "94": {
+      "95": {
         start: {
           line: 216,
           column: 21
@@ -16784,7 +14793,7 @@ var cov_15b6ke9kxw = function () {
           column: 172
         }
       },
-      "95": {
+      "96": {
         start: {
           line: 217,
           column: 20
@@ -16794,7 +14803,7 @@ var cov_15b6ke9kxw = function () {
           column: 49
         }
       },
-      "96": {
+      "97": {
         start: {
           line: 218,
           column: 2
@@ -16804,7 +14813,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "97": {
+      "98": {
         start: {
           line: 219,
           column: 3
@@ -16814,7 +14823,7 @@ var cov_15b6ke9kxw = function () {
           column: 38
         }
       },
-      "98": {
+      "99": {
         start: {
           line: 221,
           column: 12
@@ -16824,7 +14833,7 @@ var cov_15b6ke9kxw = function () {
           column: 13
         }
       },
-      "99": {
+      "100": {
         start: {
           line: 225,
           column: 2
@@ -16834,7 +14843,17 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "100": {
+      "101": {
+        start: {
+          line: 225,
+          column: 15
+        },
+        end: {
+          line: 225,
+          column: 35
+        }
+      },
+      "102": {
         start: {
           line: 226,
           column: 3
@@ -16844,7 +14863,7 @@ var cov_15b6ke9kxw = function () {
           column: 41
         }
       },
-      "101": {
+      "103": {
         start: {
           line: 227,
           column: 3
@@ -16854,7 +14873,7 @@ var cov_15b6ke9kxw = function () {
           column: 32
         }
       },
-      "102": {
+      "104": {
         start: {
           line: 228,
           column: 3
@@ -16864,7 +14883,7 @@ var cov_15b6ke9kxw = function () {
           column: 4
         }
       },
-      "103": {
+      "105": {
         start: {
           line: 229,
           column: 4
@@ -16874,7 +14893,7 @@ var cov_15b6ke9kxw = function () {
           column: 16
         }
       },
-      "104": {
+      "106": {
         start: {
           line: 230,
           column: 4
@@ -16884,7 +14903,7 @@ var cov_15b6ke9kxw = function () {
           column: 5
         }
       },
-      "105": {
+      "107": {
         start: {
           line: 231,
           column: 5
@@ -16894,7 +14913,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "106": {
+      "108": {
         start: {
           line: 233,
           column: 5
@@ -16904,7 +14923,7 @@ var cov_15b6ke9kxw = function () {
           column: 19
         }
       },
-      "107": {
+      "109": {
         start: {
           line: 236,
           column: 4
@@ -16914,7 +14933,7 @@ var cov_15b6ke9kxw = function () {
           column: 18
         }
       },
-      "108": {
+      "110": {
         start: {
           line: 238,
           column: 3
@@ -16924,7 +14943,7 @@ var cov_15b6ke9kxw = function () {
           column: 32
         }
       },
-      "109": {
+      "111": {
         start: {
           line: 241,
           column: 2
@@ -16934,7 +14953,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "110": {
+      "112": {
         start: {
           line: 242,
           column: 3
@@ -16944,7 +14963,7 @@ var cov_15b6ke9kxw = function () {
           column: 44
         }
       },
-      "111": {
+      "113": {
         start: {
           line: 247,
           column: 12
@@ -16954,7 +14973,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "112": {
+      "114": {
         start: {
           line: 248,
           column: 2
@@ -16964,7 +14983,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "113": {
+      "115": {
         start: {
           line: 248,
           column: 19
@@ -16974,7 +14993,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "114": {
+      "116": {
         start: {
           line: 250,
           column: 11
@@ -16984,7 +15003,7 @@ var cov_15b6ke9kxw = function () {
           column: 24
         }
       },
-      "115": {
+      "117": {
         start: {
           line: 251,
           column: 2
@@ -16994,7 +15013,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "116": {
+      "118": {
         start: {
           line: 252,
           column: 3
@@ -17004,7 +15023,7 @@ var cov_15b6ke9kxw = function () {
           column: 51
         }
       },
-      "117": {
+      "119": {
         start: {
           line: 257,
           column: 12
@@ -17014,7 +15033,7 @@ var cov_15b6ke9kxw = function () {
           column: 55
         }
       },
-      "118": {
+      "120": {
         start: {
           line: 258,
           column: 2
@@ -17024,7 +15043,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "119": {
+      "121": {
         start: {
           line: 258,
           column: 19
@@ -17034,7 +15053,7 @@ var cov_15b6ke9kxw = function () {
           column: 30
         }
       },
-      "120": {
+      "122": {
         start: {
           line: 260,
           column: 11
@@ -17044,7 +15063,7 @@ var cov_15b6ke9kxw = function () {
           column: 27
         }
       },
-      "121": {
+      "123": {
         start: {
           line: 261,
           column: 2
@@ -17054,7 +15073,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "122": {
+      "124": {
         start: {
           line: 262,
           column: 3
@@ -17064,7 +15083,7 @@ var cov_15b6ke9kxw = function () {
           column: 49
         }
       },
-      "123": {
+      "125": {
         start: {
           line: 267,
           column: 0
@@ -17074,7 +15093,7 @@ var cov_15b6ke9kxw = function () {
           column: 3
         }
       },
-      "124": {
+      "126": {
         start: {
           line: 268,
           column: 12
@@ -17084,7 +15103,7 @@ var cov_15b6ke9kxw = function () {
           column: 28
         }
       },
-      "125": {
+      "127": {
         start: {
           line: 269,
           column: 1
@@ -17094,7 +15113,7 @@ var cov_15b6ke9kxw = function () {
           column: 2
         }
       },
-      "126": {
+      "128": {
         start: {
           line: 270,
           column: 2
@@ -17104,7 +15123,7 @@ var cov_15b6ke9kxw = function () {
           column: 64
         }
       },
-      "127": {
+      "129": {
         start: {
           line: 270,
           column: 34
@@ -17114,7 +15133,7 @@ var cov_15b6ke9kxw = function () {
           column: 63
         }
       },
-      "128": {
+      "130": {
         start: {
           line: 271,
           column: 3
@@ -19826,7 +17845,9 @@ var cov_15b6ke9kxw = function () {
       "125": 0,
       "126": 0,
       "127": 0,
-      "128": 0
+      "128": 0,
+      "129": 0,
+      "130": 0
     },
     f: {
       "0": 0,
@@ -19918,15 +17939,15 @@ var cov_15b6ke9kxw = function () {
       "66": [0, 0],
       "67": [0, 0]
     },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
+    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
+    hash: "9162e56d44f58cc0069f5aaa25904032790674fd"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
 
   if (coverage[path] && coverage[path].hash === hash) {
     return coverage[path];
   }
 
-  coverageData.hash = hash;
   return coverage[path] = coverageData;
 }();
 
@@ -20002,120 +18023,120 @@ function msg(text) {
     cov_15b6ke9kxw.b[4][0]++;
     cov_15b6ke9kxw.s[7]++;
 
-    for (var i = 1; i < arguments.length; i++) {
-      cov_15b6ke9kxw.s[8]++;
+    for (var i = (cov_15b6ke9kxw.s[8]++, 1); i < arguments.length; i++) {
+      cov_15b6ke9kxw.s[9]++;
       text = text.replace("{" + (i - 1) + "}", arguments[i]);
     }
   } else {
     cov_15b6ke9kxw.b[4][1]++;
   }
 
-  cov_15b6ke9kxw.s[9]++;
+  cov_15b6ke9kxw.s[10]++;
   return text;
 }
 
-var validators = (cov_15b6ke9kxw.s[10]++, {
+var validators = (cov_15b6ke9kxw.s[11]++, {
   resources: resources,
   required: function required(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[6][0]++, resources);
     cov_15b6ke9kxw.f[2]++;
-    cov_15b6ke9kxw.s[11]++;
+    cov_15b6ke9kxw.s[12]++;
     return checkEmpty(value, field.required, messages);
   },
   number: function number(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[7][0]++, resources);
     cov_15b6ke9kxw.f[3]++;
-    var res = (cov_15b6ke9kxw.s[12]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[13]++;
+    var res = (cov_15b6ke9kxw.s[13]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[14]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[8][0]++;
-      cov_15b6ke9kxw.s[14]++;
+      cov_15b6ke9kxw.s[15]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[8][1]++;
     }
 
-    var err = (cov_15b6ke9kxw.s[15]++, []);
-    cov_15b6ke9kxw.s[16]++;
+    var err = (cov_15b6ke9kxw.s[16]++, []);
+    cov_15b6ke9kxw.s[17]++;
 
     if (isNumber_default()(value)) {
       cov_15b6ke9kxw.b[9][0]++;
-      cov_15b6ke9kxw.s[17]++;
+      cov_15b6ke9kxw.s[18]++;
 
       if ((cov_15b6ke9kxw.b[11][0]++, !isNil_default()(field.fieldOptions)) && (cov_15b6ke9kxw.b[11][1]++, !isNil_default()(field.fieldOptions.min)) && (cov_15b6ke9kxw.b[11][2]++, value < field.fieldOptions.min)) {
         cov_15b6ke9kxw.b[10][0]++;
-        cov_15b6ke9kxw.s[18]++;
+        cov_15b6ke9kxw.s[19]++;
         err.push(msg(messages.numberTooSmall, field.fieldOptions.min));
       } else {
         cov_15b6ke9kxw.b[10][1]++;
       }
 
-      cov_15b6ke9kxw.s[19]++;
+      cov_15b6ke9kxw.s[20]++;
 
       if ((cov_15b6ke9kxw.b[13][0]++, !isNil_default()(field.fieldOptions)) && (cov_15b6ke9kxw.b[13][1]++, !isNil_default()(field.fieldOptions.max)) && (cov_15b6ke9kxw.b[13][2]++, value > field.fieldOptions.max)) {
         cov_15b6ke9kxw.b[12][0]++;
-        cov_15b6ke9kxw.s[20]++;
+        cov_15b6ke9kxw.s[21]++;
         err.push(msg(messages.numberTooBig, field.fieldOptions.max));
       } else {
         cov_15b6ke9kxw.b[12][1]++;
       }
     } else {
       cov_15b6ke9kxw.b[9][1]++;
-      cov_15b6ke9kxw.s[21]++;
+      cov_15b6ke9kxw.s[22]++;
       err.push(msg(messages.invalidNumber));
     }
 
-    cov_15b6ke9kxw.s[22]++;
+    cov_15b6ke9kxw.s[23]++;
     return err;
   },
   integer: function integer(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[14][0]++, resources);
     cov_15b6ke9kxw.f[4]++;
-    var res = (cov_15b6ke9kxw.s[23]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[24]++;
+    var res = (cov_15b6ke9kxw.s[24]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[25]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[15][0]++;
-      cov_15b6ke9kxw.s[25]++;
+      cov_15b6ke9kxw.s[26]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[15][1]++;
     }
 
-    var errs = (cov_15b6ke9kxw.s[26]++, validators.number(value, field, model, messages));
-    cov_15b6ke9kxw.s[27]++;
+    var errs = (cov_15b6ke9kxw.s[27]++, validators.number(value, field, model, messages));
+    cov_15b6ke9kxw.s[28]++;
 
     if (!isInteger_default()(value)) {
       cov_15b6ke9kxw.b[16][0]++;
-      cov_15b6ke9kxw.s[28]++;
+      cov_15b6ke9kxw.s[29]++;
       errs.push(msg(messages.invalidInteger));
     } else {
       cov_15b6ke9kxw.b[16][1]++;
     }
 
-    cov_15b6ke9kxw.s[29]++;
+    cov_15b6ke9kxw.s[30]++;
     return errs;
   },
   double: function double(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[17][0]++, resources);
     cov_15b6ke9kxw.f[5]++;
-    var res = (cov_15b6ke9kxw.s[30]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[31]++;
+    var res = (cov_15b6ke9kxw.s[31]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[32]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[18][0]++;
-      cov_15b6ke9kxw.s[32]++;
+      cov_15b6ke9kxw.s[33]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[18][1]++;
     }
 
-    cov_15b6ke9kxw.s[33]++;
+    cov_15b6ke9kxw.s[34]++;
 
     if ((cov_15b6ke9kxw.b[20][0]++, !isNumber_default()(value)) || (cov_15b6ke9kxw.b[20][1]++, isNaN(value))) {
       cov_15b6ke9kxw.b[19][0]++;
-      cov_15b6ke9kxw.s[34]++;
+      cov_15b6ke9kxw.s[35]++;
       return [msg(messages.invalidNumber)];
     } else {
       cov_15b6ke9kxw.b[19][1]++;
@@ -20124,72 +18145,72 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   string: function string(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[21][0]++, resources);
     cov_15b6ke9kxw.f[6]++;
-    var res = (cov_15b6ke9kxw.s[35]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[36]++;
+    var res = (cov_15b6ke9kxw.s[36]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[37]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[22][0]++;
-      cov_15b6ke9kxw.s[37]++;
+      cov_15b6ke9kxw.s[38]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[22][1]++;
     }
 
-    var err = (cov_15b6ke9kxw.s[38]++, []);
-    cov_15b6ke9kxw.s[39]++;
+    var err = (cov_15b6ke9kxw.s[39]++, []);
+    cov_15b6ke9kxw.s[40]++;
 
     if (isString_default()(value)) {
       cov_15b6ke9kxw.b[23][0]++;
-      cov_15b6ke9kxw.s[40]++;
+      cov_15b6ke9kxw.s[41]++;
 
       if ((cov_15b6ke9kxw.b[25][0]++, !isNil_default()(field.fieldOptions.min)) && (cov_15b6ke9kxw.b[25][1]++, value.length < field.fieldOptions.min)) {
         cov_15b6ke9kxw.b[24][0]++;
-        cov_15b6ke9kxw.s[41]++;
+        cov_15b6ke9kxw.s[42]++;
         err.push(msg(messages.textTooSmall, value.length, field.fieldOptions.min));
       } else {
         cov_15b6ke9kxw.b[24][1]++;
       }
 
-      cov_15b6ke9kxw.s[42]++;
+      cov_15b6ke9kxw.s[43]++;
 
       if ((cov_15b6ke9kxw.b[27][0]++, !isNil_default()(field.fieldOptions.max)) && (cov_15b6ke9kxw.b[27][1]++, value.length > field.fieldOptions.max)) {
         cov_15b6ke9kxw.b[26][0]++;
-        cov_15b6ke9kxw.s[43]++;
+        cov_15b6ke9kxw.s[44]++;
         err.push(msg(messages.textTooBig, value.length, field.fieldOptions.max));
       } else {
         cov_15b6ke9kxw.b[26][1]++;
       }
     } else {
       cov_15b6ke9kxw.b[23][1]++;
-      cov_15b6ke9kxw.s[44]++;
+      cov_15b6ke9kxw.s[45]++;
       err.push(msg(messages.thisNotText));
     }
 
-    cov_15b6ke9kxw.s[45]++;
+    cov_15b6ke9kxw.s[46]++;
     return err;
   },
   array: function array(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[28][0]++, resources);
     cov_15b6ke9kxw.f[7]++;
-    cov_15b6ke9kxw.s[46]++;
+    cov_15b6ke9kxw.s[47]++;
 
     if (field.required) {
       cov_15b6ke9kxw.b[29][0]++;
-      cov_15b6ke9kxw.s[47]++;
+      cov_15b6ke9kxw.s[48]++;
 
       if (!isArray_default()(value)) {
         cov_15b6ke9kxw.b[30][0]++;
-        cov_15b6ke9kxw.s[48]++;
+        cov_15b6ke9kxw.s[49]++;
         return [msg(messages.thisNotArray)];
       } else {
         cov_15b6ke9kxw.b[30][1]++;
       }
 
-      cov_15b6ke9kxw.s[49]++;
+      cov_15b6ke9kxw.s[50]++;
 
       if (value.length === 0) {
         cov_15b6ke9kxw.b[31][0]++;
-        cov_15b6ke9kxw.s[50]++;
+        cov_15b6ke9kxw.s[51]++;
         return [msg(messages.fieldIsRequired)];
       } else {
         cov_15b6ke9kxw.b[31][1]++;
@@ -20198,25 +18219,25 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
       cov_15b6ke9kxw.b[29][1]++;
     }
 
-    cov_15b6ke9kxw.s[51]++;
+    cov_15b6ke9kxw.s[52]++;
 
     if (!isNil_default()(value)) {
       cov_15b6ke9kxw.b[32][0]++;
-      cov_15b6ke9kxw.s[52]++;
+      cov_15b6ke9kxw.s[53]++;
 
       if ((cov_15b6ke9kxw.b[34][0]++, !isNil_default()(field.fieldOptions.min)) && (cov_15b6ke9kxw.b[34][1]++, value.length < field.fieldOptions.min)) {
         cov_15b6ke9kxw.b[33][0]++;
-        cov_15b6ke9kxw.s[53]++;
+        cov_15b6ke9kxw.s[54]++;
         return [msg(messages.selectMinItems, field.fieldOptions.min)];
       } else {
         cov_15b6ke9kxw.b[33][1]++;
       }
 
-      cov_15b6ke9kxw.s[54]++;
+      cov_15b6ke9kxw.s[55]++;
 
       if ((cov_15b6ke9kxw.b[36][0]++, !isNil_default()(field.fieldOptions.max)) && (cov_15b6ke9kxw.b[36][1]++, value.length > field.fieldOptions.max)) {
         cov_15b6ke9kxw.b[35][0]++;
-        cov_15b6ke9kxw.s[55]++;
+        cov_15b6ke9kxw.s[56]++;
         return [msg(messages.selectMaxItems, field.fieldOptions.max)];
       } else {
         cov_15b6ke9kxw.b[35][1]++;
@@ -20228,39 +18249,39 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   date: function date(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[37][0]++, resources);
     cov_15b6ke9kxw.f[8]++;
-    var res = (cov_15b6ke9kxw.s[56]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[57]++;
+    var res = (cov_15b6ke9kxw.s[57]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[58]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[38][0]++;
-      cov_15b6ke9kxw.s[58]++;
+      cov_15b6ke9kxw.s[59]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[38][1]++;
     }
 
-    var m = (cov_15b6ke9kxw.s[59]++, new Date(value));
-    cov_15b6ke9kxw.s[60]++;
+    var m = (cov_15b6ke9kxw.s[60]++, new Date(value));
+    cov_15b6ke9kxw.s[61]++;
 
     if (!m) {
       cov_15b6ke9kxw.b[39][0]++;
-      cov_15b6ke9kxw.s[61]++;
+      cov_15b6ke9kxw.s[62]++;
       return [msg(messages.invalidDate)];
     } else {
       cov_15b6ke9kxw.b[39][1]++;
     }
 
-    var err = (cov_15b6ke9kxw.s[62]++, []);
-    cov_15b6ke9kxw.s[63]++;
+    var err = (cov_15b6ke9kxw.s[63]++, []);
+    cov_15b6ke9kxw.s[64]++;
 
     if (!isNil_default()(field.fieldOptions.min)) {
       cov_15b6ke9kxw.b[40][0]++;
-      var min = (cov_15b6ke9kxw.s[64]++, new Date(field.fieldOptions.min));
-      cov_15b6ke9kxw.s[65]++;
+      var min = (cov_15b6ke9kxw.s[65]++, new Date(field.fieldOptions.min));
+      cov_15b6ke9kxw.s[66]++;
 
       if (m.valueOf() < min.valueOf()) {
         cov_15b6ke9kxw.b[41][0]++;
-        cov_15b6ke9kxw.s[66]++;
+        cov_15b6ke9kxw.s[67]++;
         err.push(msg(messages.dateIsEarly, fecha_default.a.format(m), fecha_default.a.format(min)));
       } else {
         cov_15b6ke9kxw.b[41][1]++;
@@ -20269,16 +18290,16 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
       cov_15b6ke9kxw.b[40][1]++;
     }
 
-    cov_15b6ke9kxw.s[67]++;
+    cov_15b6ke9kxw.s[68]++;
 
     if (!isNil_default()(field.fieldOptions.max)) {
       cov_15b6ke9kxw.b[42][0]++;
-      var max = (cov_15b6ke9kxw.s[68]++, new Date(field.fieldOptions.max));
-      cov_15b6ke9kxw.s[69]++;
+      var max = (cov_15b6ke9kxw.s[69]++, new Date(field.fieldOptions.max));
+      cov_15b6ke9kxw.s[70]++;
 
       if (m.valueOf() > max.valueOf()) {
         cov_15b6ke9kxw.b[43][0]++;
-        cov_15b6ke9kxw.s[70]++;
+        cov_15b6ke9kxw.s[71]++;
         err.push(msg(messages.dateIsLate, fecha_default.a.format(m), fecha_default.a.format(max)));
       } else {
         cov_15b6ke9kxw.b[43][1]++;
@@ -20287,33 +18308,33 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
       cov_15b6ke9kxw.b[42][1]++;
     }
 
-    cov_15b6ke9kxw.s[71]++;
+    cov_15b6ke9kxw.s[72]++;
     return err;
   },
   regexp: function regexp(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[44][0]++, resources);
     cov_15b6ke9kxw.f[9]++;
-    var res = (cov_15b6ke9kxw.s[72]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[73]++;
+    var res = (cov_15b6ke9kxw.s[73]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[74]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[45][0]++;
-      cov_15b6ke9kxw.s[74]++;
+      cov_15b6ke9kxw.s[75]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[45][1]++;
     }
 
-    cov_15b6ke9kxw.s[75]++;
+    cov_15b6ke9kxw.s[76]++;
 
     if (!isNil_default()(field.pattern)) {
       cov_15b6ke9kxw.b[46][0]++;
-      var re = (cov_15b6ke9kxw.s[76]++, new RegExp(field.pattern));
-      cov_15b6ke9kxw.s[77]++;
+      var re = (cov_15b6ke9kxw.s[77]++, new RegExp(field.pattern));
+      cov_15b6ke9kxw.s[78]++;
 
       if (!re.test(value)) {
         cov_15b6ke9kxw.b[47][0]++;
-        cov_15b6ke9kxw.s[78]++;
+        cov_15b6ke9kxw.s[79]++;
         return [msg(messages.invalidFormat)];
       } else {
         cov_15b6ke9kxw.b[47][1]++;
@@ -20325,24 +18346,24 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   email: function email(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[48][0]++, resources);
     cov_15b6ke9kxw.f[10]++;
-    var res = (cov_15b6ke9kxw.s[79]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[80]++;
+    var res = (cov_15b6ke9kxw.s[80]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[81]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[49][0]++;
-      cov_15b6ke9kxw.s[81]++;
+      cov_15b6ke9kxw.s[82]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[49][1]++;
     }
 
-    var re = (cov_15b6ke9kxw.s[82]++, /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/); // eslint-disable-line no-useless-escape
+    var re = (cov_15b6ke9kxw.s[83]++, /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/); // eslint-disable-line no-useless-escape
 
-    cov_15b6ke9kxw.s[83]++;
+    cov_15b6ke9kxw.s[84]++;
 
     if (!re.test(value)) {
       cov_15b6ke9kxw.b[50][0]++;
-      cov_15b6ke9kxw.s[84]++;
+      cov_15b6ke9kxw.s[85]++;
       return [msg(messages.invalidEmail)];
     } else {
       cov_15b6ke9kxw.b[50][1]++;
@@ -20351,24 +18372,24 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   url: function url(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[51][0]++, resources);
     cov_15b6ke9kxw.f[11]++;
-    var res = (cov_15b6ke9kxw.s[85]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[86]++;
+    var res = (cov_15b6ke9kxw.s[86]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[87]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[52][0]++;
-      cov_15b6ke9kxw.s[87]++;
+      cov_15b6ke9kxw.s[88]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[52][1]++;
     }
 
-    var re = (cov_15b6ke9kxw.s[88]++, /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g); // eslint-disable-line no-useless-escape
+    var re = (cov_15b6ke9kxw.s[89]++, /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g); // eslint-disable-line no-useless-escape
 
-    cov_15b6ke9kxw.s[89]++;
+    cov_15b6ke9kxw.s[90]++;
 
     if (!re.test(value)) {
       cov_15b6ke9kxw.b[53][0]++;
-      cov_15b6ke9kxw.s[90]++;
+      cov_15b6ke9kxw.s[91]++;
       return [msg(messages.invalidURL)];
     } else {
       cov_15b6ke9kxw.b[53][1]++;
@@ -20377,12 +18398,12 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   creditCard: function creditCard(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[54][0]++, resources);
     cov_15b6ke9kxw.f[12]++;
-    var res = (cov_15b6ke9kxw.s[91]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[92]++;
+    var res = (cov_15b6ke9kxw.s[92]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[93]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[55][0]++;
-      cov_15b6ke9kxw.s[93]++;
+      cov_15b6ke9kxw.s[94]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[55][1]++;
@@ -20392,61 +18413,61 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
     */
 
 
-    var creditCard = (cov_15b6ke9kxw.s[94]++, /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/);
-    var sanitized = (cov_15b6ke9kxw.s[95]++, value.replace(/[^0-9]+/g, ""));
-    cov_15b6ke9kxw.s[96]++;
+    var creditCard = (cov_15b6ke9kxw.s[95]++, /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/);
+    var sanitized = (cov_15b6ke9kxw.s[96]++, value.replace(/[^0-9]+/g, ""));
+    cov_15b6ke9kxw.s[97]++;
 
     if (!creditCard.test(sanitized)) {
       cov_15b6ke9kxw.b[56][0]++;
-      cov_15b6ke9kxw.s[97]++;
+      cov_15b6ke9kxw.s[98]++;
       return [msg(messages.invalidCard)];
     } else {
       cov_15b6ke9kxw.b[56][1]++;
     }
 
-    var sum = (cov_15b6ke9kxw.s[98]++, 0);
+    var sum = (cov_15b6ke9kxw.s[99]++, 0);
     var digit;
     var tmpNum;
     var shouldDouble;
-    cov_15b6ke9kxw.s[99]++;
+    cov_15b6ke9kxw.s[100]++;
 
-    for (var i = sanitized.length - 1; i >= 0; i--) {
-      cov_15b6ke9kxw.s[100]++;
-      digit = sanitized.substring(i, i + 1);
-      cov_15b6ke9kxw.s[101]++;
-      tmpNum = parseInt(digit, 10);
+    for (var i = (cov_15b6ke9kxw.s[101]++, sanitized.length - 1); i >= 0; i--) {
       cov_15b6ke9kxw.s[102]++;
+      digit = sanitized.substring(i, i + 1);
+      cov_15b6ke9kxw.s[103]++;
+      tmpNum = parseInt(digit, 10);
+      cov_15b6ke9kxw.s[104]++;
 
       if (shouldDouble) {
         cov_15b6ke9kxw.b[57][0]++;
-        cov_15b6ke9kxw.s[103]++;
+        cov_15b6ke9kxw.s[105]++;
         tmpNum *= 2;
-        cov_15b6ke9kxw.s[104]++;
+        cov_15b6ke9kxw.s[106]++;
 
         if (tmpNum >= 10) {
           cov_15b6ke9kxw.b[58][0]++;
-          cov_15b6ke9kxw.s[105]++;
+          cov_15b6ke9kxw.s[107]++;
           sum += tmpNum % 10 + 1;
         } else {
           cov_15b6ke9kxw.b[58][1]++;
-          cov_15b6ke9kxw.s[106]++;
+          cov_15b6ke9kxw.s[108]++;
           sum += tmpNum;
         }
       } else {
         cov_15b6ke9kxw.b[57][1]++;
-        cov_15b6ke9kxw.s[107]++;
+        cov_15b6ke9kxw.s[109]++;
         sum += tmpNum;
       }
 
-      cov_15b6ke9kxw.s[108]++;
+      cov_15b6ke9kxw.s[110]++;
       shouldDouble = !shouldDouble;
     }
 
-    cov_15b6ke9kxw.s[109]++;
+    cov_15b6ke9kxw.s[111]++;
 
     if (!(sum % 10 === 0 ? (cov_15b6ke9kxw.b[60][0]++, sanitized) : (cov_15b6ke9kxw.b[60][1]++, false))) {
       cov_15b6ke9kxw.b[59][0]++;
-      cov_15b6ke9kxw.s[110]++;
+      cov_15b6ke9kxw.s[112]++;
       return [msg(messages.invalidCardNumber)];
     } else {
       cov_15b6ke9kxw.b[59][1]++;
@@ -20455,23 +18476,23 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   alpha: function alpha(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[61][0]++, resources);
     cov_15b6ke9kxw.f[13]++;
-    var res = (cov_15b6ke9kxw.s[111]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[112]++;
+    var res = (cov_15b6ke9kxw.s[113]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[114]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[62][0]++;
-      cov_15b6ke9kxw.s[113]++;
+      cov_15b6ke9kxw.s[115]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[62][1]++;
     }
 
-    var re = (cov_15b6ke9kxw.s[114]++, /^[a-zA-Z]*$/);
-    cov_15b6ke9kxw.s[115]++;
+    var re = (cov_15b6ke9kxw.s[116]++, /^[a-zA-Z]*$/);
+    cov_15b6ke9kxw.s[117]++;
 
     if (!re.test(value)) {
       cov_15b6ke9kxw.b[63][0]++;
-      cov_15b6ke9kxw.s[116]++;
+      cov_15b6ke9kxw.s[118]++;
       return [msg(messages.invalidTextContainNumber)];
     } else {
       cov_15b6ke9kxw.b[63][1]++;
@@ -20480,45 +18501,45 @@ var validators = (cov_15b6ke9kxw.s[10]++, {
   alphaNumeric: function alphaNumeric(value, field, model) {
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (cov_15b6ke9kxw.b[64][0]++, resources);
     cov_15b6ke9kxw.f[14]++;
-    var res = (cov_15b6ke9kxw.s[117]++, checkEmpty(value, field.required, messages));
-    cov_15b6ke9kxw.s[118]++;
+    var res = (cov_15b6ke9kxw.s[119]++, checkEmpty(value, field.required, messages));
+    cov_15b6ke9kxw.s[120]++;
 
     if (res != null) {
       cov_15b6ke9kxw.b[65][0]++;
-      cov_15b6ke9kxw.s[119]++;
+      cov_15b6ke9kxw.s[121]++;
       return res;
     } else {
       cov_15b6ke9kxw.b[65][1]++;
     }
 
-    var re = (cov_15b6ke9kxw.s[120]++, /^[a-zA-Z0-9]*$/);
-    cov_15b6ke9kxw.s[121]++;
+    var re = (cov_15b6ke9kxw.s[122]++, /^[a-zA-Z0-9]*$/);
+    cov_15b6ke9kxw.s[123]++;
 
     if (!re.test(value)) {
       cov_15b6ke9kxw.b[66][0]++;
-      cov_15b6ke9kxw.s[122]++;
+      cov_15b6ke9kxw.s[124]++;
       return [msg(messages.invalidTextContainSpec)];
     } else {
       cov_15b6ke9kxw.b[66][1]++;
     }
   }
 });
-cov_15b6ke9kxw.s[123]++;
+cov_15b6ke9kxw.s[125]++;
 Object.keys(validators).forEach(function (name) {
   cov_15b6ke9kxw.f[15]++;
-  var fn = (cov_15b6ke9kxw.s[124]++, validators[name]);
-  cov_15b6ke9kxw.s[125]++;
+  var fn = (cov_15b6ke9kxw.s[126]++, validators[name]);
+  cov_15b6ke9kxw.s[127]++;
 
   if (isFunction_default()(fn)) {
     cov_15b6ke9kxw.b[67][0]++;
-    cov_15b6ke9kxw.s[126]++;
+    cov_15b6ke9kxw.s[128]++;
 
     fn.locale = function (customMessages) {
       cov_15b6ke9kxw.f[16]++;
-      cov_15b6ke9kxw.s[127]++;
+      cov_15b6ke9kxw.s[129]++;
       return function (value, field, model) {
         cov_15b6ke9kxw.f[17]++;
-        cov_15b6ke9kxw.s[128]++;
+        cov_15b6ke9kxw.s[130]++;
         return fn(value, field, model, defaults_default()(customMessages, resources));
       };
     };
@@ -20527,7 +18548,7 @@ Object.keys(validators).forEach(function (name) {
   }
 });
 /* harmony default export */ var utils_validators = (validators);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldCheckbox.vue?vue&type=template&id=1d02c396&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldCheckbox.vue?vue&type=template&id=1d02c396&
 var fieldCheckboxvue_type_template_id_1d02c396_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"},{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],class:_vm.fieldClasses,attrs:{"id":_vm.fieldID,"type":"checkbox","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"name":_vm.inputName,"required":_vm.required},domProps:{"checked":Array.isArray(_vm.value)?_vm._i(_vm.value,null)>-1:(_vm.value)},on:{"change":function($event){var $$a=_vm.value,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v=null,$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.value=$$a.concat([$$v]))}else{$$i>-1&&(_vm.value=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.value=$$c}}}})}
 var fieldCheckboxvue_type_template_id_1d02c396_staticRenderFns = []
 
@@ -20536,6 +18557,9 @@ var fieldCheckboxvue_type_template_id_1d02c396_staticRenderFns = []
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es6.regexp.split.js
 var es6_regexp_split = __webpack_require__("28a5");
+
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es6.string.iterator.js
+var es6_string_iterator = __webpack_require__("5df3");
 
 // EXTERNAL MODULE: ./node_modules/lodash/uniqueId.js
 var uniqueId = __webpack_require__("98dc");
@@ -20551,12 +18575,11 @@ var forEach_default = /*#__PURE__*/__webpack_require__.n(forEach);
 
 // CONCATENATED MODULE: ./src/fields/abstractField.js
 var cov_1dqv2r7rj8 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/abstractField.js",
-      hash = "94fb99ef8be24babed69f47591b52b46bd0f2266",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
+  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/abstractField.js";
+  var hash = "94fb99ef8be24babed69f47591b52b46bd0f2266";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
     path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/abstractField.js",
     statementMap: {
       "0": {
@@ -24060,17 +22083,18 @@ var cov_1dqv2r7rj8 = function () {
       "32": [0, 0],
       "33": [0, 0]
     },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
+    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
+    hash: "94fb99ef8be24babed69f47591b52b46bd0f2266"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
 
   if (coverage[path] && coverage[path].hash === hash) {
     return coverage[path];
   }
 
-  coverageData.hash = hash;
   return coverage[path] = coverageData;
 }();
+
 
 
 
@@ -24660,32 +22684,6 @@ function attributesDirective(el, binding, vnode) {
   }
 });
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldCheckbox.vue?vue&type=script&lang=js&
-var cov_1gnugiuyrl = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldCheckbox.vue",
-      hash = "c71bb4ec61152f97eaf570d2c0c90bd6953da051",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldCheckbox.vue",
-    statementMap: {},
-    fnMap: {},
-    branchMap: {},
-    s: {},
-    f: {},
-    b: {},
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -24705,8 +22703,8 @@ var cov_1gnugiuyrl = function () {
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldCheckbox.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldCheckboxvue_type_script_lang_js_ = (fieldCheckboxvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldCheckbox.vue?vue&type=style&index=0&lang=scss&
-var fieldCheckboxvue_type_style_index_0_lang_scss_ = __webpack_require__("c495");
+// EXTERNAL MODULE: ./src/fields/core/fieldCheckbox.vue?vue&type=style&index=0&id=1d02c396&prod&lang=scss&
+var fieldCheckboxvue_type_style_index_0_id_1d02c396_prod_lang_scss_ = __webpack_require__("8847");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldCheckbox.vue
 
@@ -24728,9 +22726,8 @@ var fieldCheckbox_component = normalizeComponent(
   
 )
 
-fieldCheckbox_component.options.__file = "fieldCheckbox.vue"
 /* harmony default export */ var fieldCheckbox = (fieldCheckbox_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=82e5722e&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=82e5722e&
 var fieldChecklistvue_type_template_id_82e5722e_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{directives:[{name:"attributes",rawName:"v-attributes",value:('wrapper'),expression:"'wrapper'"}],staticClass:"wrapper"},[(_vm.useListBox)?_c('div',{staticClass:"listbox form-control",attrs:{"disabled":_vm.disabled}},_vm._l((_vm.items),function(item){return _c('div',{key:_vm.getItemValue(item),staticClass:"list-row",class:{'is-checked': _vm.isItemChecked(item)}},[_c('label',[_c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],attrs:{"id":_vm.fieldID,"type":"checkbox","disabled":_vm.disabled,"name":_vm.getInputName(item)},domProps:{"checked":_vm.isItemChecked(item)},on:{"change":function($event){_vm.onChanged($event, item)}}}),_vm._v(_vm._s(_vm.getItemName(item))+"\n\t\t\t")])])})):_vm._e(),(!_vm.useListBox)?_c('div',{staticClass:"combobox form-control",attrs:{"disabled":_vm.disabled}},[_c('div',{staticClass:"mainRow",class:{ expanded: _vm.comboExpanded },on:{"click":_vm.onExpandCombo}},[_c('div',{staticClass:"info"},[_vm._v(" "+_vm._s(_vm.selectedCount)+" selected")]),_c('div',{staticClass:"arrow"})]),_c('div',{staticClass:"dropList"},_vm._l((_vm.items),function(item){return (_vm.comboExpanded)?_c('div',{key:_vm.getItemValue(item),staticClass:"list-row",class:{'is-checked': _vm.isItemChecked(item)}},[_c('label',[_c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],attrs:{"id":_vm.fieldID,"type":"checkbox","disabled":_vm.disabled,"name":_vm.getInputName(item)},domProps:{"checked":_vm.isItemChecked(item)},on:{"change":function($event){_vm.onChanged($event, item)}}}),_vm._v("\n\t\t\t\t\t"+_vm._s(_vm.getItemName(item))+"\n\t\t\t\t")])]):_vm._e()}))]):_vm._e()])}
 var fieldChecklistvue_type_template_id_82e5722e_staticRenderFns = []
 
@@ -24742,1182 +22739,6 @@ var clone = __webpack_require__("b8ce");
 var clone_default = /*#__PURE__*/__webpack_require__.n(clone);
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=script&lang=js&
-var cov_kczjatdor = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldChecklist.vue",
-      hash = "157018f092d71c307374c1145bb8fbe85cdb77dc",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldChecklist.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 64,
-          column: 2
-        },
-        end: {
-          line: 66,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 71,
-          column: 16
-        },
-        end: {
-          line: 71,
-          column: 34
-        }
-      },
-      "2": {
-        start: {
-          line: 72,
-          column: 3
-        },
-        end: {
-          line: 74,
-          column: 24
-        }
-      },
-      "3": {
-        start: {
-          line: 73,
-          column: 4
-        },
-        end: {
-          line: 73,
-          column: 57
-        }
-      },
-      "4": {
-        start: {
-          line: 74,
-          column: 10
-        },
-        end: {
-          line: 74,
-          column: 24
-        }
-      },
-      "5": {
-        start: {
-          line: 77,
-          column: 3
-        },
-        end: {
-          line: 77,
-          column: 44
-        }
-      },
-      "6": {
-        start: {
-          line: 77,
-          column: 19
-        },
-        end: {
-          line: 77,
-          column: 44
-        }
-      },
-      "7": {
-        start: {
-          line: 79,
-          column: 3
-        },
-        end: {
-          line: 79,
-          column: 12
-        }
-      },
-      "8": {
-        start: {
-          line: 82,
-          column: 3
-        },
-        end: {
-          line: 82,
-          column: 36
-        }
-      },
-      "9": {
-        start: {
-          line: 88,
-          column: 3
-        },
-        end: {
-          line: 90,
-          column: 4
-        }
-      },
-      "10": {
-        start: {
-          line: 89,
-          column: 4
-        },
-        end: {
-          line: 89,
-          column: 67
-        }
-      },
-      "11": {
-        start: {
-          line: 91,
-          column: 3
-        },
-        end: {
-          line: 91,
-          column: 43
-        }
-      },
-      "12": {
-        start: {
-          line: 95,
-          column: 3
-        },
-        end: {
-          line: 107,
-          column: 4
-        }
-      },
-      "13": {
-        start: {
-          line: 96,
-          column: 4
-        },
-        end: {
-          line: 104,
-          column: 5
-        }
-      },
-      "14": {
-        start: {
-          line: 97,
-          column: 5
-        },
-        end: {
-          line: 97,
-          column: 42
-        }
-      },
-      "15": {
-        start: {
-          line: 99,
-          column: 5
-        },
-        end: {
-          line: 103,
-          column: 6
-        }
-      },
-      "16": {
-        start: {
-          line: 100,
-          column: 6
-        },
-        end: {
-          line: 100,
-          column: 24
-        }
-      },
-      "17": {
-        start: {
-          line: 102,
-          column: 6
-        },
-        end: {
-          line: 102,
-          column: 243
-        }
-      },
-      "18": {
-        start: {
-          line: 106,
-          column: 4
-        },
-        end: {
-          line: 106,
-          column: 16
-        }
-      },
-      "19": {
-        start: {
-          line: 110,
-          column: 3
-        },
-        end: {
-          line: 122,
-          column: 4
-        }
-      },
-      "20": {
-        start: {
-          line: 111,
-          column: 4
-        },
-        end: {
-          line: 119,
-          column: 5
-        }
-      },
-      "21": {
-        start: {
-          line: 112,
-          column: 5
-        },
-        end: {
-          line: 112,
-          column: 41
-        }
-      },
-      "22": {
-        start: {
-          line: 114,
-          column: 5
-        },
-        end: {
-          line: 118,
-          column: 6
-        }
-      },
-      "23": {
-        start: {
-          line: 115,
-          column: 6
-        },
-        end: {
-          line: 115,
-          column: 23
-        }
-      },
-      "24": {
-        start: {
-          line: 117,
-          column: 6
-        },
-        end: {
-          line: 117,
-          column: 241
-        }
-      },
-      "25": {
-        start: {
-          line: 121,
-          column: 4
-        },
-        end: {
-          line: 121,
-          column: 16
-        }
-      },
-      "26": {
-        start: {
-          line: 126,
-          column: 3
-        },
-        end: {
-          line: 126,
-          column: 75
-        }
-      },
-      "27": {
-        start: {
-          line: 130,
-          column: 19
-        },
-        end: {
-          line: 130,
-          column: 39
-        }
-      },
-      "28": {
-        start: {
-          line: 131,
-          column: 3
-        },
-        end: {
-          line: 133,
-          column: 4
-        }
-      },
-      "29": {
-        start: {
-          line: 132,
-          column: 4
-        },
-        end: {
-          line: 132,
-          column: 20
-        }
-      },
-      "30": {
-        start: {
-          line: 135,
-          column: 3
-        },
-        end: {
-          line: 145,
-          column: 4
-        }
-      },
-      "31": {
-        start: {
-          line: 137,
-          column: 16
-        },
-        end: {
-          line: 137,
-          column: 33
-        }
-      },
-      "32": {
-        start: {
-          line: 138,
-          column: 4
-        },
-        end: {
-          line: 138,
-          column: 38
-        }
-      },
-      "33": {
-        start: {
-          line: 139,
-          column: 4
-        },
-        end: {
-          line: 139,
-          column: 21
-        }
-      },
-      "34": {
-        start: {
-          line: 142,
-          column: 16
-        },
-        end: {
-          line: 142,
-          column: 33
-        }
-      },
-      "35": {
-        start: {
-          line: 143,
-          column: 4
-        },
-        end: {
-          line: 143,
-          column: 63
-        }
-      },
-      "36": {
-        start: {
-          line: 144,
-          column: 4
-        },
-        end: {
-          line: 144,
-          column: 21
-        }
-      },
-      "37": {
-        start: {
-          line: 149,
-          column: 3
-        },
-        end: {
-          line: 149,
-          column: 44
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 63,
-            column: 1
-          },
-          end: {
-            line: 63,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 63,
-            column: 8
-          },
-          end: {
-            line: 67,
-            column: 2
-          }
-        },
-        line: 63
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 70,
-            column: 2
-          },
-          end: {
-            line: 70,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 70,
-            column: 10
-          },
-          end: {
-            line: 75,
-            column: 3
-          }
-        },
-        line: 70
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 76,
-            column: 2
-          },
-          end: {
-            line: 76,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 76,
-            column: 18
-          },
-          end: {
-            line: 80,
-            column: 3
-          }
-        },
-        line: 76
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 81,
-            column: 2
-          },
-          end: {
-            line: 81,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 81,
-            column: 15
-          },
-          end: {
-            line: 83,
-            column: 3
-          }
-        },
-        line: 81
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 87,
-            column: 2
-          },
-          end: {
-            line: 87,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 87,
-            column: 21
-          },
-          end: {
-            line: 92,
-            column: 3
-          }
-        },
-        line: 87
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 94,
-            column: 2
-          },
-          end: {
-            line: 94,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 94,
-            column: 21
-          },
-          end: {
-            line: 108,
-            column: 3
-          }
-        },
-        line: 94
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 109,
-            column: 2
-          },
-          end: {
-            line: 109,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 109,
-            column: 20
-          },
-          end: {
-            line: 123,
-            column: 3
-          }
-        },
-        line: 109
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 125,
-            column: 2
-          },
-          end: {
-            line: 125,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 125,
-            column: 22
-          },
-          end: {
-            line: 127,
-            column: 3
-          }
-        },
-        line: 125
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 129,
-            column: 2
-          },
-          end: {
-            line: 129,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 129,
-            column: 25
-          },
-          end: {
-            line: 146,
-            column: 3
-          }
-        },
-        line: 129
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 148,
-            column: 2
-          },
-          end: {
-            line: 148,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 148,
-            column: 18
-          },
-          end: {
-            line: 150,
-            column: 3
-          }
-        },
-        line: 148
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 24
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 24
-          }
-        }, {
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 24
-          }
-        }],
-        line: 72
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 44
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 44
-          }
-        }, {
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 44
-          }
-        }],
-        line: 77
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 88,
-            column: 3
-          },
-          end: {
-            line: 90,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 88,
-            column: 3
-          },
-          end: {
-            line: 90,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 88,
-            column: 3
-          },
-          end: {
-            line: 90,
-            column: 4
-          }
-        }],
-        line: 88
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 88,
-            column: 7
-          },
-          end: {
-            line: 88,
-            column: 50
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 88,
-            column: 7
-          },
-          end: {
-            line: 88,
-            column: 21
-          }
-        }, {
-          start: {
-            line: 88,
-            column: 25
-          },
-          end: {
-            line: 88,
-            column: 50
-          }
-        }],
-        line: 88
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 95,
-            column: 3
-          },
-          end: {
-            line: 107,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 95,
-            column: 3
-          },
-          end: {
-            line: 107,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 95,
-            column: 3
-          },
-          end: {
-            line: 107,
-            column: 4
-          }
-        }],
-        line: 95
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 96,
-            column: 4
-          },
-          end: {
-            line: 104,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 96,
-            column: 4
-          },
-          end: {
-            line: 104,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 96,
-            column: 4
-          },
-          end: {
-            line: 104,
-            column: 5
-          }
-        }],
-        line: 96
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 99,
-            column: 5
-          },
-          end: {
-            line: 103,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 99,
-            column: 5
-          },
-          end: {
-            line: 103,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 99,
-            column: 5
-          },
-          end: {
-            line: 103,
-            column: 6
-          }
-        }],
-        line: 99
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 110,
-            column: 3
-          },
-          end: {
-            line: 122,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 110,
-            column: 3
-          },
-          end: {
-            line: 122,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 110,
-            column: 3
-          },
-          end: {
-            line: 122,
-            column: 4
-          }
-        }],
-        line: 110
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 111,
-            column: 4
-          },
-          end: {
-            line: 119,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 111,
-            column: 4
-          },
-          end: {
-            line: 119,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 111,
-            column: 4
-          },
-          end: {
-            line: 119,
-            column: 5
-          }
-        }],
-        line: 111
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 114,
-            column: 5
-          },
-          end: {
-            line: 118,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 114,
-            column: 5
-          },
-          end: {
-            line: 118,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 114,
-            column: 5
-          },
-          end: {
-            line: 118,
-            column: 6
-          }
-        }],
-        line: 114
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 126,
-            column: 10
-          },
-          end: {
-            line: 126,
-            column: 74
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 126,
-            column: 10
-          },
-          end: {
-            line: 126,
-            column: 20
-          }
-        }, {
-          start: {
-            line: 126,
-            column: 24
-          },
-          end: {
-            line: 126,
-            column: 74
-          }
-        }],
-        line: 126
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 131,
-            column: 3
-          },
-          end: {
-            line: 133,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 131,
-            column: 3
-          },
-          end: {
-            line: 133,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 131,
-            column: 3
-          },
-          end: {
-            line: 133,
-            column: 4
-          }
-        }],
-        line: 131
-      },
-      "12": {
-        loc: {
-          start: {
-            line: 131,
-            column: 7
-          },
-          end: {
-            line: 131,
-            column: 54
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 131,
-            column: 7
-          },
-          end: {
-            line: 131,
-            column: 24
-          }
-        }, {
-          start: {
-            line: 131,
-            column: 28
-          },
-          end: {
-            line: 131,
-            column: 54
-          }
-        }],
-        line: 131
-      },
-      "13": {
-        loc: {
-          start: {
-            line: 135,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 135,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 135,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        }],
-        line: 135
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0,
-      "27": 0,
-      "28": 0,
-      "29": 0,
-      "30": 0,
-      "31": 0,
-      "32": 0,
-      "33": 0,
-      "34": 0,
-      "35": 0,
-      "36": 0,
-      "37": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0],
-      "10": [0, 0],
-      "11": [0, 0],
-      "12": [0, 0],
-      "13": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -25930,182 +22751,98 @@ var cov_kczjatdor = function () {
   name: "field-checklist",
   mixins: [abstractField],
   data: function data() {
-    cov_kczjatdor.f[0]++;
-    cov_kczjatdor.s[0]++;
     return {
       comboExpanded: false
     };
   },
   computed: {
     items: function items() {
-      cov_kczjatdor.f[1]++;
-      var values = (cov_kczjatdor.s[1]++, this.schema.values);
-      cov_kczjatdor.s[2]++;
+      var values = this.schema.values;
 
       if (typeof values == "function") {
-        cov_kczjatdor.b[0][0]++;
-        cov_kczjatdor.s[3]++;
         return values.apply(this, [this.model, this.schema]);
-      } else {
-        cov_kczjatdor.b[0][1]++;
-        cov_kczjatdor.s[4]++;
-        return values;
-      }
+      } else return values;
     },
     selectedCount: function selectedCount() {
-      cov_kczjatdor.f[2]++;
-      cov_kczjatdor.s[5]++;
-
-      if (this.value) {
-        cov_kczjatdor.b[1][0]++;
-        cov_kczjatdor.s[6]++;
-        return this.value.length;
-      } else {
-        cov_kczjatdor.b[1][1]++;
-      }
-
-      cov_kczjatdor.s[7]++;
+      if (this.value) return this.value.length;
       return 0;
     },
     useListBox: function useListBox() {
-      cov_kczjatdor.f[3]++;
-      cov_kczjatdor.s[8]++;
       return this.fieldOptions.listBox;
     }
   },
   methods: {
     getInputName: function getInputName(item) {
-      cov_kczjatdor.f[4]++;
-      cov_kczjatdor.s[9]++;
-
-      if ((cov_kczjatdor.b[3][0]++, this.inputName) && (cov_kczjatdor.b[3][1]++, this.inputName.length > 0)) {
-        cov_kczjatdor.b[2][0]++;
-        cov_kczjatdor.s[10]++;
+      if (this.inputName && this.inputName.length > 0) {
         return slugify(this.inputName + "_" + this.getItemValue(item));
-      } else {
-        cov_kczjatdor.b[2][1]++;
       }
 
-      cov_kczjatdor.s[11]++;
       return slugify(this.getItemValue(item));
     },
     getItemValue: function getItemValue(item) {
-      cov_kczjatdor.f[5]++;
-      cov_kczjatdor.s[12]++;
-
       if (isObject_default()(item)) {
-        cov_kczjatdor.b[4][0]++;
-        cov_kczjatdor.s[13]++;
-
         if (typeof this.fieldOptions["value"] !== "undefined") {
-          cov_kczjatdor.b[5][0]++;
-          cov_kczjatdor.s[14]++;
           return item[this.fieldOptions.value];
         } else {
-          cov_kczjatdor.b[5][1]++;
-          cov_kczjatdor.s[15]++;
-
           if (typeof item["value"] !== "undefined") {
-            cov_kczjatdor.b[6][0]++;
-            cov_kczjatdor.s[16]++;
             return item.value;
           } else {
-            cov_kczjatdor.b[6][1]++;
-            cov_kczjatdor.s[17]++;
             throw "`value` is not defined. If you want to use another key name, add a `value` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/checklist.html#checklist-field-with-object-values";
           }
         }
       } else {
-        cov_kczjatdor.b[4][1]++;
-        cov_kczjatdor.s[18]++;
         return item;
       }
     },
     getItemName: function getItemName(item) {
-      cov_kczjatdor.f[6]++;
-      cov_kczjatdor.s[19]++;
-
       if (isObject_default()(item)) {
-        cov_kczjatdor.b[7][0]++;
-        cov_kczjatdor.s[20]++;
-
         if (typeof this.fieldOptions["name"] !== "undefined") {
-          cov_kczjatdor.b[8][0]++;
-          cov_kczjatdor.s[21]++;
           return item[this.fieldOptions.name];
         } else {
-          cov_kczjatdor.b[8][1]++;
-          cov_kczjatdor.s[22]++;
-
           if (typeof item["name"] !== "undefined") {
-            cov_kczjatdor.b[9][0]++;
-            cov_kczjatdor.s[23]++;
             return item.name;
           } else {
-            cov_kczjatdor.b[9][1]++;
-            cov_kczjatdor.s[24]++;
             throw "`name` is not defined. If you want to use another key name, add a `name` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/checklist.html#checklist-field-with-object-values";
           }
         }
       } else {
-        cov_kczjatdor.b[7][1]++;
-        cov_kczjatdor.s[25]++;
         return item;
       }
     },
     isItemChecked: function isItemChecked(item) {
-      cov_kczjatdor.f[7]++;
-      cov_kczjatdor.s[26]++;
-      return (cov_kczjatdor.b[10][0]++, this.value) && (cov_kczjatdor.b[10][1]++, this.value.indexOf(this.getItemValue(item)) !== -1);
+      return this.value && this.value.indexOf(this.getItemValue(item)) !== -1;
     },
     onChanged: function onChanged(event, item) {
-      cov_kczjatdor.f[8]++;
-      var isChecked = (cov_kczjatdor.s[27]++, event.target.checked);
-      cov_kczjatdor.s[28]++;
+      var isChecked = event.target.checked;
 
-      if ((cov_kczjatdor.b[12][0]++, isNil_default()(this.value)) || (cov_kczjatdor.b[12][1]++, !Array.isArray(this.value))) {
-        cov_kczjatdor.b[11][0]++;
-        cov_kczjatdor.s[29]++;
+      if (isNil_default()(this.value) || !Array.isArray(this.value)) {
         this.value = [];
-      } else {
-        cov_kczjatdor.b[11][1]++;
       }
 
-      cov_kczjatdor.s[30]++;
-
       if (isChecked) {
-        cov_kczjatdor.b[13][0]++;
         // Note: If you modify this.value array, it won't trigger the `set` in computed field
-        var arr = (cov_kczjatdor.s[31]++, clone_default()(this.value));
-        cov_kczjatdor.s[32]++;
+        var arr = clone_default()(this.value);
+
         arr.push(this.getItemValue(item));
-        cov_kczjatdor.s[33]++;
         this.value = arr;
       } else {
-        cov_kczjatdor.b[13][1]++;
-
         // Note: If you modify this.value array, it won't trigger the `set` in computed field
-        var _arr = (cov_kczjatdor.s[34]++, clone_default()(this.value));
-
-        cov_kczjatdor.s[35]++;
+        var _arr = clone_default()(this.value);
 
         _arr.splice(this.value.indexOf(this.getItemValue(item)), 1);
 
-        cov_kczjatdor.s[36]++;
         this.value = _arr;
       }
     },
     onExpandCombo: function onExpandCombo() {
-      cov_kczjatdor.f[9]++;
-      cov_kczjatdor.s[37]++;
       this.comboExpanded = !this.comboExpanded;
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldChecklist.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldChecklistvue_type_script_lang_js_ = (fieldChecklistvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&lang=scss&
-var fieldChecklistvue_type_style_index_0_lang_scss_ = __webpack_require__("3f6b");
+// EXTERNAL MODULE: ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=82e5722e&prod&lang=scss&
+var fieldChecklistvue_type_style_index_0_id_82e5722e_prod_lang_scss_ = __webpack_require__("5a04");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldChecklist.vue
 
@@ -26127,9 +22864,8 @@ var fieldChecklist_component = normalizeComponent(
   
 )
 
-fieldChecklist_component.options.__file = "fieldChecklist.vue"
 /* harmony default export */ var fieldChecklist = (fieldChecklist_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=template&id=13a76b9c&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=template&id=13a76b9c&
 var fieldInputvue_type_template_id_13a76b9c_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{directives:[{name:"attributes",rawName:"v-attributes",value:('wrapper'),expression:"'wrapper'"}],staticClass:"wrapper"},[_c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],staticClass:"form-control",class:_vm.fieldClasses,attrs:{"id":_vm.fieldID,"type":_vm.inputType,"disabled":_vm.disabled,"accept":_vm.fieldOptions.accept,"alt":_vm.fieldOptions.alt,"autocomplete":_vm.fieldOptions.autocomplete,"dirname":_vm.fieldOptions.dirname,"formaction":_vm.fieldOptions.formaction,"formenctype":_vm.fieldOptions.formenctype,"formmethod":_vm.fieldOptions.formmethod,"formnovalidate":_vm.fieldOptions.formnovalidate,"formtarget":_vm.fieldOptions.formtarget,"height":_vm.fieldOptions.height,"list":_vm.fieldOptions.list,"max":_vm.fieldOptions.max,"maxlength":_vm.fieldOptions.maxlength,"min":_vm.fieldOptions.min,"minlength":_vm.fieldOptions.minlength,"multiple":_vm.fieldOptions.multiple,"name":_vm.inputName,"pattern":_vm.fieldOptions.pattern,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"required":_vm.schema.required,"size":_vm.fieldOptions.size,"src":_vm.fieldOptions.src,"step":_vm.fieldOptions.step,"width":_vm.fieldOptions.width,"files":_vm.fieldOptions.files},domProps:{"value":_vm.value,"checked":_vm.fieldOptions.checked},on:{"input":_vm.onInput,"blur":_vm.onBlur,"change":function($event){_vm.schema.onChange || null}}}),(_vm.inputType === 'color' || _vm.inputType === 'range')?_c('span',{staticClass:"helper",domProps:{"textContent":_vm._s(_vm.value)}}):_vm._e()])}
 var fieldInputvue_type_template_id_13a76b9c_staticRenderFns = []
 
@@ -26137,1137 +22873,6 @@ var fieldInputvue_type_template_id_13a76b9c_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/core/fieldInput.vue?vue&type=template&id=13a76b9c&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=script&lang=js&
-var cov_1teyqiop2f = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldInput.vue",
-      hash = "232f64ca21f6ed59c38fe17da91cf9fb1be7d81c",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldInput.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 52,
-          column: 25
-        },
-        end: {
-          line: 56,
-          column: 1
-        }
-      },
-      "1": {
-        start: {
-          line: 63,
-          column: 3
-        },
-        end: {
-          line: 67,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 64,
-          column: 4
-        },
-        end: {
-          line: 64,
-          column: 53
-        }
-      },
-      "3": {
-        start: {
-          line: 66,
-          column: 4
-        },
-        end: {
-          line: 66,
-          column: 86
-        }
-      },
-      "4": {
-        start: {
-          line: 72,
-          column: 3
-        },
-        end: {
-          line: 84,
-          column: 4
-        }
-      },
-      "5": {
-        start: {
-          line: 73,
-          column: 4
-        },
-        end: {
-          line: 83,
-          column: 5
-        }
-      },
-      "6": {
-        start: {
-          line: 80,
-          column: 6
-        },
-        end: {
-          line: 82,
-          column: 8
-        }
-      },
-      "7": {
-        start: {
-          line: 81,
-          column: 7
-        },
-        end: {
-          line: 81,
-          column: 49
-        }
-      },
-      "8": {
-        start: {
-          line: 86,
-          column: 3
-        },
-        end: {
-          line: 86,
-          column: 16
-        }
-      },
-      "9": {
-        start: {
-          line: 89,
-          column: 23
-        },
-        end: {
-          line: 89,
-          column: 55
-        }
-      },
-      "10": {
-        start: {
-          line: 90,
-          column: 11
-        },
-        end: {
-          line: 90,
-          column: 47
-        }
-      },
-      "11": {
-        start: {
-          line: 91,
-          column: 3
-        },
-        end: {
-          line: 97,
-          column: 4
-        }
-      },
-      "12": {
-        start: {
-          line: 92,
-          column: 4
-        },
-        end: {
-          line: 96,
-          column: 5
-        }
-      },
-      "13": {
-        start: {
-          line: 93,
-          column: 5
-        },
-        end: {
-          line: 93,
-          column: 52
-        }
-      },
-      "14": {
-        start: {
-          line: 95,
-          column: 5
-        },
-        end: {
-          line: 95,
-          column: 28
-        }
-      },
-      "15": {
-        start: {
-          line: 98,
-          column: 3
-        },
-        end: {
-          line: 98,
-          column: 45
-        }
-      },
-      "16": {
-        start: {
-          line: 101,
-          column: 3
-        },
-        end: {
-          line: 103,
-          column: 4
-        }
-      },
-      "17": {
-        start: {
-          line: 102,
-          column: 4
-        },
-        end: {
-          line: 102,
-          column: 19
-        }
-      },
-      "18": {
-        start: {
-          line: 104,
-          column: 3
-        },
-        end: {
-          line: 104,
-          column: 45
-        }
-      },
-      "19": {
-        start: {
-          line: 107,
-          column: 15
-        },
-        end: {
-          line: 107,
-          column: 34
-        }
-      },
-      "20": {
-        start: {
-          line: 108,
-          column: 3
-        },
-        end: {
-          line: 115,
-          column: 4
-        }
-      },
-      "21": {
-        start: {
-          line: 111,
-          column: 5
-        },
-        end: {
-          line: 113,
-          column: 6
-        }
-      },
-      "22": {
-        start: {
-          line: 112,
-          column: 6
-        },
-        end: {
-          line: 112,
-          column: 46
-        }
-      },
-      "23": {
-        start: {
-          line: 114,
-          column: 5
-        },
-        end: {
-          line: 114,
-          column: 11
-        }
-      },
-      "24": {
-        start: {
-          line: 116,
-          column: 3
-        },
-        end: {
-          line: 116,
-          column: 22
-        }
-      },
-      "25": {
-        start: {
-          line: 119,
-          column: 3
-        },
-        end: {
-          line: 121,
-          column: 4
-        }
-      },
-      "26": {
-        start: {
-          line: 120,
-          column: 4
-        },
-        end: {
-          line: 120,
-          column: 37
-        }
-      },
-      "27": {
-        start: {
-          line: 126,
-          column: 2
-        },
-        end: {
-          line: 155,
-          column: 3
-        }
-      },
-      "28": {
-        start: {
-          line: 129,
-          column: 4
-        },
-        end: {
-          line: 138,
-          column: 6
-        }
-      },
-      "29": {
-        start: {
-          line: 131,
-          column: 6
-        },
-        end: {
-          line: 131,
-          column: 51
-        }
-      },
-      "30": {
-        start: {
-          line: 139,
-          column: 4
-        },
-        end: {
-          line: 139,
-          column: 10
-        }
-      },
-      "31": {
-        start: {
-          line: 144,
-          column: 4
-        },
-        end: {
-          line: 153,
-          column: 6
-        }
-      },
-      "32": {
-        start: {
-          line: 146,
-          column: 6
-        },
-        end: {
-          line: 146,
-          column: 53
-        }
-      },
-      "33": {
-        start: {
-          line: 154,
-          column: 4
-        },
-        end: {
-          line: 154,
-          column: 10
-        }
-      },
-      "34": {
-        start: {
-          line: 159,
-          column: 2
-        },
-        end: {
-          line: 161,
-          column: 3
-        }
-      },
-      "35": {
-        start: {
-          line: 160,
-          column: 3
-        },
-        end: {
-          line: 160,
-          column: 91
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 62,
-            column: 2
-          },
-          end: {
-            line: 62,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 62,
-            column: 14
-          },
-          end: {
-            line: 68,
-            column: 3
-          }
-        },
-        line: 62
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 71,
-            column: 2
-          },
-          end: {
-            line: 71,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 71,
-            column: 28
-          },
-          end: {
-            line: 87,
-            column: 3
-          }
-        },
-        line: 71
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 80,
-            column: 13
-          },
-          end: {
-            line: 80,
-            column: 14
-          }
-        },
-        loc: {
-          start: {
-            line: 80,
-            column: 37
-          },
-          end: {
-            line: 82,
-            column: 7
-          }
-        },
-        line: 80
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 88,
-            column: 2
-          },
-          end: {
-            line: 88,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 88,
-            column: 44
-          },
-          end: {
-            line: 99,
-            column: 3
-          }
-        },
-        line: 88
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 100,
-            column: 2
-          },
-          end: {
-            line: 100,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 100,
-            column: 42
-          },
-          end: {
-            line: 105,
-            column: 3
-          }
-        },
-        line: 100
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 106,
-            column: 2
-          },
-          end: {
-            line: 106,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 106,
-            column: 18
-          },
-          end: {
-            line: 117,
-            column: 3
-          }
-        },
-        line: 106
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 118,
-            column: 2
-          },
-          end: {
-            line: 118,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 118,
-            column: 11
-          },
-          end: {
-            line: 122,
-            column: 3
-          }
-        },
-        line: 118
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 125,
-            column: 1
-          },
-          end: {
-            line: 125,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 125,
-            column: 11
-          },
-          end: {
-            line: 156,
-            column: 2
-          }
-        },
-        line: 125
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 130,
-            column: 5
-          },
-          end: {
-            line: 130,
-            column: 6
-          }
-        },
-        loc: {
-          start: {
-            line: 130,
-            column: 29
-          },
-          end: {
-            line: 132,
-            column: 6
-          }
-        },
-        line: 130
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 145,
-            column: 5
-          },
-          end: {
-            line: 145,
-            column: 6
-          }
-        },
-        loc: {
-          start: {
-            line: 145,
-            column: 29
-          },
-          end: {
-            line: 147,
-            column: 6
-          }
-        },
-        line: 145
-      },
-      "10": {
-        name: "(anonymous_10)",
-        decl: {
-          start: {
-            line: 158,
-            column: 1
-          },
-          end: {
-            line: 158,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 158,
-            column: 11
-          },
-          end: {
-            line: 162,
-            column: 2
-          }
-        },
-        line: 158
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        }],
-        line: 63
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 72,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        }],
-        line: 72
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 73,
-            column: 4
-          },
-          end: {
-            line: 83,
-            column: 5
-          }
-        },
-        type: "switch",
-        locations: [{
-          start: {
-            line: 74,
-            column: 5
-          },
-          end: {
-            line: 74,
-            column: 17
-          }
-        }, {
-          start: {
-            line: 75,
-            column: 5
-          },
-          end: {
-            line: 75,
-            column: 21
-          }
-        }, {
-          start: {
-            line: 76,
-            column: 5
-          },
-          end: {
-            line: 76,
-            column: 27
-          }
-        }, {
-          start: {
-            line: 77,
-            column: 5
-          },
-          end: {
-            line: 77,
-            column: 19
-          }
-        }, {
-          start: {
-            line: 78,
-            column: 5
-          },
-          end: {
-            line: 82,
-            column: 8
-          }
-        }],
-        line: 73
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 91,
-            column: 3
-          },
-          end: {
-            line: 97,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 91,
-            column: 3
-          },
-          end: {
-            line: 97,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 91,
-            column: 3
-          },
-          end: {
-            line: 97,
-            column: 4
-          }
-        }],
-        line: 91
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 92,
-            column: 4
-          },
-          end: {
-            line: 96,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 92,
-            column: 4
-          },
-          end: {
-            line: 96,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 92,
-            column: 4
-          },
-          end: {
-            line: 96,
-            column: 5
-          }
-        }],
-        line: 92
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 101,
-            column: 3
-          },
-          end: {
-            line: 103,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 101,
-            column: 3
-          },
-          end: {
-            line: 103,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 101,
-            column: 3
-          },
-          end: {
-            line: 103,
-            column: 4
-          }
-        }],
-        line: 101
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 108,
-            column: 3
-          },
-          end: {
-            line: 115,
-            column: 4
-          }
-        },
-        type: "switch",
-        locations: [{
-          start: {
-            line: 109,
-            column: 4
-          },
-          end: {
-            line: 109,
-            column: 18
-          }
-        }, {
-          start: {
-            line: 110,
-            column: 4
-          },
-          end: {
-            line: 114,
-            column: 11
-          }
-        }],
-        line: 108
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 111,
-            column: 5
-          },
-          end: {
-            line: 113,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 111,
-            column: 5
-          },
-          end: {
-            line: 113,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 111,
-            column: 5
-          },
-          end: {
-            line: 113,
-            column: 6
-          }
-        }],
-        line: 111
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 119,
-            column: 3
-          },
-          end: {
-            line: 121,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 119,
-            column: 3
-          },
-          end: {
-            line: 121,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 119,
-            column: 3
-          },
-          end: {
-            line: 121,
-            column: 4
-          }
-        }],
-        line: 119
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 126,
-            column: 2
-          },
-          end: {
-            line: 155,
-            column: 3
-          }
-        },
-        type: "switch",
-        locations: [{
-          start: {
-            line: 127,
-            column: 3
-          },
-          end: {
-            line: 127,
-            column: 17
-          }
-        }, {
-          start: {
-            line: 128,
-            column: 3
-          },
-          end: {
-            line: 139,
-            column: 10
-          }
-        }, {
-          start: {
-            line: 140,
-            column: 3
-          },
-          end: {
-            line: 140,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 141,
-            column: 3
-          },
-          end: {
-            line: 141,
-            column: 19
-          }
-        }, {
-          start: {
-            line: 142,
-            column: 3
-          },
-          end: {
-            line: 154,
-            column: 10
-          }
-        }],
-        line: 126
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 159,
-            column: 2
-          },
-          end: {
-            line: 161,
-            column: 3
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 159,
-            column: 2
-          },
-          end: {
-            line: 161,
-            column: 3
-          }
-        }, {
-          start: {
-            line: 159,
-            column: 2
-          },
-          end: {
-            line: 161,
-            column: 3
-          }
-        }],
-        line: 159
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0,
-      "27": 0,
-      "28": 0,
-      "29": 0,
-      "30": 0,
-      "31": 0,
-      "32": 0,
-      "33": 0,
-      "34": 0,
-      "35": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0, 0, 0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0, 0, 0, 0],
-      "10": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -27320,26 +22925,19 @@ var cov_1teyqiop2f = function () {
 //
 
 
-var DATETIME_FORMATS = (cov_1teyqiop2f.s[0]++, {
+var DATETIME_FORMATS = {
   date: "YYYY-MM-DD",
   datetime: "YYYY-MM-DD HH:mm:ss",
   "datetime-local": "YYYY-MM-DDTHH:mm:ss"
-});
+};
 /* harmony default export */ var fieldInputvue_type_script_lang_js_ = ({
   name: "field-input",
   mixins: [abstractField],
   computed: {
     inputType: function inputType() {
-      cov_1teyqiop2f.f[0]++;
-      cov_1teyqiop2f.s[1]++;
-
       if (typeof this.fieldOptions.inputType !== "undefined") {
-        cov_1teyqiop2f.b[0][0]++;
-        cov_1teyqiop2f.s[2]++;
         return this.fieldOptions.inputType.toLowerCase();
       } else {
-        cov_1teyqiop2f.b[0][1]++;
-        cov_1teyqiop2f.s[3]++;
         console.warn("Missing inputType", this.fieldOptions, this.fieldOptions.inputType);
       }
     }
@@ -27348,191 +22946,101 @@ var DATETIME_FORMATS = (cov_1teyqiop2f.s[0]++, {
     formatValueToModel: function formatValueToModel(value) {
       var _this = this;
 
-      cov_1teyqiop2f.f[1]++;
-      cov_1teyqiop2f.s[4]++;
-
       if (value != null) {
-        cov_1teyqiop2f.b[1][0]++;
-        cov_1teyqiop2f.s[5]++;
-
         switch (this.inputType) {
           case "date":
-            cov_1teyqiop2f.b[2][0]++;
-
           case "datetime":
-            cov_1teyqiop2f.b[2][1]++;
-
           case "datetime-local":
-            cov_1teyqiop2f.b[2][2]++;
-
           case "number":
-            cov_1teyqiop2f.b[2][3]++;
-
           case "range":
-            cov_1teyqiop2f.b[2][4]++;
-            cov_1teyqiop2f.s[6]++;
             // debounce
             return function (newValue, oldValue) {
-              cov_1teyqiop2f.f[2]++;
-              cov_1teyqiop2f.s[7]++;
-
               _this.debouncedFormatFunc(value, oldValue);
             };
         }
-      } else {
-        cov_1teyqiop2f.b[1][1]++;
       }
 
-      cov_1teyqiop2f.s[8]++;
       return value;
     },
     formatDatetimeToModel: function formatDatetimeToModel(newValue, oldValue) {
-      cov_1teyqiop2f.f[3]++;
-      var defaultFormat = (cov_1teyqiop2f.s[9]++, DATETIME_FORMATS[this.inputType]);
-      var m = (cov_1teyqiop2f.s[10]++, fecha_default.a.parse(newValue, defaultFormat));
-      cov_1teyqiop2f.s[11]++;
+      var defaultFormat = DATETIME_FORMATS[this.inputType];
+      var m = fecha_default.a.parse(newValue, defaultFormat);
 
       if (m !== false) {
-        cov_1teyqiop2f.b[3][0]++;
-        cov_1teyqiop2f.s[12]++;
-
         if (this.schema.format) {
-          cov_1teyqiop2f.b[4][0]++;
-          cov_1teyqiop2f.s[13]++;
           newValue = fecha_default.a.format(m, this.schema.format);
         } else {
-          cov_1teyqiop2f.b[4][1]++;
-          cov_1teyqiop2f.s[14]++;
           newValue = m.valueOf();
         }
-      } else {
-        cov_1teyqiop2f.b[3][1]++;
       }
 
-      cov_1teyqiop2f.s[15]++;
       this.updateModelValue(newValue, oldValue);
     },
     formatNumberToModel: function formatNumberToModel(newValue, oldValue) {
-      cov_1teyqiop2f.f[4]++;
-      cov_1teyqiop2f.s[16]++;
-
       if (!isNumber_default()(newValue)) {
-        cov_1teyqiop2f.b[5][0]++;
-        cov_1teyqiop2f.s[17]++;
         newValue = NaN;
-      } else {
-        cov_1teyqiop2f.b[5][1]++;
       }
 
-      cov_1teyqiop2f.s[18]++;
       this.updateModelValue(newValue, oldValue);
     },
     onInput: function onInput($event) {
-      cov_1teyqiop2f.f[5]++;
-      var value = (cov_1teyqiop2f.s[19]++, $event.target.value);
-      cov_1teyqiop2f.s[20]++;
+      var value = $event.target.value;
 
       switch (this.inputType) {
         case "number":
-          cov_1teyqiop2f.b[6][0]++;
-
         case "range":
-          cov_1teyqiop2f.b[6][1]++;
-          cov_1teyqiop2f.s[21]++;
-
           if (isNumber_default()(parseFloat($event.target.value))) {
-            cov_1teyqiop2f.b[7][0]++;
-            cov_1teyqiop2f.s[22]++;
             value = parseFloat($event.target.value);
-          } else {
-            cov_1teyqiop2f.b[7][1]++;
           }
 
-          cov_1teyqiop2f.s[23]++;
           break;
       }
 
-      cov_1teyqiop2f.s[24]++;
       this.value = value;
     },
     onBlur: function onBlur() {
-      cov_1teyqiop2f.f[6]++;
-      cov_1teyqiop2f.s[25]++;
-
       if (isFunction_default()(this.debouncedFormatFunc)) {
-        cov_1teyqiop2f.b[8][0]++;
-        cov_1teyqiop2f.s[26]++;
         this.debouncedFormatFunc.flush();
-      } else {
-        cov_1teyqiop2f.b[8][1]++;
       }
     }
   },
   mounted: function mounted() {
     var _this2 = this;
 
-    cov_1teyqiop2f.f[7]++;
-    cov_1teyqiop2f.s[27]++;
-
     switch (this.inputType) {
       case "number":
-        cov_1teyqiop2f.b[9][0]++;
-
       case "range":
-        cov_1teyqiop2f.b[9][1]++;
-        cov_1teyqiop2f.s[28]++;
         this.debouncedFormatFunc = debounce_default()(function (newValue, oldValue) {
-          cov_1teyqiop2f.f[8]++;
-          cov_1teyqiop2f.s[29]++;
-
           _this2.formatNumberToModel(newValue, oldValue);
         }, parseInt(get_default()(this.schema, "debounceFormatTimeout", 1000)), {
           trailing: true,
           leading: false
         });
-        cov_1teyqiop2f.s[30]++;
         break;
 
       case "date":
-        cov_1teyqiop2f.b[9][2]++;
-
       case "datetime":
-        cov_1teyqiop2f.b[9][3]++;
-
       case "datetime-local":
-        cov_1teyqiop2f.b[9][4]++;
-        cov_1teyqiop2f.s[31]++;
         // wait 1s before calling 'formatDatetimeToModel' to allow user to input data
         this.debouncedFormatFunc = debounce_default()(function (newValue, oldValue) {
-          cov_1teyqiop2f.f[9]++;
-          cov_1teyqiop2f.s[32]++;
-
           _this2.formatDatetimeToModel(newValue, oldValue);
         }, parseInt(get_default()(this.schema, "debounceFormatTimeout", 1000)), {
           trailing: true,
           leading: false
         });
-        cov_1teyqiop2f.s[33]++;
         break;
     }
   },
   created: function created() {
-    cov_1teyqiop2f.f[10]++;
-    cov_1teyqiop2f.s[34]++;
-
     if (this.inputType === "file") {
-      cov_1teyqiop2f.b[10][0]++;
-      cov_1teyqiop2f.s[35]++;
       console.warn("The 'file' type in input field is deprecated. Use 'file' field instead.");
-    } else {
-      cov_1teyqiop2f.b[10][1]++;
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldInput.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldInputvue_type_script_lang_js_ = (fieldInputvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldInput.vue?vue&type=style&index=0&lang=scss&
-var fieldInputvue_type_style_index_0_lang_scss_ = __webpack_require__("8a23");
+// EXTERNAL MODULE: ./src/fields/core/fieldInput.vue?vue&type=style&index=0&id=13a76b9c&prod&lang=scss&
+var fieldInputvue_type_style_index_0_id_13a76b9c_prod_lang_scss_ = __webpack_require__("1005");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldInput.vue
 
@@ -27554,9 +23062,8 @@ var fieldInput_component = normalizeComponent(
   
 )
 
-fieldInput_component.options.__file = "fieldInput.vue"
 /* harmony default export */ var fieldInput = (fieldInput_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldLabel.vue?vue&type=template&id=2b2a70a2&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldLabel.vue?vue&type=template&id=2b2a70a2&
 var fieldLabelvue_type_template_id_2b2a70a2_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('span',{directives:[{name:"attributes",rawName:"v-attributes",value:('label'),expression:"'label'"}],class:_vm.fieldClasses,attrs:{"id":_vm.fieldID},domProps:{"textContent":_vm._s(_vm.value)}})}
 var fieldLabelvue_type_template_id_2b2a70a2_staticRenderFns = []
 
@@ -27564,32 +23071,6 @@ var fieldLabelvue_type_template_id_2b2a70a2_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/core/fieldLabel.vue?vue&type=template&id=2b2a70a2&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldLabel.vue?vue&type=script&lang=js&
-var cov_1o051vbqx0 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldLabel.vue",
-      hash = "82d3ad3f4384a7f9edc75ce3da778f1e178487fb",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldLabel.vue",
-    statementMap: {},
-    fnMap: {},
-    branchMap: {},
-    s: {},
-    f: {},
-    b: {},
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -27604,8 +23085,8 @@ var cov_1o051vbqx0 = function () {
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldLabel.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldLabelvue_type_script_lang_js_ = (fieldLabelvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldLabel.vue?vue&type=style&index=0&lang=scss&
-var fieldLabelvue_type_style_index_0_lang_scss_ = __webpack_require__("b72b");
+// EXTERNAL MODULE: ./src/fields/core/fieldLabel.vue?vue&type=style&index=0&id=2b2a70a2&prod&lang=scss&
+var fieldLabelvue_type_style_index_0_id_2b2a70a2_prod_lang_scss_ = __webpack_require__("a726");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldLabel.vue
 
@@ -27627,9 +23108,8 @@ var fieldLabel_component = normalizeComponent(
   
 )
 
-fieldLabel_component.options.__file = "fieldLabel.vue"
 /* harmony default export */ var fieldLabel = (fieldLabel_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldRadios.vue?vue&type=template&id=928ea6b6&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldRadios.vue?vue&type=template&id=928ea6b6&
 var fieldRadiosvue_type_template_id_928ea6b6_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{directives:[{name:"attributes",rawName:"v-attributes",value:('wrapper'),expression:"'wrapper'"}],staticClass:"radio-list",attrs:{"disabled":_vm.disabled}},_vm._l((_vm.items),function(item){return _c('label',{directives:[{name:"attributes",rawName:"v-attributes",value:('label'),expression:"'label'"}],key:_vm.getItemValue(item),class:{'is-checked': _vm.isItemChecked(item)}},[_c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],class:_vm.fieldClasses,attrs:{"id":_vm.fieldID,"type":"radio","disabled":_vm.disabled,"name":_vm.id,"required":_vm.required},domProps:{"value":_vm.getItemValue(item),"checked":_vm.isItemChecked(item)},on:{"click":function($event){_vm.onSelection(item)}}}),_vm._v(_vm._s(_vm.getItemName(item))+"\n\t")])}))}
 var fieldRadiosvue_type_template_id_928ea6b6_staticRenderFns = []
 
@@ -27637,668 +23117,6 @@ var fieldRadiosvue_type_template_id_928ea6b6_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/core/fieldRadios.vue?vue&type=template&id=928ea6b6&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldRadios.vue?vue&type=script&lang=js&
-var cov_1etasql5z3 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldRadios.vue",
-      hash = "90d458564ba9a4b7c5b7a8391257bfc2c072fe2d",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldRadios.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 34,
-          column: 16
-        },
-        end: {
-          line: 34,
-          column: 34
-        }
-      },
-      "1": {
-        start: {
-          line: 35,
-          column: 3
-        },
-        end: {
-          line: 39,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 36,
-          column: 4
-        },
-        end: {
-          line: 36,
-          column: 57
-        }
-      },
-      "3": {
-        start: {
-          line: 38,
-          column: 4
-        },
-        end: {
-          line: 38,
-          column: 18
-        }
-      },
-      "4": {
-        start: {
-          line: 42,
-          column: 3
-        },
-        end: {
-          line: 42,
-          column: 28
-        }
-      },
-      "5": {
-        start: {
-          line: 48,
-          column: 3
-        },
-        end: {
-          line: 60,
-          column: 4
-        }
-      },
-      "6": {
-        start: {
-          line: 49,
-          column: 4
-        },
-        end: {
-          line: 57,
-          column: 5
-        }
-      },
-      "7": {
-        start: {
-          line: 50,
-          column: 5
-        },
-        end: {
-          line: 50,
-          column: 42
-        }
-      },
-      "8": {
-        start: {
-          line: 52,
-          column: 5
-        },
-        end: {
-          line: 56,
-          column: 6
-        }
-      },
-      "9": {
-        start: {
-          line: 53,
-          column: 6
-        },
-        end: {
-          line: 53,
-          column: 24
-        }
-      },
-      "10": {
-        start: {
-          line: 55,
-          column: 6
-        },
-        end: {
-          line: 55,
-          column: 237
-        }
-      },
-      "11": {
-        start: {
-          line: 59,
-          column: 4
-        },
-        end: {
-          line: 59,
-          column: 16
-        }
-      },
-      "12": {
-        start: {
-          line: 63,
-          column: 3
-        },
-        end: {
-          line: 75,
-          column: 4
-        }
-      },
-      "13": {
-        start: {
-          line: 64,
-          column: 4
-        },
-        end: {
-          line: 72,
-          column: 5
-        }
-      },
-      "14": {
-        start: {
-          line: 65,
-          column: 5
-        },
-        end: {
-          line: 65,
-          column: 41
-        }
-      },
-      "15": {
-        start: {
-          line: 67,
-          column: 5
-        },
-        end: {
-          line: 71,
-          column: 6
-        }
-      },
-      "16": {
-        start: {
-          line: 68,
-          column: 6
-        },
-        end: {
-          line: 68,
-          column: 23
-        }
-      },
-      "17": {
-        start: {
-          line: 70,
-          column: 6
-        },
-        end: {
-          line: 70,
-          column: 235
-        }
-      },
-      "18": {
-        start: {
-          line: 74,
-          column: 4
-        },
-        end: {
-          line: 74,
-          column: 16
-        }
-      },
-      "19": {
-        start: {
-          line: 78,
-          column: 3
-        },
-        end: {
-          line: 78,
-          column: 40
-        }
-      },
-      "20": {
-        start: {
-          line: 81,
-          column: 22
-        },
-        end: {
-          line: 81,
-          column: 45
-        }
-      },
-      "21": {
-        start: {
-          line: 82,
-          column: 3
-        },
-        end: {
-          line: 82,
-          column: 38
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 33,
-            column: 2
-          },
-          end: {
-            line: 33,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 33,
-            column: 10
-          },
-          end: {
-            line: 40,
-            column: 3
-          }
-        },
-        line: 33
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 41,
-            column: 2
-          },
-          end: {
-            line: 41,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 41,
-            column: 7
-          },
-          end: {
-            line: 43,
-            column: 3
-          }
-        },
-        line: 41
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 47,
-            column: 2
-          },
-          end: {
-            line: 47,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 47,
-            column: 21
-          },
-          end: {
-            line: 61,
-            column: 3
-          }
-        },
-        line: 47
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 62,
-            column: 2
-          },
-          end: {
-            line: 62,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 62,
-            column: 20
-          },
-          end: {
-            line: 76,
-            column: 3
-          }
-        },
-        line: 62
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 77,
-            column: 2
-          },
-          end: {
-            line: 77,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 77,
-            column: 20
-          },
-          end: {
-            line: 79,
-            column: 3
-          }
-        },
-        line: 77
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 80,
-            column: 2
-          },
-          end: {
-            line: 80,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 80,
-            column: 22
-          },
-          end: {
-            line: 83,
-            column: 3
-          }
-        },
-        line: 80
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }],
-        line: 35
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 48,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 48,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 48,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }],
-        line: 48
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 49,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 49,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        }],
-        line: 49
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 52,
-            column: 5
-          },
-          end: {
-            line: 56,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 52,
-            column: 5
-          },
-          end: {
-            line: 56,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 52,
-            column: 5
-          },
-          end: {
-            line: 56,
-            column: 6
-          }
-        }],
-        line: 52
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 75,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 75,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 75,
-            column: 4
-          }
-        }],
-        line: 63
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 64,
-            column: 4
-          },
-          end: {
-            line: 72,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 64,
-            column: 4
-          },
-          end: {
-            line: 72,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 64,
-            column: 4
-          },
-          end: {
-            line: 72,
-            column: 5
-          }
-        }],
-        line: 64
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 67,
-            column: 5
-          },
-          end: {
-            line: 71,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 67,
-            column: 5
-          },
-          end: {
-            line: 71,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 67,
-            column: 5
-          },
-          end: {
-            line: 71,
-            column: 6
-          }
-        }],
-        line: 67
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -28309,108 +23127,62 @@ var cov_1etasql5z3 = function () {
   mixins: [abstractField],
   computed: {
     items: function items() {
-      cov_1etasql5z3.f[0]++;
-      var values = (cov_1etasql5z3.s[0]++, this.schema.values);
-      cov_1etasql5z3.s[1]++;
+      var values = this.schema.values;
 
       if (typeof values == "function") {
-        cov_1etasql5z3.b[0][0]++;
-        cov_1etasql5z3.s[2]++;
         return values.apply(this, [this.model, this.schema]);
       } else {
-        cov_1etasql5z3.b[0][1]++;
-        cov_1etasql5z3.s[3]++;
         return values;
       }
     },
     id: function id() {
-      cov_1etasql5z3.f[1]++;
-      cov_1etasql5z3.s[4]++;
       return this.schema.model;
     }
   },
   methods: {
     getItemValue: function getItemValue(item) {
-      cov_1etasql5z3.f[2]++;
-      cov_1etasql5z3.s[5]++;
-
       if (isObject_default()(item)) {
-        cov_1etasql5z3.b[1][0]++;
-        cov_1etasql5z3.s[6]++;
-
         if (typeof this.fieldOptions["value"] !== "undefined") {
-          cov_1etasql5z3.b[2][0]++;
-          cov_1etasql5z3.s[7]++;
           return item[this.fieldOptions.value];
         } else {
-          cov_1etasql5z3.b[2][1]++;
-          cov_1etasql5z3.s[8]++;
-
           if (typeof item["value"] !== "undefined") {
-            cov_1etasql5z3.b[3][0]++;
-            cov_1etasql5z3.s[9]++;
             return item.value;
           } else {
-            cov_1etasql5z3.b[3][1]++;
-            cov_1etasql5z3.s[10]++;
             throw "`value` is not defined. If you want to use another key name, add a `value` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/radios.html#radios-field-with-object-values";
           }
         }
       } else {
-        cov_1etasql5z3.b[1][1]++;
-        cov_1etasql5z3.s[11]++;
         return item;
       }
     },
     getItemName: function getItemName(item) {
-      cov_1etasql5z3.f[3]++;
-      cov_1etasql5z3.s[12]++;
-
       if (isObject_default()(item)) {
-        cov_1etasql5z3.b[4][0]++;
-        cov_1etasql5z3.s[13]++;
-
         if (typeof this.fieldOptions["name"] !== "undefined") {
-          cov_1etasql5z3.b[5][0]++;
-          cov_1etasql5z3.s[14]++;
           return item[this.fieldOptions.name];
         } else {
-          cov_1etasql5z3.b[5][1]++;
-          cov_1etasql5z3.s[15]++;
-
           if (typeof item["name"] !== "undefined") {
-            cov_1etasql5z3.b[6][0]++;
-            cov_1etasql5z3.s[16]++;
             return item.name;
           } else {
-            cov_1etasql5z3.b[6][1]++;
-            cov_1etasql5z3.s[17]++;
             throw "`name` is not defined. If you want to use another key name, add a `name` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/radios.html#radios-field-with-object-values";
           }
         }
       } else {
-        cov_1etasql5z3.b[4][1]++;
-        cov_1etasql5z3.s[18]++;
         return item;
       }
     },
     onSelection: function onSelection(item) {
-      cov_1etasql5z3.f[4]++;
-      cov_1etasql5z3.s[19]++;
       this.value = this.getItemValue(item);
     },
     isItemChecked: function isItemChecked(item) {
-      cov_1etasql5z3.f[5]++;
-      var currentValue = (cov_1etasql5z3.s[20]++, this.getItemValue(item));
-      cov_1etasql5z3.s[21]++;
+      var currentValue = this.getItemValue(item);
       return currentValue === this.value;
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldRadios.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldRadiosvue_type_script_lang_js_ = (fieldRadiosvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldRadios.vue?vue&type=style&index=0&lang=scss&
-var fieldRadiosvue_type_style_index_0_lang_scss_ = __webpack_require__("602f");
+// EXTERNAL MODULE: ./src/fields/core/fieldRadios.vue?vue&type=style&index=0&id=928ea6b6&prod&lang=scss&
+var fieldRadiosvue_type_style_index_0_id_928ea6b6_prod_lang_scss_ = __webpack_require__("2867");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldRadios.vue
 
@@ -28432,9 +23204,8 @@ var fieldRadios_component = normalizeComponent(
   
 )
 
-fieldRadios_component.options.__file = "fieldRadios.vue"
 /* harmony default export */ var fieldRadios = (fieldRadios_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=template&id=21b27462&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=template&id=21b27462&
 var fieldSelectvue_type_template_id_21b27462_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"},{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],staticClass:"form-control",class:_vm.fieldClasses,attrs:{"disabled":_vm.disabled,"name":_vm.inputName,"id":_vm.fieldID},on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.value=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[(!_vm.fieldOptions.hideNoneSelectedText)?_c('option',{attrs:{"disabled":_vm.schema.required},domProps:{"value":null}},[_vm._v(" "+_vm._s(_vm.fieldOptions.noneSelectedText || "<Nothing selected>")+"\n\t")]):_vm._e(),_vm._l((_vm.items),function(item){return [(item.group)?_c('optgroup',{key:_vm.getItemValue(item),attrs:{"label":_vm.getGroupName(item)}},_vm._l((item.ops),function(i){return (item.ops)?_c('option',{key:_vm.getItemValue(i),domProps:{"value":_vm.getItemValue(i)}},[_vm._v(" "+_vm._s(_vm.getItemName(i)))]):_vm._e()})):_vm._e(),(!item.group)?_c('option',{key:_vm.getItemValue(item),domProps:{"value":_vm.getItemValue(item)}},[_vm._v(" "+_vm._s(_vm.getItemName(item)))]):_vm._e()]})],2)}
 var fieldSelectvue_type_template_id_21b27462_staticRenderFns = []
 
@@ -28446,1109 +23217,6 @@ var find = __webpack_require__("2769");
 var find_default = /*#__PURE__*/__webpack_require__.n(find);
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=script&lang=js&
-var cov_f0gpdiszg = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldSelect.vue",
-      hash = "7be674a57c51dc324a3b438e01ecda92b03f86a9",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldSelect.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 41,
-          column: 16
-        },
-        end: {
-          line: 41,
-          column: 34
-        }
-      },
-      "1": {
-        start: {
-          line: 42,
-          column: 3
-        },
-        end: {
-          line: 44,
-          column: 42
-        }
-      },
-      "2": {
-        start: {
-          line: 43,
-          column: 4
-        },
-        end: {
-          line: 43,
-          column: 75
-        }
-      },
-      "3": {
-        start: {
-          line: 44,
-          column: 10
-        },
-        end: {
-          line: 44,
-          column: 42
-        }
-      },
-      "4": {
-        start: {
-          line: 50,
-          column: 3
-        },
-        end: {
-          line: 52,
-          column: 4
-        }
-      },
-      "5": {
-        start: {
-          line: 51,
-          column: 4
-        },
-        end: {
-          line: 51,
-          column: 16
-        }
-      },
-      "6": {
-        start: {
-          line: 53,
-          column: 3
-        },
-        end: {
-          line: 53,
-          column: 16
-        }
-      },
-      "7": {
-        start: {
-          line: 57,
-          column: 15
-        },
-        end: {
-          line: 57,
-          column: 17
-        }
-      },
-      "8": {
-        start: {
-          line: 58,
-          column: 22
-        },
-        end: {
-          line: 58,
-          column: 24
-        }
-      },
-      "9": {
-        start: {
-          line: 60,
-          column: 3
-        },
-        end: {
-          line: 101,
-          column: 6
-        }
-      },
-      "10": {
-        start: {
-          line: 61,
-          column: 4
-        },
-        end: {
-          line: 61,
-          column: 24
-        }
-      },
-      "11": {
-        start: {
-          line: 63,
-          column: 4
-        },
-        end: {
-          line: 100,
-          column: 5
-        }
-      },
-      "12": {
-        start: {
-          line: 67,
-          column: 5
-        },
-        end: {
-          line: 67,
-          column: 63
-        }
-      },
-      "13": {
-        start: {
-          line: 67,
-          column: 39
-        },
-        end: {
-          line: 67,
-          column: 61
-        }
-      },
-      "14": {
-        start: {
-          line: 69,
-          column: 5
-        },
-        end: {
-          line: 96,
-          column: 6
-        }
-      },
-      "15": {
-        start: {
-          line: 72,
-          column: 6
-        },
-        end: {
-          line: 75,
-          column: 9
-        }
-      },
-      "16": {
-        start: {
-          line: 80,
-          column: 6
-        },
-        end: {
-          line: 83,
-          column: 8
-        }
-      },
-      "17": {
-        start: {
-          line: 86,
-          column: 6
-        },
-        end: {
-          line: 86,
-          column: 38
-        }
-      },
-      "18": {
-        start: {
-          line: 89,
-          column: 6
-        },
-        end: {
-          line: 92,
-          column: 9
-        }
-      },
-      "19": {
-        start: {
-          line: 95,
-          column: 6
-        },
-        end: {
-          line: 95,
-          column: 31
-        }
-      },
-      "20": {
-        start: {
-          line: 99,
-          column: 5
-        },
-        end: {
-          line: 99,
-          column: 22
-        }
-      },
-      "21": {
-        start: {
-          line: 104,
-          column: 3
-        },
-        end: {
-          line: 104,
-          column: 16
-        }
-      },
-      "22": {
-        start: {
-          line: 108,
-          column: 3
-        },
-        end: {
-          line: 110,
-          column: 4
-        }
-      },
-      "23": {
-        start: {
-          line: 109,
-          column: 4
-        },
-        end: {
-          line: 109,
-          column: 22
-        }
-      },
-      "24": {
-        start: {
-          line: 112,
-          column: 3
-        },
-        end: {
-          line: 112,
-          column: 136
-        }
-      },
-      "25": {
-        start: {
-          line: 116,
-          column: 3
-        },
-        end: {
-          line: 129,
-          column: 4
-        }
-      },
-      "26": {
-        start: {
-          line: 117,
-          column: 4
-        },
-        end: {
-          line: 126,
-          column: 5
-        }
-      },
-      "27": {
-        start: {
-          line: 118,
-          column: 5
-        },
-        end: {
-          line: 118,
-          column: 42
-        }
-      },
-      "28": {
-        start: {
-          line: 121,
-          column: 5
-        },
-        end: {
-          line: 125,
-          column: 6
-        }
-      },
-      "29": {
-        start: {
-          line: 122,
-          column: 6
-        },
-        end: {
-          line: 122,
-          column: 21
-        }
-      },
-      "30": {
-        start: {
-          line: 124,
-          column: 6
-        },
-        end: {
-          line: 124,
-          column: 233
-        }
-      },
-      "31": {
-        start: {
-          line: 128,
-          column: 4
-        },
-        end: {
-          line: 128,
-          column: 16
-        }
-      },
-      "32": {
-        start: {
-          line: 133,
-          column: 3
-        },
-        end: {
-          line: 145,
-          column: 4
-        }
-      },
-      "33": {
-        start: {
-          line: 134,
-          column: 4
-        },
-        end: {
-          line: 142,
-          column: 5
-        }
-      },
-      "34": {
-        start: {
-          line: 135,
-          column: 5
-        },
-        end: {
-          line: 135,
-          column: 41
-        }
-      },
-      "35": {
-        start: {
-          line: 137,
-          column: 5
-        },
-        end: {
-          line: 141,
-          column: 6
-        }
-      },
-      "36": {
-        start: {
-          line: 138,
-          column: 6
-        },
-        end: {
-          line: 138,
-          column: 23
-        }
-      },
-      "37": {
-        start: {
-          line: 140,
-          column: 6
-        },
-        end: {
-          line: 140,
-          column: 234
-        }
-      },
-      "38": {
-        start: {
-          line: 144,
-          column: 4
-        },
-        end: {
-          line: 144,
-          column: 16
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 40,
-            column: 2
-          },
-          end: {
-            line: 40,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 40,
-            column: 10
-          },
-          end: {
-            line: 45,
-            column: 3
-          }
-        },
-        line: 40
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 49,
-            column: 2
-          },
-          end: {
-            line: 49,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 49,
-            column: 28
-          },
-          end: {
-            line: 54,
-            column: 3
-          }
-        },
-        line: 49
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 56,
-            column: 2
-          },
-          end: {
-            line: 56,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 56,
-            column: 22
-          },
-          end: {
-            line: 105,
-            column: 3
-          }
-        },
-        line: 56
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 60,
-            column: 18
-          },
-          end: {
-            line: 60,
-            column: 19
-          }
-        },
-        loc: {
-          start: {
-            line: 60,
-            column: 28
-          },
-          end: {
-            line: 101,
-            column: 4
-          }
-        },
-        line: 60
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 67,
-            column: 32
-          },
-          end: {
-            line: 67,
-            column: 33
-          }
-        },
-        loc: {
-          start: {
-            line: 67,
-            column: 39
-          },
-          end: {
-            line: 67,
-            column: 61
-          }
-        },
-        line: 67
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 107,
-            column: 2
-          },
-          end: {
-            line: 107,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 107,
-            column: 21
-          },
-          end: {
-            line: 113,
-            column: 3
-          }
-        },
-        line: 107
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 115,
-            column: 2
-          },
-          end: {
-            line: 115,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 115,
-            column: 21
-          },
-          end: {
-            line: 130,
-            column: 3
-          }
-        },
-        line: 115
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 132,
-            column: 2
-          },
-          end: {
-            line: 132,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 132,
-            column: 20
-          },
-          end: {
-            line: 146,
-            column: 3
-          }
-        },
-        line: 132
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 42,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 42
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 42,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 42
-          }
-        }, {
-          start: {
-            line: 42,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 42
-          }
-        }],
-        line: 42
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 50,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 50,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 50,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        }],
-        line: 50
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 63,
-            column: 4
-          },
-          end: {
-            line: 100,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 63,
-            column: 4
-          },
-          end: {
-            line: 100,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 63,
-            column: 4
-          },
-          end: {
-            line: 100,
-            column: 5
-          }
-        }],
-        line: 63
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 63,
-            column: 8
-          },
-          end: {
-            line: 63,
-            column: 36
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 63,
-            column: 8
-          },
-          end: {
-            line: 63,
-            column: 18
-          }
-        }, {
-          start: {
-            line: 63,
-            column: 22
-          },
-          end: {
-            line: 63,
-            column: 36
-          }
-        }],
-        line: 63
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 69,
-            column: 5
-          },
-          end: {
-            line: 96,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 69,
-            column: 5
-          },
-          end: {
-            line: 96,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 69,
-            column: 5
-          },
-          end: {
-            line: 96,
-            column: 6
-          }
-        }],
-        line: 69
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 108,
-            column: 3
-          },
-          end: {
-            line: 110,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 108,
-            column: 3
-          },
-          end: {
-            line: 110,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 108,
-            column: 3
-          },
-          end: {
-            line: 110,
-            column: 4
-          }
-        }],
-        line: 108
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 108,
-            column: 7
-          },
-          end: {
-            line: 108,
-            column: 25
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 108,
-            column: 7
-          },
-          end: {
-            line: 108,
-            column: 11
-          }
-        }, {
-          start: {
-            line: 108,
-            column: 15
-          },
-          end: {
-            line: 108,
-            column: 25
-          }
-        }],
-        line: 108
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 116,
-            column: 3
-          },
-          end: {
-            line: 129,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 116,
-            column: 3
-          },
-          end: {
-            line: 129,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 116,
-            column: 3
-          },
-          end: {
-            line: 129,
-            column: 4
-          }
-        }],
-        line: 116
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 117,
-            column: 4
-          },
-          end: {
-            line: 126,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 117,
-            column: 4
-          },
-          end: {
-            line: 126,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 117,
-            column: 4
-          },
-          end: {
-            line: 126,
-            column: 5
-          }
-        }],
-        line: 117
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 121,
-            column: 5
-          },
-          end: {
-            line: 125,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 121,
-            column: 5
-          },
-          end: {
-            line: 125,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 121,
-            column: 5
-          },
-          end: {
-            line: 125,
-            column: 6
-          }
-        }],
-        line: 121
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 133,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 133,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 133,
-            column: 3
-          },
-          end: {
-            line: 145,
-            column: 4
-          }
-        }],
-        line: 133
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 134,
-            column: 4
-          },
-          end: {
-            line: 142,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 134,
-            column: 4
-          },
-          end: {
-            line: 142,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 134,
-            column: 4
-          },
-          end: {
-            line: 142,
-            column: 5
-          }
-        }],
-        line: 134
-      },
-      "12": {
-        loc: {
-          start: {
-            line: 137,
-            column: 5
-          },
-          end: {
-            line: 141,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 137,
-            column: 5
-          },
-          end: {
-            line: 141,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 137,
-            column: 5
-          },
-          end: {
-            line: 141,
-            column: 6
-          }
-        }],
-        line: 137
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0,
-      "27": 0,
-      "28": 0,
-      "29": 0,
-      "30": 0,
-      "31": 0,
-      "32": 0,
-      "33": 0,
-      "34": 0,
-      "35": 0,
-      "36": 0,
-      "37": 0,
-      "38": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0],
-      "10": [0, 0],
-      "11": [0, 0],
-      "12": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -29561,71 +23229,41 @@ var cov_f0gpdiszg = function () {
   mixins: [abstractField],
   computed: {
     items: function items() {
-      cov_f0gpdiszg.f[0]++;
-      var values = (cov_f0gpdiszg.s[0]++, this.schema.values);
-      cov_f0gpdiszg.s[1]++;
+      var values = this.schema.values;
 
       if (typeof values == "function") {
-        cov_f0gpdiszg.b[0][0]++;
-        cov_f0gpdiszg.s[2]++;
         return this.groupValues(values.apply(this, [this.model, this.schema]));
-      } else {
-        cov_f0gpdiszg.b[0][1]++;
-        cov_f0gpdiszg.s[3]++;
-        return this.groupValues(values);
-      }
+      } else return this.groupValues(values);
     }
   },
   methods: {
     formatValueToField: function formatValueToField(value) {
-      cov_f0gpdiszg.f[1]++;
-      cov_f0gpdiszg.s[4]++;
-
       if (isNil_default()(value)) {
-        cov_f0gpdiszg.b[1][0]++;
-        cov_f0gpdiszg.s[5]++;
         return null;
-      } else {
-        cov_f0gpdiszg.b[1][1]++;
       }
 
-      cov_f0gpdiszg.s[6]++;
       return value;
     },
     groupValues: function groupValues(values) {
-      cov_f0gpdiszg.f[2]++;
-      var array = (cov_f0gpdiszg.s[7]++, []);
-      var arrayElement = (cov_f0gpdiszg.s[8]++, {});
-      cov_f0gpdiszg.s[9]++;
+      var array = [];
+      var arrayElement = {};
       values.forEach(function (item) {
-        cov_f0gpdiszg.f[3]++;
-        cov_f0gpdiszg.s[10]++;
         arrayElement = null;
-        cov_f0gpdiszg.s[11]++;
 
-        if ((cov_f0gpdiszg.b[3][0]++, item.group) && (cov_f0gpdiszg.b[3][1]++, isObject_default()(item))) {
-          cov_f0gpdiszg.b[2][0]++;
-          cov_f0gpdiszg.s[12]++;
+        if (item.group && isObject_default()(item)) {
           // There is in a group.
           // Find element with this group.
           arrayElement = find_default()(array, function (i) {
-            cov_f0gpdiszg.f[4]++;
-            cov_f0gpdiszg.s[13]++;
             return i.group === item.group;
           });
-          cov_f0gpdiszg.s[14]++;
 
           if (arrayElement) {
-            cov_f0gpdiszg.b[4][0]++;
-            cov_f0gpdiszg.s[15]++;
             // There is such a group.
             arrayElement.ops.push({
               id: item.id,
               name: item.name
             });
           } else {
-            cov_f0gpdiszg.b[4][1]++;
-            cov_f0gpdiszg.s[16]++;
             // There is not such a group.
             // Initialising.
             arrayElement = {
@@ -29633,106 +23271,58 @@ var cov_f0gpdiszg = function () {
               ops: []
             }; // Set group.
 
-            cov_f0gpdiszg.s[17]++;
             arrayElement.group = item.group; // Set Group element.
 
-            cov_f0gpdiszg.s[18]++;
             arrayElement.ops.push({
               id: item.id,
               name: item.name
             }); // Add array.
 
-            cov_f0gpdiszg.s[19]++;
             array.push(arrayElement);
           }
         } else {
-          cov_f0gpdiszg.b[2][1]++;
-          cov_f0gpdiszg.s[20]++;
           // There is not in a group.
           array.push(item);
         }
       }); // With Groups.
 
-      cov_f0gpdiszg.s[21]++;
       return array;
     },
     getGroupName: function getGroupName(item) {
-      cov_f0gpdiszg.f[5]++;
-      cov_f0gpdiszg.s[22]++;
-
-      if ((cov_f0gpdiszg.b[6][0]++, item) && (cov_f0gpdiszg.b[6][1]++, item.group)) {
-        cov_f0gpdiszg.b[5][0]++;
-        cov_f0gpdiszg.s[23]++;
+      if (item && item.group) {
         return item.group;
-      } else {
-        cov_f0gpdiszg.b[5][1]++;
       }
 
-      cov_f0gpdiszg.s[24]++;
       throw "Group name is missing! https://icebob.gitbooks.io/vueformgenerator/content/fields/select.html#select-field-with-object-items";
     },
     getItemValue: function getItemValue(item) {
-      cov_f0gpdiszg.f[6]++;
-      cov_f0gpdiszg.s[25]++;
-
       if (isObject_default()(item)) {
-        cov_f0gpdiszg.b[7][0]++;
-        cov_f0gpdiszg.s[26]++;
-
         if (typeof this.fieldOptions["value"] !== "undefined") {
-          cov_f0gpdiszg.b[8][0]++;
-          cov_f0gpdiszg.s[27]++;
           return item[this.fieldOptions.value];
         } else {
-          cov_f0gpdiszg.b[8][1]++;
-          cov_f0gpdiszg.s[28]++;
-
           // Use 'id' instead of 'value' cause of backward compatibility
           if (typeof item["id"] !== "undefined") {
-            cov_f0gpdiszg.b[9][0]++;
-            cov_f0gpdiszg.s[29]++;
             return item.id;
           } else {
-            cov_f0gpdiszg.b[9][1]++;
-            cov_f0gpdiszg.s[30]++;
             throw "`id` is not defined. If you want to use another key name, add a `value` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/select.html#select-field-with-object-items";
           }
         }
       } else {
-        cov_f0gpdiszg.b[7][1]++;
-        cov_f0gpdiszg.s[31]++;
         return item;
       }
     },
     getItemName: function getItemName(item) {
-      cov_f0gpdiszg.f[7]++;
-      cov_f0gpdiszg.s[32]++;
-
       if (isObject_default()(item)) {
-        cov_f0gpdiszg.b[10][0]++;
-        cov_f0gpdiszg.s[33]++;
-
         if (typeof this.fieldOptions["name"] !== "undefined") {
-          cov_f0gpdiszg.b[11][0]++;
-          cov_f0gpdiszg.s[34]++;
           return item[this.fieldOptions.name];
         } else {
-          cov_f0gpdiszg.b[11][1]++;
-          cov_f0gpdiszg.s[35]++;
-
           if (typeof item["name"] !== "undefined") {
-            cov_f0gpdiszg.b[12][0]++;
-            cov_f0gpdiszg.s[36]++;
             return item.name;
           } else {
-            cov_f0gpdiszg.b[12][1]++;
-            cov_f0gpdiszg.s[37]++;
             throw "`name` is not defined. If you want to use another key name, add a `name` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/select.html#select-field-with-object-items";
           }
         }
       } else {
-        cov_f0gpdiszg.b[10][1]++;
-        cov_f0gpdiszg.s[38]++;
         return item;
       }
     }
@@ -29759,9 +23349,8 @@ var fieldSelect_component = normalizeComponent(
   
 )
 
-fieldSelect_component.options.__file = "fieldSelect.vue"
 /* harmony default export */ var fieldSelect = (fieldSelect_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=template&id=59362445&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=template&id=59362445&
 var fieldSubmitvue_type_template_id_59362445_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],class:_vm.fieldClasses,attrs:{"id":_vm.fieldID,"type":"submit","name":_vm.inputName,"disabled":_vm.disabled},domProps:{"value":_vm.fieldOptions.buttonText},on:{"click":_vm.onClick}})}
 var fieldSubmitvue_type_template_id_59362445_staticRenderFns = []
 
@@ -29773,368 +23362,6 @@ var isEmpty = __webpack_require__("13ea");
 var isEmpty_default = /*#__PURE__*/__webpack_require__.n(isEmpty);
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=script&lang=js&
-var cov_21n0imld0y = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldSubmit.vue",
-      hash = "bace6f27567fb0b29fe8a82ff642627ca56f35b9",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldSubmit.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 22,
-          column: 3
-        },
-        end: {
-          line: 39,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 25,
-          column: 4
-        },
-        end: {
-          line: 25,
-          column: 28
-        }
-      },
-      "2": {
-        start: {
-          line: 27,
-          column: 4
-        },
-        end: {
-          line: 27,
-          column: 53
-        }
-      },
-      "3": {
-        start: {
-          line: 28,
-          column: 4
-        },
-        end: {
-          line: 34,
-          column: 7
-        }
-      },
-      "4": {
-        start: {
-          line: 29,
-          column: 5
-        },
-        end: {
-          line: 33,
-          column: 6
-        }
-      },
-      "5": {
-        start: {
-          line: 30,
-          column: 6
-        },
-        end: {
-          line: 30,
-          column: 87
-        }
-      },
-      "6": {
-        start: {
-          line: 31,
-          column: 12
-        },
-        end: {
-          line: 33,
-          column: 6
-        }
-      },
-      "7": {
-        start: {
-          line: 32,
-          column: 6
-        },
-        end: {
-          line: 32,
-          column: 66
-        }
-      },
-      "8": {
-        start: {
-          line: 35,
-          column: 10
-        },
-        end: {
-          line: 39,
-          column: 4
-        }
-      },
-      "9": {
-        start: {
-          line: 38,
-          column: 4
-        },
-        end: {
-          line: 38,
-          column: 64
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 21,
-            column: 2
-          },
-          end: {
-            line: 21,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 21,
-            column: 18
-          },
-          end: {
-            line: 40,
-            column: 3
-          }
-        },
-        line: 21
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 28,
-            column: 54
-          },
-          end: {
-            line: 28,
-            column: 55
-          }
-        },
-        loc: {
-          start: {
-            line: 28,
-            column: 70
-          },
-          end: {
-            line: 34,
-            column: 5
-          }
-        },
-        line: 28
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 22,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 22,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 22,
-            column: 3
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }],
-        line: 22
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 29,
-            column: 5
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 29,
-            column: 5
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 29,
-            column: 5
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        }],
-        line: 29
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 29,
-            column: 9
-          },
-          end: {
-            line: 29,
-            column: 80
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 29,
-            column: 9
-          },
-          end: {
-            line: 29,
-            column: 29
-          }
-        }, {
-          start: {
-            line: 29,
-            column: 33
-          },
-          end: {
-            line: 29,
-            column: 80
-          }
-        }],
-        line: 29
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 31,
-            column: 12
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 31,
-            column: 12
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 31,
-            column: 12
-          },
-          end: {
-            line: 33,
-            column: 6
-          }
-        }],
-        line: 31
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 35,
-            column: 10
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 35,
-            column: 10
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 35,
-            column: 10
-          },
-          end: {
-            line: 39,
-            column: 4
-          }
-        }],
-        line: 35
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 //
@@ -30156,62 +23383,30 @@ var cov_21n0imld0y = function () {
     onClick: function onClick($event) {
       var _this = this;
 
-      cov_21n0imld0y.f[0]++;
-      cov_21n0imld0y.s[0]++;
-
       if (this.fieldOptions.validateBeforeSubmit === true) {
-        cov_21n0imld0y.b[0][0]++;
-        cov_21n0imld0y.s[1]++;
         // prevent a <form /> from having it's submit event triggered
         // when we have to validate data first
         $event.preventDefault();
-        cov_21n0imld0y.s[2]++;
         this.eventBus.$emit("fields-validation-trigger");
-        cov_21n0imld0y.s[3]++;
         this.eventBus.$on("fields-validation-terminated", function (formErrors) {
-          cov_21n0imld0y.f[1]++;
-          cov_21n0imld0y.s[4]++;
-
-          if ((cov_21n0imld0y.b[2][0]++, !isEmpty_default()(formErrors)) && (cov_21n0imld0y.b[2][1]++, isFunction_default()(_this.fieldOptions.onValidationError))) {
-            cov_21n0imld0y.b[1][0]++;
-            cov_21n0imld0y.s[5]++;
-
+          if (!isEmpty_default()(formErrors) && isFunction_default()(_this.fieldOptions.onValidationError)) {
             _this.fieldOptions.onValidationError(_this.model, _this.schema, formErrors, $event);
-          } else {
-            cov_21n0imld0y.b[1][1]++;
-            cov_21n0imld0y.s[6]++;
-
-            if (isFunction_default()(_this.fieldOptions.onSubmit)) {
-              cov_21n0imld0y.b[3][0]++;
-              cov_21n0imld0y.s[7]++;
-
-              _this.fieldOptions.onSubmit(_this.model, _this.schema, $event);
-            } else {
-              cov_21n0imld0y.b[3][1]++;
-            }
+          } else if (isFunction_default()(_this.fieldOptions.onSubmit)) {
+            _this.fieldOptions.onSubmit(_this.model, _this.schema, $event);
           }
         });
-      } else {
-        cov_21n0imld0y.b[0][1]++;
-        cov_21n0imld0y.s[8]++;
-
-        if (isFunction_default()(this.fieldOptions.onSubmit)) {
-          cov_21n0imld0y.b[4][0]++;
-          cov_21n0imld0y.s[9]++;
-          // if we aren't validating, just pass the onSubmit handler the $event
-          // so it can be handled there
-          this.fieldOptions.onSubmit(this.model, this.schema, $event);
-        } else {
-          cov_21n0imld0y.b[4][1]++;
-        }
+      } else if (isFunction_default()(this.fieldOptions.onSubmit)) {
+        // if we aren't validating, just pass the onSubmit handler the $event
+        // so it can be handled there
+        this.fieldOptions.onSubmit(this.model, this.schema, $event);
       }
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldSubmit.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldSubmitvue_type_script_lang_js_ = (fieldSubmitvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&lang=scss&
-var fieldSubmitvue_type_style_index_0_lang_scss_ = __webpack_require__("eb5d");
+// EXTERNAL MODULE: ./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&id=59362445&prod&lang=scss&
+var fieldSubmitvue_type_style_index_0_id_59362445_prod_lang_scss_ = __webpack_require__("9b8c");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldSubmit.vue
 
@@ -30233,9 +23428,8 @@ var fieldSubmit_component = normalizeComponent(
   
 )
 
-fieldSubmit_component.options.__file = "fieldSubmit.vue"
 /* harmony default export */ var fieldSubmit = (fieldSubmit_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=template&id=4dc92ac2&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=template&id=4dc92ac2&
 var fieldTextAreavue_type_template_id_4dc92ac2_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('textarea',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"},{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],staticClass:"form-control",class:_vm.fieldClasses,attrs:{"id":_vm.fieldID,"disabled":_vm.disabled,"maxlength":_vm.fieldOptions.max,"minlength":_vm.fieldOptions.min,"placeholder":_vm.placeholder,"required":_vm.required,"readonly":_vm.readonly,"rows":_vm.fieldOptions.rows || 2,"name":_vm.inputName},domProps:{"value":(_vm.value)},on:{"input":function($event){if($event.target.composing){ return; }_vm.value=$event.target.value}}})}
 var fieldTextAreavue_type_template_id_4dc92ac2_staticRenderFns = []
 
@@ -30243,32 +23437,6 @@ var fieldTextAreavue_type_template_id_4dc92ac2_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/core/fieldTextArea.vue?vue&type=template&id=4dc92ac2&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=script&lang=js&
-var cov_1vjii645g6 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldTextArea.vue",
-      hash = "f3cfa9854180aabcd3901d092d6a80be49af8f4a",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldTextArea.vue",
-    statementMap: {},
-    fnMap: {},
-    branchMap: {},
-    s: {},
-    f: {},
-    b: {},
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -30311,9 +23479,8 @@ var fieldTextArea_component = normalizeComponent(
   
 )
 
-fieldTextArea_component.options.__file = "fieldTextArea.vue"
 /* harmony default export */ var fieldTextArea = (fieldTextArea_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldUpload.vue?vue&type=template&id=83c6591e&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldUpload.vue?vue&type=template&id=83c6591e&
 var fieldUploadvue_type_template_id_83c6591e_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{directives:[{name:"attributes",rawName:"v-attributes",value:('wrapper'),expression:"'wrapper'"}],staticClass:"wrapper"},[_c('input',{directives:[{name:"attributes",rawName:"v-attributes",value:('input'),expression:"'input'"}],staticClass:"form-control",attrs:{"id":_vm.fieldID,"type":"file","name":_vm.inputName,"accept":_vm.fieldOptions.accept,"multiple":_vm.fieldOptions.multiple,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"required":_vm.schema.required,"disabled":_vm.disabled},on:{"change":_vm.onChange}})])}
 var fieldUploadvue_type_template_id_83c6591e_staticRenderFns = []
 
@@ -30321,119 +23488,6 @@ var fieldUploadvue_type_template_id_83c6591e_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/core/fieldUpload.vue?vue&type=template&id=83c6591e&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/core/fieldUpload.vue?vue&type=script&lang=js&
-var cov_1rh4bwa2wk = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldUpload.vue",
-      hash = "3947e35d0f3eba7efb01aaceb69bfffaf6681b2a",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/core/fieldUpload.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 28,
-          column: 3
-        },
-        end: {
-          line: 31,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 30,
-          column: 4
-        },
-        end: {
-          line: 30,
-          column: 82
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 27,
-            column: 2
-          },
-          end: {
-            line: 27,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 27,
-            column: 19
-          },
-          end: {
-            line: 32,
-            column: 3
-          }
-        },
-        line: 27
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 28,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 28,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 28,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        }],
-        line: 28
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0
-    },
-    f: {
-      "0": 0
-    },
-    b: {
-      "0": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 //
 //
@@ -30459,24 +23513,17 @@ var cov_1rh4bwa2wk = function () {
   mixins: [abstractField],
   methods: {
     onChange: function onChange($event) {
-      cov_1rh4bwa2wk.f[0]++;
-      cov_1rh4bwa2wk.s[0]++;
-
       if (isFunction_default()(this.fieldOptions.onChanged)) {
-        cov_1rh4bwa2wk.b[0][0]++;
-        cov_1rh4bwa2wk.s[1]++;
         // Schema has defined onChange method.
         this.fieldOptions.onChanged.call(this, this.model, this.schema, $event, this);
-      } else {
-        cov_1rh4bwa2wk.b[0][1]++;
       }
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/core/fieldUpload.vue?vue&type=script&lang=js&
  /* harmony default export */ var core_fieldUploadvue_type_script_lang_js_ = (fieldUploadvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/core/fieldUpload.vue?vue&type=style&index=0&lang=scss&
-var fieldUploadvue_type_style_index_0_lang_scss_ = __webpack_require__("b018");
+// EXTERNAL MODULE: ./src/fields/core/fieldUpload.vue?vue&type=style&index=0&id=83c6591e&prod&lang=scss&
+var fieldUploadvue_type_style_index_0_id_83c6591e_prod_lang_scss_ = __webpack_require__("12e0");
 
 // CONCATENATED MODULE: ./src/fields/core/fieldUpload.vue
 
@@ -30498,9 +23545,8 @@ var fieldUpload_component = normalizeComponent(
   
 )
 
-fieldUpload_component.options.__file = "fieldUpload.vue"
 /* harmony default export */ var fieldUpload = (fieldUpload_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldCleave.vue?vue&type=template&id=28ad72ce&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldCleave.vue?vue&type=template&id=28ad72ce&
 var fieldCleavevue_type_template_id_28ad72ce_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{staticClass:"form-control",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName,"id":_vm.fieldID},domProps:{"value":_vm.value}})}
 var fieldCleavevue_type_template_id_28ad72ce_staticRenderFns = []
 
@@ -30508,467 +23554,6 @@ var fieldCleavevue_type_template_id_28ad72ce_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldCleave.vue?vue&type=template&id=28ad72ce&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldCleave.vue?vue&type=script&lang=js&
-var cov_aej8h5a3t = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldCleave.vue",
-      hash = "7ada8013641758181eaafa969aa57048d59d708f",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldCleave.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 22,
-          column: 2
-        },
-        end: {
-          line: 24,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 28,
-          column: 2
-        },
-        end: {
-          line: 70,
-          column: 5
-        }
-      },
-      "2": {
-        start: {
-          line: 29,
-          column: 3
-        },
-        end: {
-          line: 69,
-          column: 4
-        }
-      },
-      "3": {
-        start: {
-          line: 30,
-          column: 4
-        },
-        end: {
-          line: 56,
-          column: 6
-        }
-      },
-      "4": {
-        start: {
-          line: 58,
-          column: 4
-        },
-        end: {
-          line: 64,
-          column: 5
-        }
-      },
-      "5": {
-        start: {
-          line: 59,
-          column: 5
-        },
-        end: {
-          line: 61,
-          column: 8
-        }
-      },
-      "6": {
-        start: {
-          line: 60,
-          column: 6
-        },
-        end: {
-          line: 60,
-          column: 49
-        }
-      },
-      "7": {
-        start: {
-          line: 63,
-          column: 5
-        },
-        end: {
-          line: 63,
-          column: 58
-        }
-      },
-      "8": {
-        start: {
-          line: 66,
-          column: 4
-        },
-        end: {
-          line: 68,
-          column: 6
-        }
-      },
-      "9": {
-        start: {
-          line: 75,
-          column: 3
-        },
-        end: {
-          line: 75,
-          column: 31
-        }
-      },
-      "10": {
-        start: {
-          line: 80,
-          column: 2
-        },
-        end: {
-          line: 83,
-          column: 3
-        }
-      },
-      "11": {
-        start: {
-          line: 81,
-          column: 3
-        },
-        end: {
-          line: 81,
-          column: 25
-        }
-      },
-      "12": {
-        start: {
-          line: 82,
-          column: 3
-        },
-        end: {
-          line: 82,
-          column: 59
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 21,
-            column: 1
-          },
-          end: {
-            line: 21,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 21,
-            column: 8
-          },
-          end: {
-            line: 25,
-            column: 2
-          }
-        },
-        line: 21
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 27,
-            column: 1
-          },
-          end: {
-            line: 27,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 27,
-            column: 11
-          },
-          end: {
-            line: 71,
-            column: 2
-          }
-        },
-        line: 27
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 28,
-            column: 17
-          },
-          end: {
-            line: 28,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 28,
-            column: 28
-          },
-          end: {
-            line: 70,
-            column: 3
-          }
-        },
-        line: 28
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 59,
-            column: 45
-          },
-          end: {
-            line: 59,
-            column: 46
-          }
-        },
-        loc: {
-          start: {
-            line: 59,
-            column: 51
-          },
-          end: {
-            line: 61,
-            column: 6
-          }
-        },
-        line: 59
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 74,
-            column: 2
-          },
-          end: {
-            line: 74,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 74,
-            column: 16
-          },
-          end: {
-            line: 76,
-            column: 3
-          }
-        },
-        line: 74
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 79,
-            column: 1
-          },
-          end: {
-            line: 79,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 79,
-            column: 17
-          },
-          end: {
-            line: 84,
-            column: 2
-          }
-        },
-        line: 79
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 29,
-            column: 3
-          },
-          end: {
-            line: 69,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 29,
-            column: 3
-          },
-          end: {
-            line: 69,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 29,
-            column: 3
-          },
-          end: {
-            line: 69,
-            column: 4
-          }
-        }],
-        line: 29
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 58,
-            column: 4
-          },
-          end: {
-            line: 64,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 58,
-            column: 4
-          },
-          end: {
-            line: 64,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 58,
-            column: 4
-          },
-          end: {
-            line: 64,
-            column: 5
-          }
-        }],
-        line: 58
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 58,
-            column: 8
-          },
-          end: {
-            line: 58,
-            column: 81
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 58,
-            column: 8
-          },
-          end: {
-            line: 58,
-            column: 30
-          }
-        }, {
-          start: {
-            line: 58,
-            column: 34
-          },
-          end: {
-            line: 58,
-            column: 81
-          }
-        }],
-        line: 58
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 80,
-            column: 2
-          },
-          end: {
-            line: 83,
-            column: 3
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 80,
-            column: 2
-          },
-          end: {
-            line: 83,
-            column: 3
-          }
-        }, {
-          start: {
-            line: 80,
-            column: 2
-          },
-          end: {
-            line: 83,
-            column: 3
-          }
-        }],
-        line: 80
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 //
 //
@@ -30987,24 +23572,15 @@ var cov_aej8h5a3t = function () {
   name: "field-cleave",
   mixins: [abstractField],
   data: function data() {
-    cov_aej8h5a3t.f[0]++;
-    cov_aej8h5a3t.s[0]++;
     return {
       cleave: null
     };
   },
   mounted: function mounted() {
-    cov_aej8h5a3t.f[1]++;
-    cov_aej8h5a3t.s[1]++;
     this.$nextTick(function () {
       var _this = this;
 
-      cov_aej8h5a3t.f[2]++;
-      cov_aej8h5a3t.s[2]++;
-
       if (window.Cleave) {
-        cov_aej8h5a3t.b[0][0]++;
-        cov_aej8h5a3t.s[3]++;
         this.cleave = new window.Cleave(this.$el, defaults_default()(this.fieldOptions, {
           // Credit Card
           creditCard: false,
@@ -31029,47 +23605,28 @@ var cov_aej8h5a3t = function () {
           lowercase: false,
           maxLength: 0
         }));
-        cov_aej8h5a3t.s[4]++;
 
-        if ((cov_aej8h5a3t.b[2][0]++, this.cleave.properties) && (cov_aej8h5a3t.b[2][1]++, this.cleave.properties.hasOwnProperty("result"))) {
-          cov_aej8h5a3t.b[1][0]++;
-          cov_aej8h5a3t.s[5]++;
+        if (this.cleave.properties && this.cleave.properties.hasOwnProperty("result")) {
           this.$watch("cleave.properties.result", function () {
-            cov_aej8h5a3t.f[3]++;
-            cov_aej8h5a3t.s[6]++;
             _this.value = _this.cleave.properties.result;
           });
         } else {
-          cov_aej8h5a3t.b[1][1]++;
-          cov_aej8h5a3t.s[7]++;
           this.$el.addEventListener("input", this.inputChange);
         }
       } else {
-        cov_aej8h5a3t.b[0][1]++;
-        cov_aej8h5a3t.s[8]++;
         console.warn("Cleave is missing. Please download from https://github.com/nosir/cleave.js/ and load the script in the HTML head section!");
       }
     });
   },
   methods: {
     inputChange: function inputChange() {
-      cov_aej8h5a3t.f[4]++;
-      cov_aej8h5a3t.s[9]++;
       this.value = this.$el.value;
     }
   },
   beforeDestroy: function beforeDestroy() {
-    cov_aej8h5a3t.f[5]++;
-    cov_aej8h5a3t.s[10]++;
-
     if (this.cleave) {
-      cov_aej8h5a3t.b[3][0]++;
-      cov_aej8h5a3t.s[11]++;
       this.cleave.destroy();
-      cov_aej8h5a3t.s[12]++;
       this.$el.removeEventListener("input", this.inputChange);
-    } else {
-      cov_aej8h5a3t.b[3][1]++;
     }
   }
 });
@@ -31094,43 +23651,24 @@ var fieldCleave_component = normalizeComponent(
   
 )
 
-fieldCleave_component.options.__file = "fieldCleave.vue"
 /* harmony default export */ var fieldCleave = (fieldCleave_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldDateTimePicker.vue?vue&type=template&id=0954884d&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldDateTimePicker.vue?vue&type=template&id=0954884d&
 var fieldDateTimePickervue_type_template_id_0954884d_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"input-group date"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],staticClass:"form-control",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName,"id":_vm.fieldID},domProps:{"value":(_vm.value)},on:{"input":function($event){if($event.target.composing){ return; }_vm.value=$event.target.value}}}),_vm._m(0)])}
 var fieldDateTimePickervue_type_template_id_0954884d_staticRenderFns = [function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('span',{staticClass:"input-group-addon"},[_c('span',{staticClass:"glyphicon glyphicon-calendar"})])}]
 
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldDateTimePicker.vue?vue&type=template&id=0954884d&
 
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/objectSpread.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es7.object.get-own-property-descriptors.js
+var es7_object_get_own_property_descriptors = __webpack_require__("8e6e");
 
-function _objectSpread(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
-
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
-    }
-
-    ownKeys.forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    });
-  }
-
-  return target;
-}
 // CONCATENATED MODULE: ./src/utils/dateFieldHelper.js
 var cov_8z4n4vbsn = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/dateFieldHelper.js",
-      hash = "b8e3e3d71bbfac1b76f8da96e623f8c4cb660071",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
+  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/dateFieldHelper.js";
+  var hash = "b8e3e3d71bbfac1b76f8da96e623f8c4cb660071";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
     path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/dateFieldHelper.js",
     statementMap: {
       "0": {
@@ -31601,15 +24139,15 @@ var cov_8z4n4vbsn = function () {
       "3": [0, 0],
       "4": [0, 0]
     },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
+    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
+    hash: "b8e3e3d71bbfac1b76f8da96e623f8c4cb660071"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
 
   if (coverage[path] && coverage[path].hash === hash) {
     return coverage[path];
   }
 
-  coverageData.hash = hash;
   return coverage[path] = coverageData;
 }();
 
@@ -31690,363 +24228,16 @@ var inputFormat = (cov_8z4n4vbsn.s[0]++, "YYYY-MM-DD HH:mm:ss");
   }
 });
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldDateTimePicker.vue?vue&type=script&lang=js&
-var cov_2dcodflvh9 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldDateTimePicker.vue",
-      hash = "81bc5aa54f88ca3c9dc557deab1da1befbe988a1",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldDateTimePicker.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 34,
-          column: 2
-        },
-        end: {
-          line: 51,
-          column: 5
-        }
-      },
-      "1": {
-        start: {
-          line: 35,
-          column: 3
-        },
-        end: {
-          line: 50,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 36,
-          column: 16
-        },
-        end: {
-          line: 36,
-          column: 55
-        }
-      },
-      "3": {
-        start: {
-          line: 37,
-          column: 4
-        },
-        end: {
-          line: 45,
-          column: 8
-        }
-      },
-      "4": {
-        start: {
-          line: 44,
-          column: 6
-        },
-        end: {
-          line: 44,
-          column: 31
-        }
-      },
-      "5": {
-        start: {
-          line: 47,
-          column: 4
-        },
-        end: {
-          line: 49,
-          column: 6
-        }
-      },
-      "6": {
-        start: {
-          line: 55,
-          column: 2
-        },
-        end: {
-          line: 59,
-          column: 3
-        }
-      },
-      "7": {
-        start: {
-          line: 56,
-          column: 3
-        },
-        end: {
-          line: 58,
-          column: 15
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 33,
-            column: 1
-          },
-          end: {
-            line: 33,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 33,
-            column: 11
-          },
-          end: {
-            line: 52,
-            column: 2
-          }
-        },
-        line: 33
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 34,
-            column: 17
-          },
-          end: {
-            line: 34,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 34,
-            column: 23
-          },
-          end: {
-            line: 51,
-            column: 3
-          }
-        },
-        line: 34
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 43,
-            column: 22
-          },
-          end: {
-            line: 43,
-            column: 23
-          }
-        },
-        loc: {
-          start: {
-            line: 43,
-            column: 28
-          },
-          end: {
-            line: 45,
-            column: 6
-          }
-        },
-        line: 43
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 54,
-            column: 1
-          },
-          end: {
-            line: 54,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 54,
-            column: 17
-          },
-          end: {
-            line: 60,
-            column: 2
-          }
-        },
-        line: 54
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 50,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 50,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 35,
-            column: 3
-          },
-          end: {
-            line: 50,
-            column: 4
-          }
-        }],
-        line: 35
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 35,
-            column: 7
-          },
-          end: {
-            line: 35,
-            column: 45
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 35,
-            column: 7
-          },
-          end: {
-            line: 35,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 35,
-            column: 19
-          },
-          end: {
-            line: 35,
-            column: 45
-          }
-        }],
-        line: 35
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 55,
-            column: 2
-          },
-          end: {
-            line: 59,
-            column: 3
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 55,
-            column: 2
-          },
-          end: {
-            line: 59,
-            column: 3
-          }
-        }, {
-          start: {
-            line: 55,
-            column: 2
-          },
-          end: {
-            line: 59,
-            column: 3
-          }
-        }],
-        line: 55
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 55,
-            column: 6
-          },
-          end: {
-            line: 55,
-            column: 44
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 55,
-            column: 6
-          },
-          end: {
-            line: 55,
-            column: 14
-          }
-        }, {
-          start: {
-            line: 55,
-            column: 18
-          },
-          end: {
-            line: 55,
-            column: 44
-          }
-        }],
-        line: 55
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
 
 
+
+
+
+
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 //
 //
@@ -32077,40 +24268,23 @@ var cov_2dcodflvh9 = function () {
   mounted: function mounted() {
     var _this = this;
 
-    cov_2dcodflvh9.f[0]++;
-    cov_2dcodflvh9.s[0]++;
     this.$nextTick(function () {
-      cov_2dcodflvh9.f[1]++;
-      cov_2dcodflvh9.s[1]++;
+      if (window.$ && window.$.fn.datetimepicker) {
+        var input = _this.$el.querySelector(".form-control");
 
-      if ((cov_2dcodflvh9.b[1][0]++, window.$) && (cov_2dcodflvh9.b[1][1]++, window.$.fn.datetimepicker)) {
-        cov_2dcodflvh9.b[0][0]++;
-        var input = (cov_2dcodflvh9.s[2]++, _this.$el.querySelector(".form-control"));
-        cov_2dcodflvh9.s[3]++;
         $(_this.$el).datetimepicker(defaults_default()(_this.fieldOptions, {
           format: _this.getDefaultInputFormat()
         })).on("dp.change", function () {
-          cov_2dcodflvh9.f[2]++;
-          cov_2dcodflvh9.s[4]++;
           _this.value = input.value;
         });
       } else {
-        cov_2dcodflvh9.b[0][1]++;
-        cov_2dcodflvh9.s[5]++;
         console.warn("Bootstrap datetimepicker library is missing. Please download from https://eonasdan.github.io/bootstrap-datetimepicker/ and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_2dcodflvh9.f[3]++;
-    cov_2dcodflvh9.s[6]++;
-
-    if ((cov_2dcodflvh9.b[3][0]++, window.$) && (cov_2dcodflvh9.b[3][1]++, window.$.fn.datetimepicker)) {
-      cov_2dcodflvh9.b[2][0]++;
-      cov_2dcodflvh9.s[7]++;
+    if (window.$ && window.$.fn.datetimepicker) {
       $(this.$el).data("DateTimePicker").destroy();
-    } else {
-      cov_2dcodflvh9.b[2][1]++;
     }
   }
 });
@@ -32135,9 +24309,8 @@ var fieldDateTimePicker_component = normalizeComponent(
   
 )
 
-fieldDateTimePicker_component.options.__file = "fieldDateTimePicker.vue"
 /* harmony default export */ var fieldDateTimePicker = (fieldDateTimePicker_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldGoogleAddress.vue?vue&type=template&id=5a13bdc3&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldGoogleAddress.vue?vue&type=template&id=5a13bdc3&
 var fieldGoogleAddressvue_type_template_id_5a13bdc3_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],staticClass:"form-control",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName,"debounce":"500","id":_vm.fieldID},domProps:{"value":(_vm.value)},on:{"focus":function($event){_vm.geolocate()},"input":function($event){if($event.target.composing){ return; }_vm.value=$event.target.value}}})}
 var fieldGoogleAddressvue_type_template_id_5a13bdc3_staticRenderFns = []
 
@@ -32145,686 +24318,6 @@ var fieldGoogleAddressvue_type_template_id_5a13bdc3_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldGoogleAddress.vue?vue&type=template&id=5a13bdc3&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldGoogleAddress.vue?vue&type=script&lang=js&
-var cov_4807aow69 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldGoogleAddress.vue",
-      hash = "8f112b13c5d3bf64e66a74a30f99191cc10f0824",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldGoogleAddress.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 30,
-          column: 2
-        },
-        end: {
-          line: 44,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 48,
-          column: 2
-        },
-        end: {
-          line: 65,
-          column: 5
-        }
-      },
-      "2": {
-        start: {
-          line: 49,
-          column: 3
-        },
-        end: {
-          line: 64,
-          column: 4
-        }
-      },
-      "3": {
-        start: {
-          line: 55,
-          column: 4
-        },
-        end: {
-          line: 57,
-          column: 7
-        }
-      },
-      "4": {
-        start: {
-          line: 59,
-          column: 4
-        },
-        end: {
-          line: 59,
-          column: 69
-        }
-      },
-      "5": {
-        start: {
-          line: 61,
-          column: 4
-        },
-        end: {
-          line: 63,
-          column: 6
-        }
-      },
-      "6": {
-        start: {
-          line: 74,
-          column: 15
-        },
-        end: {
-          line: 74,
-          column: 43
-        }
-      },
-      "7": {
-        start: {
-          line: 75,
-          column: 3
-        },
-        end: {
-          line: 91,
-          column: 4
-        }
-      },
-      "8": {
-        start: {
-          line: 76,
-          column: 4
-        },
-        end: {
-          line: 76,
-          column: 41
-        }
-      },
-      "9": {
-        start: {
-          line: 78,
-          column: 15
-        },
-        end: {
-          line: 78,
-          column: 17
-        }
-      },
-      "10": {
-        start: {
-          line: 79,
-          column: 4
-        },
-        end: {
-          line: 86,
-          column: 5
-        }
-      },
-      "11": {
-        start: {
-          line: 80,
-          column: 5
-        },
-        end: {
-          line: 85,
-          column: 6
-        }
-      },
-      "12": {
-        start: {
-          line: 81,
-          column: 18
-        },
-        end: {
-          line: 81,
-          column: 54
-        }
-      },
-      "13": {
-        start: {
-          line: 82,
-          column: 6
-        },
-        end: {
-          line: 84,
-          column: 7
-        }
-      },
-      "14": {
-        start: {
-          line: 83,
-          column: 7
-        },
-        end: {
-          line: 83,
-          column: 69
-        }
-      },
-      "15": {
-        start: {
-          line: 89,
-          column: 4
-        },
-        end: {
-          line: 90,
-          column: 88
-        }
-      },
-      "16": {
-        start: {
-          line: 90,
-          column: 5
-        },
-        end: {
-          line: 90,
-          column: 88
-        }
-      },
-      "17": {
-        start: {
-          line: 99,
-          column: 3
-        },
-        end: {
-          line: 113,
-          column: 4
-        }
-      },
-      "18": {
-        start: {
-          line: 100,
-          column: 4
-        },
-        end: {
-          line: 112,
-          column: 7
-        }
-      },
-      "19": {
-        start: {
-          line: 101,
-          column: 23
-        },
-        end: {
-          line: 104,
-          column: 6
-        }
-      },
-      "20": {
-        start: {
-          line: 106,
-          column: 18
-        },
-        end: {
-          line: 109,
-          column: 7
-        }
-      },
-      "21": {
-        start: {
-          line: 111,
-          column: 5
-        },
-        end: {
-          line: 111,
-          column: 53
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 29,
-            column: 1
-          },
-          end: {
-            line: 29,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 29,
-            column: 8
-          },
-          end: {
-            line: 45,
-            column: 2
-          }
-        },
-        line: 29
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 47,
-            column: 1
-          },
-          end: {
-            line: 47,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 47,
-            column: 11
-          },
-          end: {
-            line: 66,
-            column: 2
-          }
-        },
-        line: 47
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 48,
-            column: 17
-          },
-          end: {
-            line: 48,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 48,
-            column: 23
-          },
-          end: {
-            line: 65,
-            column: 3
-          }
-        },
-        line: 48
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 73,
-            column: 2
-          },
-          end: {
-            line: 73,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 73,
-            column: 16
-          },
-          end: {
-            line: 92,
-            column: 3
-          }
-        },
-        line: 73
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 98,
-            column: 2
-          },
-          end: {
-            line: 98,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 98,
-            column: 14
-          },
-          end: {
-            line: 114,
-            column: 3
-          }
-        },
-        line: 98
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 100,
-            column: 45
-          },
-          end: {
-            line: 100,
-            column: 46
-          }
-        },
-        loc: {
-          start: {
-            line: 100,
-            column: 59
-          },
-          end: {
-            line: 112,
-            column: 5
-          }
-        },
-        line: 100
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 64,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 64,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 64,
-            column: 4
-          }
-        }],
-        line: 49
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 50,
-            column: 4
-          },
-          end: {
-            line: 53,
-            column: 42
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 50,
-            column: 4
-          },
-          end: {
-            line: 50,
-            column: 17
-          }
-        }, {
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 51,
-            column: 22
-          }
-        }, {
-          start: {
-            line: 52,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 29
-          }
-        }, {
-          start: {
-            line: 53,
-            column: 4
-          },
-          end: {
-            line: 53,
-            column: 42
-          }
-        }],
-        line: 50
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 75,
-            column: 3
-          },
-          end: {
-            line: 91,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 75,
-            column: 3
-          },
-          end: {
-            line: 91,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 75,
-            column: 3
-          },
-          end: {
-            line: 91,
-            column: 4
-          }
-        }],
-        line: 75
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 79,
-            column: 4
-          },
-          end: {
-            line: 86,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 79,
-            column: 4
-          },
-          end: {
-            line: 86,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 79,
-            column: 4
-          },
-          end: {
-            line: 86,
-            column: 5
-          }
-        }],
-        line: 79
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 82,
-            column: 6
-          },
-          end: {
-            line: 84,
-            column: 7
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 82,
-            column: 6
-          },
-          end: {
-            line: 84,
-            column: 7
-          }
-        }, {
-          start: {
-            line: 82,
-            column: 6
-          },
-          end: {
-            line: 84,
-            column: 7
-          }
-        }],
-        line: 82
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 89,
-            column: 4
-          },
-          end: {
-            line: 90,
-            column: 88
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 89,
-            column: 4
-          },
-          end: {
-            line: 90,
-            column: 88
-          }
-        }, {
-          start: {
-            line: 89,
-            column: 4
-          },
-          end: {
-            line: 90,
-            column: 88
-          }
-        }],
-        line: 89
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 99,
-            column: 3
-          },
-          end: {
-            line: 113,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 99,
-            column: 3
-          },
-          end: {
-            line: 113,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 99,
-            column: 3
-          },
-          end: {
-            line: 113,
-            column: 4
-          }
-        }],
-        line: 99
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0, 0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 //
 //
@@ -32852,8 +24345,6 @@ var cov_4807aow69 = function () {
   name: "field-googleAddress",
   mixins: [abstractField],
   data: function data() {
-    cov_4807aow69.f[0]++;
-    cov_4807aow69.s[0]++;
     return {
       // google autocomplete object
       autocomplete: "",
@@ -32872,24 +24363,14 @@ var cov_4807aow69 = function () {
   mounted: function mounted() {
     var _this = this;
 
-    cov_4807aow69.f[1]++;
-    cov_4807aow69.s[1]++;
     this.$nextTick(function () {
-      cov_4807aow69.f[2]++;
-      cov_4807aow69.s[2]++;
-
-      if ((cov_4807aow69.b[1][0]++, window.google) && (cov_4807aow69.b[1][1]++, window.google.maps) && (cov_4807aow69.b[1][2]++, window.google.maps.places) && (cov_4807aow69.b[1][3]++, window.google.maps.places.Autocomplete)) {
-        cov_4807aow69.b[0][0]++;
-        cov_4807aow69.s[3]++;
+      if (window.google && window.google.maps && window.google.maps.places && window.google.maps.places.Autocomplete) {
         _this.autocomplete = new google.maps.places.Autocomplete(_this.$el, {
           types: ["geocode"]
         });
-        cov_4807aow69.s[4]++;
 
         _this.autocomplete.addListener("place_changed", _this.pipeAddress);
       } else {
-        cov_4807aow69.b[0][1]++;
-        cov_4807aow69.s[5]++;
         console.warn("Google Maps API is missing. Please add https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&libraries=places script in the HTML head section!");
       }
     });
@@ -32900,49 +24381,24 @@ var cov_4807aow69 = function () {
      * @return void
      */
     pipeAddress: function pipeAddress() {
-      cov_4807aow69.f[3]++;
-      var place = (cov_4807aow69.s[6]++, this.autocomplete.getPlace());
-      cov_4807aow69.s[7]++;
+      var place = this.autocomplete.getPlace();
 
       if (place) {
-        cov_4807aow69.b[2][0]++;
-        cov_4807aow69.s[8]++;
         this.value = place.formatted_address;
-        var data = (cov_4807aow69.s[9]++, {});
-        cov_4807aow69.s[10]++;
+        var data = {};
 
         if (place.address_components !== undefined) {
-          cov_4807aow69.b[3][0]++;
-          cov_4807aow69.s[11]++;
-
           for (var i = 0; i < place.address_components.length; i++) {
-            var input = (cov_4807aow69.s[12]++, place.address_components[i].types[0]);
-            cov_4807aow69.s[13]++;
+            var input = place.address_components[i].types[0];
 
             if (this.inputs[input]) {
-              cov_4807aow69.b[4][0]++;
-              cov_4807aow69.s[14]++;
               data[input] = place.address_components[i][this.inputs[input]];
-            } else {
-              cov_4807aow69.b[4][1]++;
             }
           }
-        } else {
-          cov_4807aow69.b[3][1]++;
         } // Call event in schema
 
 
-        cov_4807aow69.s[15]++;
-
-        if (isFunction_default()(this.fieldOptions.onPlaceChanged)) {
-          cov_4807aow69.b[5][0]++;
-          cov_4807aow69.s[16]++;
-          this.fieldOptions.onPlaceChanged(this.value, data, place, this.model, this.schema);
-        } else {
-          cov_4807aow69.b[5][1]++;
-        }
-      } else {
-        cov_4807aow69.b[2][1]++;
+        if (isFunction_default()(this.fieldOptions.onPlaceChanged)) this.fieldOptions.onPlaceChanged(this.value, data, place, this.model, this.schema);
       }
     },
 
@@ -32953,28 +24409,19 @@ var cov_4807aow69 = function () {
     geolocate: function geolocate() {
       var _this2 = this;
 
-      cov_4807aow69.f[4]++;
-      cov_4807aow69.s[17]++;
-
       if (navigator.geolocation) {
-        cov_4807aow69.b[6][0]++;
-        cov_4807aow69.s[18]++;
         navigator.geolocation.getCurrentPosition(function (position) {
-          cov_4807aow69.f[5]++;
-          var geolocation = (cov_4807aow69.s[19]++, {
+          var geolocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
-          var circle = (cov_4807aow69.s[20]++, new window.google.maps.Circle({
+          };
+          var circle = new window.google.maps.Circle({
             center: geolocation,
             radius: position.coords.accuracy
-          }));
-          cov_4807aow69.s[21]++;
+          });
 
           _this2.autocomplete.setBounds(circle.getBounds());
         });
-      } else {
-        cov_4807aow69.b[6][1]++;
       }
     }
   }
@@ -33000,9 +24447,8 @@ var fieldGoogleAddress_component = normalizeComponent(
   
 )
 
-fieldGoogleAddress_component.options.__file = "fieldGoogleAddress.vue"
 /* harmony default export */ var fieldGoogleAddress = (fieldGoogleAddress_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldImage.vue?vue&type=template&id=1d199458&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldImage.vue?vue&type=template&id=1d199458&
 var fieldImagevue_type_template_id_1d199458_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"wrapper"},[_c('input',{directives:[{name:"show",rawName:"v-show",value:(_vm.fieldOptions.hideInput !== true),expression:"fieldOptions.hideInput !== true"},{name:"model",rawName:"v-model",value:(_vm.wrappedValue),expression:"wrappedValue"}],staticClass:"form-control link",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly},domProps:{"value":(_vm.wrappedValue)},on:{"input":function($event){if($event.target.composing){ return; }_vm.wrappedValue=$event.target.value}}}),(_vm.fieldOptions.browse !== false)?_c('input',{staticClass:"form-control file",attrs:{"type":"file","disabled":_vm.disabled,"name":_vm.inputName},on:{"change":_vm.fileChanged}}):_vm._e(),_c('div',{staticClass:"preview",style:(_vm.previewStyle)},[_c('div',{staticClass:"remove",attrs:{"title":"Remove image"},on:{"click":_vm.remove}})])])}
 var fieldImagevue_type_template_id_1d199458_staticRenderFns = []
 
@@ -33010,706 +24456,6 @@ var fieldImagevue_type_template_id_1d199458_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldImage.vue?vue&type=template&id=1d199458&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldImage.vue?vue&type=script&lang=js&
-var cov_mqchcwu6 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldImage.vue",
-      hash = "5db256bac2c61e1477ed8f88127f440ebf2b9d13",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldImage.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 37,
-          column: 3
-        },
-        end: {
-          line: 46,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 38,
-          column: 4
-        },
-        end: {
-          line: 41,
-          column: 6
-        }
-      },
-      "2": {
-        start: {
-          line: 43,
-          column: 4
-        },
-        end: {
-          line: 45,
-          column: 6
-        }
-      },
-      "3": {
-        start: {
-          line: 51,
-          column: 4
-        },
-        end: {
-          line: 52,
-          column: 27
-        }
-      },
-      "4": {
-        start: {
-          line: 51,
-          column: 56
-        },
-        end: {
-          line: 51,
-          column: 87
-        }
-      },
-      "5": {
-        start: {
-          line: 52,
-          column: 9
-        },
-        end: {
-          line: 52,
-          column: 27
-        }
-      },
-      "6": {
-        start: {
-          line: 55,
-          column: 4
-        },
-        end: {
-          line: 57,
-          column: 5
-        }
-      },
-      "7": {
-        start: {
-          line: 56,
-          column: 5
-        },
-        end: {
-          line: 56,
-          column: 27
-        }
-      },
-      "8": {
-        start: {
-          line: 64,
-          column: 12
-        },
-        end: {
-          line: 64,
-          column: 48
-        }
-      },
-      "9": {
-        start: {
-          line: 65,
-          column: 3
-        },
-        end: {
-          line: 67,
-          column: 4
-        }
-      },
-      "10": {
-        start: {
-          line: 66,
-          column: 4
-        },
-        end: {
-          line: 66,
-          column: 18
-        }
-      },
-      "11": {
-        start: {
-          line: 73,
-          column: 3
-        },
-        end: {
-          line: 73,
-          column: 19
-        }
-      },
-      "12": {
-        start: {
-          line: 77,
-          column: 16
-        },
-        end: {
-          line: 77,
-          column: 32
-        }
-      },
-      "13": {
-        start: {
-          line: 78,
-          column: 3
-        },
-        end: {
-          line: 80,
-          column: 5
-        }
-      },
-      "14": {
-        start: {
-          line: 79,
-          column: 4
-        },
-        end: {
-          line: 79,
-          column: 33
-        }
-      },
-      "15": {
-        start: {
-          line: 82,
-          column: 3
-        },
-        end: {
-          line: 84,
-          column: 4
-        }
-      },
-      "16": {
-        start: {
-          line: 83,
-          column: 4
-        },
-        end: {
-          line: 83,
-          column: 48
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 36,
-            column: 2
-          },
-          end: {
-            line: 36,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 36,
-            column: 17
-          },
-          end: {
-            line: 47,
-            column: 3
-          }
-        },
-        line: 36
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 50,
-            column: 3
-          },
-          end: {
-            line: 50,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 50,
-            column: 9
-          },
-          end: {
-            line: 53,
-            column: 4
-          }
-        },
-        line: 50
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 54,
-            column: 3
-          },
-          end: {
-            line: 54,
-            column: 4
-          }
-        },
-        loc: {
-          start: {
-            line: 54,
-            column: 17
-          },
-          end: {
-            line: 58,
-            column: 4
-          }
-        },
-        line: 54
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 63,
-            column: 2
-          },
-          end: {
-            line: 63,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 63,
-            column: 10
-          },
-          end: {
-            line: 68,
-            column: 3
-          }
-        },
-        line: 63
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 72,
-            column: 2
-          },
-          end: {
-            line: 72,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 72,
-            column: 11
-          },
-          end: {
-            line: 74,
-            column: 3
-          }
-        },
-        line: 72
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 76,
-            column: 2
-          },
-          end: {
-            line: 76,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 76,
-            column: 21
-          },
-          end: {
-            line: 85,
-            column: 3
-          }
-        },
-        line: 76
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 78,
-            column: 19
-          },
-          end: {
-            line: 78,
-            column: 20
-          }
-        },
-        loc: {
-          start: {
-            line: 78,
-            column: 26
-          },
-          end: {
-            line: 80,
-            column: 4
-          }
-        },
-        line: 78
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 37,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 37,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 37,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        }],
-        line: 37
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 40,
-            column: 25
-          },
-          end: {
-            line: 40,
-            column: 80
-          }
-        },
-        type: "cond-expr",
-        locations: [{
-          start: {
-            line: 40,
-            column: 46
-          },
-          end: {
-            line: 40,
-            column: 71
-          }
-        }, {
-          start: {
-            line: 40,
-            column: 74
-          },
-          end: {
-            line: 40,
-            column: 80
-          }
-        }],
-        line: 40
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 27
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 27
-          }
-        }, {
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 27
-          }
-        }],
-        line: 51
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 51,
-            column: 8
-          },
-          end: {
-            line: 51,
-            column: 54
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 51,
-            column: 8
-          },
-          end: {
-            line: 51,
-            column: 18
-          }
-        }, {
-          start: {
-            line: 51,
-            column: 22
-          },
-          end: {
-            line: 51,
-            column: 54
-          }
-        }],
-        line: 51
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 57,
-            column: 5
-          }
-        }],
-        line: 55
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 55,
-            column: 8
-          },
-          end: {
-            line: 55,
-            column: 50
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 55,
-            column: 8
-          },
-          end: {
-            line: 55,
-            column: 16
-          }
-        }, {
-          start: {
-            line: 55,
-            column: 20
-          },
-          end: {
-            line: 55,
-            column: 50
-          }
-        }],
-        line: 55
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 65,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 65,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 65,
-            column: 3
-          },
-          end: {
-            line: 67,
-            column: 4
-          }
-        }],
-        line: 65
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 82,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 82,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 82,
-            column: 3
-          },
-          end: {
-            line: 84,
-            column: 4
-          }
-        }],
-        line: 82
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 82,
-            column: 7
-          },
-          end: {
-            line: 82,
-            column: 58
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 82,
-            column: 7
-          },
-          end: {
-            line: 82,
-            column: 25
-          }
-        }, {
-          start: {
-            line: 82,
-            column: 29
-          },
-          end: {
-            line: 82,
-            column: 58
-          }
-        }],
-        line: 82
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -33743,19 +24489,12 @@ var cov_mqchcwu6 = function () {
   mixins: [abstractField],
   computed: {
     previewStyle: function previewStyle() {
-      cov_mqchcwu6.f[0]++;
-      cov_mqchcwu6.s[0]++;
-
       if (this.fieldOptions.preview !== false) {
-        cov_mqchcwu6.b[0][0]++;
-        cov_mqchcwu6.s[1]++;
         return {
           display: "block",
-          "background-image": this.value != null ? (cov_mqchcwu6.b[1][0]++, "url(" + this.value + ")") : (cov_mqchcwu6.b[1][1]++, "none")
+          "background-image": this.value != null ? "url(" + this.value + ")" : "none"
         };
       } else {
-        cov_mqchcwu6.b[0][1]++;
-        cov_mqchcwu6.s[2]++;
         return {
           display: "none"
         };
@@ -33763,83 +24502,47 @@ var cov_mqchcwu6 = function () {
     },
     wrappedValue: {
       get: function get() {
-        cov_mqchcwu6.f[1]++;
-        cov_mqchcwu6.s[3]++;
-
-        if ((cov_mqchcwu6.b[3][0]++, this.value) && (cov_mqchcwu6.b[3][1]++, this.value.indexOf("data") === 0)) {
-          cov_mqchcwu6.b[2][0]++;
-          cov_mqchcwu6.s[4]++;
-          return "<inline base64 image>";
-        } else {
-          cov_mqchcwu6.b[2][1]++;
-          cov_mqchcwu6.s[5]++;
-          return this.value;
-        }
+        if (this.value && this.value.indexOf("data") === 0) return "<inline base64 image>";else return this.value;
       },
       set: function set(newValue) {
-        cov_mqchcwu6.f[2]++;
-        cov_mqchcwu6.s[6]++;
-
-        if ((cov_mqchcwu6.b[5][0]++, newValue) && (cov_mqchcwu6.b[5][1]++, newValue.indexOf("http") === 0)) {
-          cov_mqchcwu6.b[4][0]++;
-          cov_mqchcwu6.s[7]++;
+        if (newValue && newValue.indexOf("http") === 0) {
           this.value = newValue;
-        } else {
-          cov_mqchcwu6.b[4][1]++;
         }
       }
     }
   },
   watch: {
     model: function model() {
-      cov_mqchcwu6.f[3]++;
-      var el = (cov_mqchcwu6.s[8]++, this.$el.querySelector("input.file"));
-      cov_mqchcwu6.s[9]++;
+      var el = this.$el.querySelector("input.file");
 
       if (el) {
-        cov_mqchcwu6.b[6][0]++;
-        cov_mqchcwu6.s[10]++;
         el.value = "";
-      } else {
-        cov_mqchcwu6.b[6][1]++;
       }
     }
   },
   methods: {
     remove: function remove() {
-      cov_mqchcwu6.f[4]++;
-      cov_mqchcwu6.s[11]++;
       this.value = "";
     },
     fileChanged: function fileChanged(event) {
       var _this = this;
 
-      cov_mqchcwu6.f[5]++;
-      var reader = (cov_mqchcwu6.s[12]++, new FileReader());
-      cov_mqchcwu6.s[13]++;
+      var reader = new FileReader();
 
       reader.onload = function (e) {
-        cov_mqchcwu6.f[6]++;
-        cov_mqchcwu6.s[14]++;
         _this.value = e.target.result;
       };
 
-      cov_mqchcwu6.s[15]++;
-
-      if ((cov_mqchcwu6.b[8][0]++, event.target.files) && (cov_mqchcwu6.b[8][1]++, event.target.files.length > 0)) {
-        cov_mqchcwu6.b[7][0]++;
-        cov_mqchcwu6.s[16]++;
+      if (event.target.files && event.target.files.length > 0) {
         reader.readAsDataURL(event.target.files[0]);
-      } else {
-        cov_mqchcwu6.b[7][1]++;
       }
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldImage.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldImagevue_type_script_lang_js_ = (fieldImagevue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldImage.vue?vue&type=style&index=0&lang=scss&
-var fieldImagevue_type_style_index_0_lang_scss_ = __webpack_require__("2d36");
+// EXTERNAL MODULE: ./src/fields/optional/fieldImage.vue?vue&type=style&index=0&id=1d199458&prod&lang=scss&
+var fieldImagevue_type_style_index_0_id_1d199458_prod_lang_scss_ = __webpack_require__("9666");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldImage.vue
 
@@ -33861,9 +24564,8 @@ var fieldImage_component = normalizeComponent(
   
 )
 
-fieldImage_component.options.__file = "fieldImage.vue"
 /* harmony default export */ var fieldImage = (fieldImage_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldMasked.vue?vue&type=template&id=7f459cba&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldMasked.vue?vue&type=template&id=7f459cba&
 var fieldMaskedvue_type_template_id_7f459cba_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],staticClass:"form-control",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName,"id":_vm.fieldID},domProps:{"value":(_vm.value)},on:{"input":function($event){if($event.target.composing){ return; }_vm.value=$event.target.value}}})}
 var fieldMaskedvue_type_template_id_7f459cba_staticRenderFns = []
 
@@ -33871,315 +24573,6 @@ var fieldMaskedvue_type_template_id_7f459cba_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldMasked.vue?vue&type=template&id=7f459cba&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldMasked.vue?vue&type=script&lang=js&
-var cov_2mtm8dg4pp = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldMasked.vue",
-      hash = "2dbea27f9f7c46930a94d4e5c707f0c0d89c0f4d",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldMasked.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 22,
-          column: 2
-        },
-        end: {
-          line: 32,
-          column: 5
-        }
-      },
-      "1": {
-        start: {
-          line: 23,
-          column: 3
-        },
-        end: {
-          line: 31,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 24,
-          column: 4
-        },
-        end: {
-          line: 26,
-          column: 66
-        }
-      },
-      "3": {
-        start: {
-          line: 28,
-          column: 4
-        },
-        end: {
-          line: 30,
-          column: 6
-        }
-      },
-      "4": {
-        start: {
-          line: 36,
-          column: 2
-        },
-        end: {
-          line: 36,
-          column: 57
-        }
-      },
-      "5": {
-        start: {
-          line: 36,
-          column: 36
-        },
-        end: {
-          line: 36,
-          column: 57
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 21,
-            column: 1
-          },
-          end: {
-            line: 21,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 21,
-            column: 11
-          },
-          end: {
-            line: 33,
-            column: 2
-          }
-        },
-        line: 21
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 22,
-            column: 17
-          },
-          end: {
-            line: 22,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 22,
-            column: 28
-          },
-          end: {
-            line: 32,
-            column: 3
-          }
-        },
-        line: 22
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 35,
-            column: 1
-          },
-          end: {
-            line: 35,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 35,
-            column: 17
-          },
-          end: {
-            line: 37,
-            column: 2
-          }
-        },
-        line: 35
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 31,
-            column: 4
-          }
-        }],
-        line: 23
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 23,
-            column: 7
-          },
-          end: {
-            line: 23,
-            column: 35
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 23,
-            column: 7
-          },
-          end: {
-            line: 23,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 23,
-            column: 19
-          },
-          end: {
-            line: 23,
-            column: 35
-          }
-        }],
-        line: 23
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 36,
-            column: 2
-          },
-          end: {
-            line: 36,
-            column: 57
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 36,
-            column: 2
-          },
-          end: {
-            line: 36,
-            column: 57
-          }
-        }, {
-          start: {
-            line: 36,
-            column: 2
-          },
-          end: {
-            line: 36,
-            column: 57
-          }
-        }],
-        line: 36
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 36,
-            column: 6
-          },
-          end: {
-            line: 36,
-            column: 34
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 36,
-            column: 6
-          },
-          end: {
-            line: 36,
-            column: 14
-          }
-        }, {
-          start: {
-            line: 36,
-            column: 18
-          },
-          end: {
-            line: 36,
-            column: 34
-          }
-        }],
-        line: 36
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -34199,34 +24592,16 @@ var cov_2mtm8dg4pp = function () {
   name: "field-masked",
   mixins: [abstractField],
   mounted: function mounted() {
-    cov_2mtm8dg4pp.f[0]++;
-    cov_2mtm8dg4pp.s[0]++;
     this.$nextTick(function () {
-      cov_2mtm8dg4pp.f[1]++;
-      cov_2mtm8dg4pp.s[1]++;
-
-      if ((cov_2mtm8dg4pp.b[1][0]++, window.$) && (cov_2mtm8dg4pp.b[1][1]++, window.$.fn.mask)) {
-        cov_2mtm8dg4pp.b[0][0]++;
-        cov_2mtm8dg4pp.s[2]++;
+      if (window.$ && window.$.fn.mask) {
         $(this.$el).unmask().mask(this.fieldOptions.mask, this.fieldOptions.maskOptions);
       } else {
-        cov_2mtm8dg4pp.b[0][1]++;
-        cov_2mtm8dg4pp.s[3]++;
         console.warn("JQuery MaskedInput library is missing. Please download from https://github.com/digitalBush/jquery.maskedinput and load the script in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_2mtm8dg4pp.f[2]++;
-    cov_2mtm8dg4pp.s[4]++;
-
-    if ((cov_2mtm8dg4pp.b[3][0]++, window.$) && (cov_2mtm8dg4pp.b[3][1]++, window.$.fn.mask)) {
-      cov_2mtm8dg4pp.b[2][0]++;
-      cov_2mtm8dg4pp.s[5]++;
-      $(this.$el).unmask();
-    } else {
-      cov_2mtm8dg4pp.b[2][1]++;
-    }
+    if (window.$ && window.$.fn.mask) $(this.$el).unmask();
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldMasked.vue?vue&type=script&lang=js&
@@ -34250,9 +24625,8 @@ var fieldMasked_component = normalizeComponent(
   
 )
 
-fieldMasked_component.options.__file = "fieldMasked.vue"
 /* harmony default export */ var fieldMasked = (fieldMasked_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldNoUiSlider.vue?vue&type=template&id=42f42504&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldNoUiSlider.vue?vue&type=template&id=42f42504&
 var fieldNoUiSlidervue_type_template_id_42f42504_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{staticClass:"slider",class:{ 'contain-pips': _vm.containPips, 'contain-tooltip': _vm.containTooltip },attrs:{"disabled":_vm.disabled}})}
 var fieldNoUiSlidervue_type_template_id_42f42504_staticRenderFns = []
 
@@ -34263,1027 +24637,6 @@ var fieldNoUiSlidervue_type_template_id_42f42504_staticRenderFns = []
 var es6_number_constructor = __webpack_require__("c5f6");
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldNoUiSlider.vue?vue&type=script&lang=js&
-var cov_2rleug92gu = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldNoUiSlider.vue",
-      hash = "1d1b9304f1ab543a141f7415c7301c771a4f1a8a",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldNoUiSlider.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 16,
-          column: 2
-        },
-        end: {
-          line: 18,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 23,
-          column: 3
-        },
-        end: {
-          line: 25,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 24,
-          column: 4
-        },
-        end: {
-          line: 24,
-          column: 43
-        }
-      },
-      "3": {
-        start: {
-          line: 31,
-          column: 3
-        },
-        end: {
-          line: 31,
-          column: 56
-        }
-      },
-      "4": {
-        start: {
-          line: 34,
-          column: 3
-        },
-        end: {
-          line: 34,
-          column: 60
-        }
-      },
-      "5": {
-        start: {
-          line: 40,
-          column: 3
-        },
-        end: {
-          line: 46,
-          column: 4
-        }
-      },
-      "6": {
-        start: {
-          line: 42,
-          column: 4
-        },
-        end: {
-          line: 42,
-          column: 62
-        }
-      },
-      "7": {
-        start: {
-          line: 45,
-          column: 4
-        },
-        end: {
-          line: 45,
-          column: 35
-        }
-      },
-      "8": {
-        start: {
-          line: 49,
-          column: 3
-        },
-        end: {
-          line: 51,
-          column: 4
-        }
-      },
-      "9": {
-        start: {
-          line: 50,
-          column: 4
-        },
-        end: {
-          line: 50,
-          column: 38
-        }
-      },
-      "10": {
-        start: {
-          line: 54,
-          column: 3
-        },
-        end: {
-          line: 60,
-          column: 4
-        }
-      },
-      "11": {
-        start: {
-          line: 55,
-          column: 4
-        },
-        end: {
-          line: 59,
-          column: 5
-        }
-      },
-      "12": {
-        start: {
-          line: 56,
-          column: 5
-        },
-        end: {
-          line: 56,
-          column: 45
-        }
-      },
-      "13": {
-        start: {
-          line: 58,
-          column: 5
-        },
-        end: {
-          line: 58,
-          column: 24
-        }
-      },
-      "14": {
-        start: {
-          line: 63,
-          column: 3
-        },
-        end: {
-          line: 71,
-          column: 4
-        }
-      },
-      "15": {
-        start: {
-          line: 64,
-          column: 4
-        },
-        end: {
-          line: 64,
-          column: 22
-        }
-      },
-      "16": {
-        start: {
-          line: 66,
-          column: 4
-        },
-        end: {
-          line: 70,
-          column: 5
-        }
-      },
-      "17": {
-        start: {
-          line: 67,
-          column: 5
-        },
-        end: {
-          line: 67,
-          column: 59
-        }
-      },
-      "18": {
-        start: {
-          line: 69,
-          column: 5
-        },
-        end: {
-          line: 69,
-          column: 34
-        }
-      },
-      "19": {
-        start: {
-          line: 76,
-          column: 2
-        },
-        end: {
-          line: 95,
-          column: 5
-        }
-      },
-      "20": {
-        start: {
-          line: 77,
-          column: 3
-        },
-        end: {
-          line: 94,
-          column: 4
-        }
-      },
-      "21": {
-        start: {
-          line: 78,
-          column: 4
-        },
-        end: {
-          line: 78,
-          column: 27
-        }
-      },
-      "22": {
-        start: {
-          line: 79,
-          column: 4
-        },
-        end: {
-          line: 88,
-          column: 6
-        }
-      },
-      "23": {
-        start: {
-          line: 89,
-          column: 4
-        },
-        end: {
-          line: 89,
-          column: 66
-        }
-      },
-      "24": {
-        start: {
-          line: 91,
-          column: 4
-        },
-        end: {
-          line: 93,
-          column: 6
-        }
-      },
-      "25": {
-        start: {
-          line: 99,
-          column: 2
-        },
-        end: {
-          line: 99,
-          column: 56
-        }
-      },
-      "26": {
-        start: {
-          line: 99,
-          column: 19
-        },
-        end: {
-          line: 99,
-          column: 56
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 15,
-            column: 1
-          },
-          end: {
-            line: 15,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 15,
-            column: 8
-          },
-          end: {
-            line: 19,
-            column: 2
-          }
-        },
-        line: 15
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 22,
-            column: 9
-          },
-          end: {
-            line: 22,
-            column: 10
-          }
-        },
-        loc: {
-          start: {
-            line: 22,
-            column: 20
-          },
-          end: {
-            line: 26,
-            column: 3
-          }
-        },
-        line: 22
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 30,
-            column: 2
-          },
-          end: {
-            line: 30,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 30,
-            column: 16
-          },
-          end: {
-            line: 32,
-            column: 3
-          }
-        },
-        line: 30
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 33,
-            column: 2
-          },
-          end: {
-            line: 33,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 33,
-            column: 19
-          },
-          end: {
-            line: 35,
-            column: 3
-          }
-        },
-        line: 33
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 39,
-            column: 2
-          },
-          end: {
-            line: 39,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 39,
-            column: 18
-          },
-          end: {
-            line: 47,
-            column: 3
-          }
-        },
-        line: 39
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 48,
-            column: 2
-          },
-          end: {
-            line: 48,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 48,
-            column: 28
-          },
-          end: {
-            line: 52,
-            column: 3
-          }
-        },
-        line: 48
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 53,
-            column: 2
-          },
-          end: {
-            line: 53,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 53,
-            column: 26
-          },
-          end: {
-            line: 61,
-            column: 3
-          }
-        },
-        line: 53
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 62,
-            column: 2
-          },
-          end: {
-            line: 62,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 62,
-            column: 18
-          },
-          end: {
-            line: 72,
-            column: 3
-          }
-        },
-        line: 62
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 75,
-            column: 1
-          },
-          end: {
-            line: 75,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 75,
-            column: 11
-          },
-          end: {
-            line: 96,
-            column: 2
-          }
-        },
-        line: 75
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 76,
-            column: 17
-          },
-          end: {
-            line: 76,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 76,
-            column: 23
-          },
-          end: {
-            line: 95,
-            column: 3
-          }
-        },
-        line: 76
-      },
-      "10": {
-        name: "(anonymous_10)",
-        decl: {
-          start: {
-            line: 98,
-            column: 1
-          },
-          end: {
-            line: 98,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 98,
-            column: 17
-          },
-          end: {
-            line: 100,
-            column: 2
-          }
-        },
-        line: 98
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 25,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 25,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 23,
-            column: 3
-          },
-          end: {
-            line: 25,
-            column: 4
-          }
-        }],
-        line: 23
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 23,
-            column: 7
-          },
-          end: {
-            line: 23,
-            column: 65
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 23,
-            column: 7
-          },
-          end: {
-            line: 23,
-            column: 24
-          }
-        }, {
-          start: {
-            line: 23,
-            column: 28
-          },
-          end: {
-            line: 23,
-            column: 39
-          }
-        }, {
-          start: {
-            line: 23,
-            column: 43
-          },
-          end: {
-            line: 23,
-            column: 65
-          }
-        }],
-        line: 23
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 46,
-            column: 4
-          }
-        }],
-        line: 40
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 51,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 51,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 51,
-            column: 4
-          }
-        }],
-        line: 49
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 49,
-            column: 7
-          },
-          end: {
-            line: 49,
-            column: 76
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 49,
-            column: 7
-          },
-          end: {
-            line: 49,
-            column: 27
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 31
-          },
-          end: {
-            line: 49,
-            column: 76
-          }
-        }],
-        line: 49
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 54,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 54,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 54,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }],
-        line: 54
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 59,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 59,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 55,
-            column: 4
-          },
-          end: {
-            line: 59,
-            column: 5
-          }
-        }],
-        line: 55
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 71,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 71,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 63,
-            column: 3
-          },
-          end: {
-            line: 71,
-            column: 4
-          }
-        }],
-        line: 63
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 66,
-            column: 4
-          },
-          end: {
-            line: 70,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 66,
-            column: 4
-          },
-          end: {
-            line: 70,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 66,
-            column: 4
-          },
-          end: {
-            line: 70,
-            column: 5
-          }
-        }],
-        line: 66
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 94,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 94,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 77,
-            column: 3
-          },
-          end: {
-            line: 94,
-            column: 4
-          }
-        }],
-        line: 77
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 81,
-            column: 14
-          },
-          end: {
-            line: 81,
-            column: 37
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 81,
-            column: 14
-          },
-          end: {
-            line: 81,
-            column: 31
-          }
-        }, {
-          start: {
-            line: 81,
-            column: 35
-          },
-          end: {
-            line: 81,
-            column: 37
-          }
-        }],
-        line: 81
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 99,
-            column: 2
-          },
-          end: {
-            line: 99,
-            column: 56
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 99,
-            column: 2
-          },
-          end: {
-            line: 99,
-            column: 56
-          }
-        }, {
-          start: {
-            line: 99,
-            column: 2
-          },
-          end: {
-            line: 99,
-            column: 56
-          }
-        }],
-        line: 99
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0,
-      "26": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0],
-      "10": [0, 0],
-      "11": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -35298,107 +24651,56 @@ var cov_2rleug92gu = function () {
   name: "field-noUiSlider",
   mixins: [abstractField],
   data: function data() {
-    cov_2rleug92gu.f[0]++;
-    cov_2rleug92gu.s[0]++;
     return {
       slider: null
     };
   },
   watch: {
     model: function model() {
-      cov_2rleug92gu.f[1]++;
-      cov_2rleug92gu.s[1]++;
-
-      if ((cov_2rleug92gu.b[1][0]++, window.noUiSlider) && (cov_2rleug92gu.b[1][1]++, this.slider) && (cov_2rleug92gu.b[1][2]++, this.slider.noUiSlider)) {
-        cov_2rleug92gu.b[0][0]++;
-        cov_2rleug92gu.s[2]++;
+      if (window.noUiSlider && this.slider && this.slider.noUiSlider) {
         this.slider.noUiSlider.set(this.value);
-      } else {
-        cov_2rleug92gu.b[0][1]++;
       }
     }
   },
   computed: {
     containPips: function containPips() {
-      cov_2rleug92gu.f[2]++;
-      cov_2rleug92gu.s[3]++;
       return typeof this.fieldOptions.pips !== "undefined";
     },
     containTooltip: function containTooltip() {
-      cov_2rleug92gu.f[3]++;
-      cov_2rleug92gu.s[4]++;
       return typeof this.fieldOptions.tooltips !== "undefined";
     }
   },
   methods: {
     onChange: function onChange(value) {
-      cov_2rleug92gu.f[4]++;
-      cov_2rleug92gu.s[5]++;
-
       if (isArray_default()(value)) {
-        cov_2rleug92gu.b[2][0]++;
-        cov_2rleug92gu.s[6]++;
         // Array (range)
         this.value = [parseFloat(value[0]), parseFloat(value[1])];
       } else {
-        cov_2rleug92gu.b[2][1]++;
-        cov_2rleug92gu.s[7]++;
         // Single value
         this.value = parseFloat(value);
       }
     },
     formatValueToField: function formatValueToField(value) {
-      cov_2rleug92gu.f[5]++;
-      cov_2rleug92gu.s[8]++;
-
-      if ((cov_2rleug92gu.b[4][0]++, this.slider !== null) && (cov_2rleug92gu.b[4][1]++, typeof this.slider.noUiSlider !== "undefined")) {
-        cov_2rleug92gu.b[3][0]++;
-        cov_2rleug92gu.s[9]++;
+      if (this.slider !== null && typeof this.slider.noUiSlider !== "undefined") {
         this.slider.noUiSlider.set(value);
-      } else {
-        cov_2rleug92gu.b[3][1]++;
       }
     },
     formatValueToModel: function formatValueToModel(val) {
-      cov_2rleug92gu.f[6]++;
-      cov_2rleug92gu.s[10]++;
-
       if (typeof this.slider.noUiSlider !== "undefined") {
-        cov_2rleug92gu.b[5][0]++;
-        cov_2rleug92gu.s[11]++;
-
         if (val instanceof Array) {
-          cov_2rleug92gu.b[6][0]++;
-          cov_2rleug92gu.s[12]++;
           return [Number(val[0]), Number(val[1])];
         } else {
-          cov_2rleug92gu.b[6][1]++;
-          cov_2rleug92gu.s[13]++;
           return Number(val);
         }
-      } else {
-        cov_2rleug92gu.b[5][1]++;
       }
     },
     getStartValue: function getStartValue() {
-      cov_2rleug92gu.f[7]++;
-      cov_2rleug92gu.s[14]++;
-
       if (this.value != null) {
-        cov_2rleug92gu.b[7][0]++;
-        cov_2rleug92gu.s[15]++;
         return this.value;
       } else {
-        cov_2rleug92gu.b[7][1]++;
-        cov_2rleug92gu.s[16]++;
-
         if (typeof this.fieldOptions.double !== "undefined") {
-          cov_2rleug92gu.b[8][0]++;
-          cov_2rleug92gu.s[17]++;
           return [this.fieldOptions.min, this.fieldOptions.min];
         } else {
-          cov_2rleug92gu.b[8][1]++;
-          cov_2rleug92gu.s[18]++;
           return this.fieldOptions.min;
         }
       }
@@ -35407,51 +24709,31 @@ var cov_2rleug92gu = function () {
   mounted: function mounted() {
     var _this = this;
 
-    cov_2rleug92gu.f[8]++;
-    cov_2rleug92gu.s[19]++;
     this.$nextTick(function () {
-      cov_2rleug92gu.f[9]++;
-      cov_2rleug92gu.s[20]++;
-
       if (window.noUiSlider) {
-        cov_2rleug92gu.b[9][0]++;
-        cov_2rleug92gu.s[21]++;
         _this.slider = _this.$el;
-        cov_2rleug92gu.s[22]++;
-        window.noUiSlider.create(_this.slider, defaults_default()((cov_2rleug92gu.b[10][0]++, _this.fieldOptions) || (cov_2rleug92gu.b[10][1]++, {}), {
+        window.noUiSlider.create(_this.slider, defaults_default()(_this.fieldOptions || {}, {
           start: _this.getStartValue(),
           range: {
             min: _this.fieldOptions.min,
             max: _this.fieldOptions.max
           }
         }));
-        cov_2rleug92gu.s[23]++;
 
         _this.slider.noUiSlider.on("change", _this.onChange.bind(_this));
       } else {
-        cov_2rleug92gu.b[9][1]++;
-        cov_2rleug92gu.s[24]++;
         console.warn("noUiSlider is missing. Please download from https://github.com/leongersen/noUiSlider and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_2rleug92gu.f[10]++;
-    cov_2rleug92gu.s[25]++;
-
-    if (this.slider) {
-      cov_2rleug92gu.b[11][0]++;
-      cov_2rleug92gu.s[26]++;
-      this.slider.noUiSlider.off("change");
-    } else {
-      cov_2rleug92gu.b[11][1]++;
-    }
+    if (this.slider) this.slider.noUiSlider.off("change");
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldNoUiSlider.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldNoUiSlidervue_type_script_lang_js_ = (fieldNoUiSlidervue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldNoUiSlider.vue?vue&type=style&index=0&lang=scss&
-var fieldNoUiSlidervue_type_style_index_0_lang_scss_ = __webpack_require__("bf23");
+// EXTERNAL MODULE: ./src/fields/optional/fieldNoUiSlider.vue?vue&type=style&index=0&id=42f42504&prod&lang=scss&
+var fieldNoUiSlidervue_type_style_index_0_id_42f42504_prod_lang_scss_ = __webpack_require__("f207");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldNoUiSlider.vue
 
@@ -35473,9 +24755,8 @@ var fieldNoUiSlider_component = normalizeComponent(
   
 )
 
-fieldNoUiSlider_component.options.__file = "fieldNoUiSlider.vue"
 /* harmony default export */ var fieldNoUiSlider = (fieldNoUiSlider_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldPikaday.vue?vue&type=template&id=ef21789c&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldPikaday.vue?vue&type=template&id=ef21789c&
 var fieldPikadayvue_type_template_id_ef21789c_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],staticClass:"form-control",attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName},domProps:{"value":(_vm.value)},on:{"input":function($event){if($event.target.composing){ return; }_vm.value=$event.target.value}}})}
 var fieldPikadayvue_type_template_id_ef21789c_staticRenderFns = []
 
@@ -35483,321 +24764,17 @@ var fieldPikadayvue_type_template_id_ef21789c_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldPikaday.vue?vue&type=template&id=ef21789c&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldPikaday.vue?vue&type=script&lang=js&
-var cov_pjie54xlp = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldPikaday.vue",
-      hash = "b787f4bece0d676d57b4eae667bf05769195cd91",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldPikaday.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 21,
-          column: 2
-        },
-        end: {
-          line: 21,
-          column: 26
-        }
-      },
-      "1": {
-        start: {
-          line: 29,
-          column: 2
-        },
-        end: {
-          line: 45,
-          column: 5
-        }
-      },
-      "2": {
-        start: {
-          line: 30,
-          column: 3
-        },
-        end: {
-          line: 44,
-          column: 4
-        }
-      },
-      "3": {
-        start: {
-          line: 31,
-          column: 4
-        },
-        end: {
-          line: 39,
-          column: 6
-        }
-      },
-      "4": {
-        start: {
-          line: 35,
-          column: 7
-        },
-        end: {
-          line: 35,
-          column: 43
-        }
-      },
-      "5": {
-        start: {
-          line: 41,
-          column: 4
-        },
-        end: {
-          line: 43,
-          column: 6
-        }
-      },
-      "6": {
-        start: {
-          line: 49,
-          column: 2
-        },
-        end: {
-          line: 49,
-          column: 41
-        }
-      },
-      "7": {
-        start: {
-          line: 49,
-          column: 19
-        },
-        end: {
-          line: 49,
-          column: 41
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 20,
-            column: 1
-          },
-          end: {
-            line: 20,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 20,
-            column: 8
-          },
-          end: {
-            line: 22,
-            column: 2
-          }
-        },
-        line: 20
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 28,
-            column: 1
-          },
-          end: {
-            line: 28,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 28,
-            column: 11
-          },
-          end: {
-            line: 46,
-            column: 2
-          }
-        },
-        line: 28
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 29,
-            column: 17
-          },
-          end: {
-            line: 29,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 29,
-            column: 23
-          },
-          end: {
-            line: 45,
-            column: 3
-          }
-        },
-        line: 29
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 34,
-            column: 16
-          },
-          end: {
-            line: 34,
-            column: 17
-          }
-        },
-        loc: {
-          start: {
-            line: 34,
-            column: 22
-          },
-          end: {
-            line: 36,
-            column: 7
-          }
-        },
-        line: 34
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 48,
-            column: 1
-          },
-          end: {
-            line: 48,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 48,
-            column: 17
-          },
-          end: {
-            line: 50,
-            column: 2
-          }
-        },
-        line: 48
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 30,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 30,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 30,
-            column: 3
-          },
-          end: {
-            line: 44,
-            column: 4
-          }
-        }],
-        line: 30
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 49,
-            column: 2
-          },
-          end: {
-            line: 49,
-            column: 41
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 49,
-            column: 2
-          },
-          end: {
-            line: 49,
-            column: 41
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 2
-          },
-          end: {
-            line: 49,
-            column: 41
-          }
-        }],
-        line: 49
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
 
 
 
+
+
+
+
+
+function fieldPikadayvue_type_script_lang_js_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function fieldPikadayvue_type_script_lang_js_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? fieldPikadayvue_type_script_lang_js_ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : fieldPikadayvue_type_script_lang_js_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
 //
 //
@@ -35816,53 +24793,31 @@ var cov_pjie54xlp = function () {
   name: "field-pikaday",
   mixins: [abstractField],
   data: function data() {
-    cov_pjie54xlp.f[0]++;
-    cov_pjie54xlp.s[0]++;
     return {
       picker: null
     };
   },
-  methods: _objectSpread({}, dateFieldHelper),
+  methods: fieldPikadayvue_type_script_lang_js_objectSpread({}, dateFieldHelper),
   mounted: function mounted() {
     var _this = this;
 
-    cov_pjie54xlp.f[1]++;
-    cov_pjie54xlp.s[1]++;
     this.$nextTick(function () {
-      cov_pjie54xlp.f[2]++;
-      cov_pjie54xlp.s[2]++;
-
       if (window.Pikaday) {
-        cov_pjie54xlp.b[0][0]++;
-        cov_pjie54xlp.s[3]++;
         _this.picker = new window.Pikaday(defaults_default()(_this.fieldOptions, {
           field: _this.$el,
           // bind the datepicker to a form field
           onSelect: function onSelect() {
-            cov_pjie54xlp.f[3]++;
-            cov_pjie54xlp.s[4]++;
             _this.value = _this.picker.toString();
           } // trigger: , // use a different element to trigger opening the datepicker, see [trigger example][] (default to `field`)
 
         }));
       } else {
-        cov_pjie54xlp.b[0][1]++;
-        cov_pjie54xlp.s[5]++;
         console.warn("Pikaday is missing. Please download from https://github.com/dbushell/Pikaday/ and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_pjie54xlp.f[4]++;
-    cov_pjie54xlp.s[6]++;
-
-    if (this.picker) {
-      cov_pjie54xlp.b[1][0]++;
-      cov_pjie54xlp.s[7]++;
-      this.picker.destroy();
-    } else {
-      cov_pjie54xlp.b[1][1]++;
-    }
+    if (this.picker) this.picker.destroy();
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldPikaday.vue?vue&type=script&lang=js&
@@ -35886,28 +24841,46 @@ var fieldPikaday_component = normalizeComponent(
   
 )
 
-fieldPikaday_component.options.__file = "fieldPikaday.vue"
 /* harmony default export */ var fieldPikaday = (fieldPikaday_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldRangeSlider.vue?vue&type=template&id=280726e2&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldRangeSlider.vue?vue&type=template&id=280726e2&
 var fieldRangeSlidervue_type_template_id_280726e2_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"data-disable":_vm.disabled,"data-max":_vm.fieldOptions.max,"data-min":_vm.fieldOptions.min,"data-step":_vm.fieldOptions.step,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName}})}
 var fieldRangeSlidervue_type_template_id_280726e2_staticRenderFns = []
 
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldRangeSlider.vue?vue&type=template&id=280726e2&
 
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/arrayWithHoles.js
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/array/is-array.js
+var is_array = __webpack_require__("a745");
+var is_array_default = /*#__PURE__*/__webpack_require__.n(is_array);
+
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/arrayWithHoles.js
+
 function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
+  if (is_array_default()(arr)) return arr;
 }
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/iterableToArrayLimit.js
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/symbol.js
+var symbol = __webpack_require__("67bb");
+var symbol_default = /*#__PURE__*/__webpack_require__.n(symbol);
+
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/symbol/iterator.js
+var iterator = __webpack_require__("5d58");
+var iterator_default = /*#__PURE__*/__webpack_require__.n(iterator);
+
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/iterableToArrayLimit.js
+
+
 function _iterableToArrayLimit(arr, i) {
+  var _i = arr == null ? null : typeof symbol_default.a !== "undefined" && arr[iterator_default.a] || arr["@@iterator"];
+
+  if (_i == null) return;
   var _arr = [];
   var _n = true;
   var _d = false;
-  var _e = undefined;
+
+  var _s, _e;
 
   try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+    for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
       _arr.push(_s.value);
 
       if (i && _arr.length === i) break;
@@ -35925,737 +24898,44 @@ function _iterableToArrayLimit(arr, i) {
 
   return _arr;
 }
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/nonIterableRest.js
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/array/from.js
+var from = __webpack_require__("774e");
+var from_default = /*#__PURE__*/__webpack_require__.n(from);
+
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/arrayLikeToArray.js
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) {
+    arr2[i] = arr[i];
+  }
+
+  return arr2;
 }
-// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/builtin/es6/slicedToArray.js
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/unsupportedIterableToArray.js
+
+
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return from_default()(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/nonIterableRest.js
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs2/helpers/esm/slicedToArray.js
+
 
 
 
 function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldRangeSlider.vue?vue&type=script&lang=js&
-var cov_pd12tmzj = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldRangeSlider.vue",
-      hash = "dd366dfe4c9f06091175f6befd6bec32f157d891",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldRangeSlider.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 24,
-          column: 2
-        },
-        end: {
-          line: 26,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 31,
-          column: 3
-        },
-        end: {
-          line: 43,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 33,
-          column: 4
-        },
-        end: {
-          line: 35,
-          column: 34
-        }
-      },
-      "3": {
-        start: {
-          line: 34,
-          column: 5
-        },
-        end: {
-          line: 34,
-          column: 39
-        }
-      },
-      "4": {
-        start: {
-          line: 35,
-          column: 11
-        },
-        end: {
-          line: 35,
-          column: 34
-        }
-      },
-      "5": {
-        start: {
-          line: 37,
-          column: 4
-        },
-        end: {
-          line: 42,
-          column: 5
-        }
-      },
-      "6": {
-        start: {
-          line: 38,
-          column: 5
-        },
-        end: {
-          line: 41,
-          column: 8
-        }
-      },
-      "7": {
-        start: {
-          line: 48,
-          column: 2
-        },
-        end: {
-          line: 78,
-          column: 5
-        }
-      },
-      "8": {
-        start: {
-          line: 49,
-          column: 3
-        },
-        end: {
-          line: 77,
-          column: 4
-        }
-      },
-      "9": {
-        start: {
-          line: 51,
-          column: 4
-        },
-        end: {
-          line: 53,
-          column: 34
-        }
-      },
-      "10": {
-        start: {
-          line: 52,
-          column: 5
-        },
-        end: {
-          line: 52,
-          column: 39
-        }
-      },
-      "11": {
-        start: {
-          line: 53,
-          column: 11
-        },
-        end: {
-          line: 53,
-          column: 34
-        }
-      },
-      "12": {
-        start: {
-          line: 55,
-          column: 15
-        },
-        end: {
-          line: 55,
-          column: 19
-        }
-      },
-      "13": {
-        start: {
-          line: 56,
-          column: 4
-        },
-        end: {
-          line: 71,
-          column: 6
-        }
-      },
-      "14": {
-        start: {
-          line: 64,
-          column: 7
-        },
-        end: {
-          line: 68,
-          column: 8
-        }
-      },
-      "15": {
-        start: {
-          line: 65,
-          column: 8
-        },
-        end: {
-          line: 65,
-          column: 46
-        }
-      },
-      "16": {
-        start: {
-          line: 67,
-          column: 8
-        },
-        end: {
-          line: 67,
-          column: 33
-        }
-      },
-      "17": {
-        start: {
-          line: 72,
-          column: 4
-        },
-        end: {
-          line: 72,
-          column: 53
-        }
-      },
-      "18": {
-        start: {
-          line: 74,
-          column: 4
-        },
-        end: {
-          line: 76,
-          column: 6
-        }
-      },
-      "19": {
-        start: {
-          line: 82,
-          column: 2
-        },
-        end: {
-          line: 82,
-          column: 41
-        }
-      },
-      "20": {
-        start: {
-          line: 82,
-          column: 19
-        },
-        end: {
-          line: 82,
-          column: 41
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 23,
-            column: 1
-          },
-          end: {
-            line: 23,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 23,
-            column: 8
-          },
-          end: {
-            line: 27,
-            column: 2
-          }
-        },
-        line: 23
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 30,
-            column: 9
-          },
-          end: {
-            line: 30,
-            column: 10
-          }
-        },
-        loc: {
-          start: {
-            line: 30,
-            column: 20
-          },
-          end: {
-            line: 44,
-            column: 3
-          }
-        },
-        line: 30
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 47,
-            column: 1
-          },
-          end: {
-            line: 47,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 47,
-            column: 11
-          },
-          end: {
-            line: 79,
-            column: 2
-          }
-        },
-        line: 47
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 48,
-            column: 17
-          },
-          end: {
-            line: 48,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 48,
-            column: 28
-          },
-          end: {
-            line: 78,
-            column: 3
-          }
-        },
-        line: 48
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 63,
-            column: 6
-          },
-          end: {
-            line: 63,
-            column: 7
-          }
-        },
-        loc: {
-          start: {
-            line: 63,
-            column: 23
-          },
-          end: {
-            line: 69,
-            column: 7
-          }
-        },
-        line: 63
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 81,
-            column: 1
-          },
-          end: {
-            line: 81,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 81,
-            column: 17
-          },
-          end: {
-            line: 83,
-            column: 2
-          }
-        },
-        line: 81
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 43,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 43,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 43,
-            column: 4
-          }
-        }],
-        line: 31
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 31,
-            column: 7
-          },
-          end: {
-            line: 31,
-            column: 45
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 31,
-            column: 7
-          },
-          end: {
-            line: 31,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 31,
-            column: 19
-          },
-          end: {
-            line: 31,
-            column: 45
-          }
-        }],
-        line: 31
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 35,
-            column: 34
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 35,
-            column: 34
-          }
-        }, {
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 35,
-            column: 34
-          }
-        }],
-        line: 33
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 37,
-            column: 4
-          },
-          end: {
-            line: 42,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 37,
-            column: 4
-          },
-          end: {
-            line: 42,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 37,
-            column: 4
-          },
-          end: {
-            line: 42,
-            column: 5
-          }
-        }],
-        line: 37
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 3
-          },
-          end: {
-            line: 77,
-            column: 4
-          }
-        }],
-        line: 49
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 49,
-            column: 7
-          },
-          end: {
-            line: 49,
-            column: 45
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 49,
-            column: 7
-          },
-          end: {
-            line: 49,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 49,
-            column: 19
-          },
-          end: {
-            line: 49,
-            column: 45
-          }
-        }],
-        line: 49
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 53,
-            column: 34
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 53,
-            column: 34
-          }
-        }, {
-          start: {
-            line: 51,
-            column: 4
-          },
-          end: {
-            line: 53,
-            column: 34
-          }
-        }],
-        line: 51
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 64,
-            column: 7
-          },
-          end: {
-            line: 68,
-            column: 8
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 64,
-            column: 7
-          },
-          end: {
-            line: 68,
-            column: 8
-          }
-        }, {
-          start: {
-            line: 64,
-            column: 7
-          },
-          end: {
-            line: 68,
-            column: 8
-          }
-        }],
-        line: 64
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 82,
-            column: 2
-          },
-          end: {
-            line: 82,
-            column: 41
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 82,
-            column: 2
-          },
-          end: {
-            line: 82,
-            column: 41
-          }
-        }, {
-          start: {
-            line: 82,
-            column: 2
-          },
-          end: {
-            line: 82,
-            column: 41
-          }
-        }],
-        line: 82
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -36679,81 +24959,44 @@ var cov_pd12tmzj = function () {
   name: "field-rangeSlider",
   mixins: [abstractField],
   data: function data() {
-    cov_pd12tmzj.f[0]++;
-    cov_pd12tmzj.s[0]++;
     return {
       slider: null
     };
   },
   watch: {
     model: function model() {
-      cov_pd12tmzj.f[1]++;
-      cov_pd12tmzj.s[1]++;
-
-      if ((cov_pd12tmzj.b[1][0]++, window.$) && (cov_pd12tmzj.b[1][1]++, window.$.fn.ionRangeSlider)) {
-        cov_pd12tmzj.b[0][0]++;
+      if (window.$ && window.$.fn.ionRangeSlider) {
         var valueFrom, valueTo;
-        cov_pd12tmzj.s[2]++;
 
         if (isArray_default()(this.value)) {
-          cov_pd12tmzj.b[2][0]++;
-          cov_pd12tmzj.s[3]++;
-
           var _this$value = _slicedToArray(this.value, 2);
 
           valueFrom = _this$value[0];
           valueTo = _this$value[1];
-        } else {
-          cov_pd12tmzj.b[2][1]++;
-          cov_pd12tmzj.s[4]++;
-          valueFrom = this.value;
-        }
-
-        cov_pd12tmzj.s[5]++;
+        } else valueFrom = this.value;
 
         if (this.slider) {
-          cov_pd12tmzj.b[3][0]++;
-          cov_pd12tmzj.s[6]++;
           this.slider.update({
             from: valueFrom,
             to: valueTo
           });
-        } else {
-          cov_pd12tmzj.b[3][1]++;
         }
-      } else {
-        cov_pd12tmzj.b[0][1]++;
       }
     }
   },
   mounted: function mounted() {
-    cov_pd12tmzj.f[2]++;
-    cov_pd12tmzj.s[7]++;
     this.$nextTick(function () {
-      cov_pd12tmzj.f[3]++;
-      cov_pd12tmzj.s[8]++;
-
-      if ((cov_pd12tmzj.b[5][0]++, window.$) && (cov_pd12tmzj.b[5][1]++, window.$.fn.ionRangeSlider)) {
-        cov_pd12tmzj.b[4][0]++;
+      if (window.$ && window.$.fn.ionRangeSlider) {
         var valueFrom, valueTo;
-        cov_pd12tmzj.s[9]++;
 
         if (isArray_default()(this.value)) {
-          cov_pd12tmzj.b[6][0]++;
-          cov_pd12tmzj.s[10]++;
-
           var _this$value2 = _slicedToArray(this.value, 2);
 
           valueFrom = _this$value2[0];
           valueTo = _this$value2[1];
-        } else {
-          cov_pd12tmzj.b[6][1]++;
-          cov_pd12tmzj.s[11]++;
-          valueFrom = this.value;
-        }
+        } else valueFrom = this.value;
 
-        var self = (cov_pd12tmzj.s[12]++, this);
-        cov_pd12tmzj.s[13]++;
+        var self = this;
         $(this.$el).ionRangeSlider(defaults_default()(this.fieldOptions, {
           type: "single",
           grid: true,
@@ -36761,46 +25004,27 @@ var cov_pd12tmzj = function () {
           from: valueFrom,
           to: valueTo,
           onChange: function onChange(slider) {
-            cov_pd12tmzj.f[4]++;
-            cov_pd12tmzj.s[14]++;
-
             if (self.slider.options.type === "double") {
-              cov_pd12tmzj.b[7][0]++;
-              cov_pd12tmzj.s[15]++;
               self.value = [slider.from, slider.to];
             } else {
-              cov_pd12tmzj.b[7][1]++;
-              cov_pd12tmzj.s[16]++;
               self.value = slider.from;
             }
           }
         }));
-        cov_pd12tmzj.s[17]++;
         this.slider = $(this.$el).data("ionRangeSlider");
       } else {
-        cov_pd12tmzj.b[4][1]++;
-        cov_pd12tmzj.s[18]++;
         console.warn("ion.rangeSlider library is missing. Please download from https://github.com/IonDen/ion.rangeSlider and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_pd12tmzj.f[5]++;
-    cov_pd12tmzj.s[19]++;
-
-    if (this.slider) {
-      cov_pd12tmzj.b[8][0]++;
-      cov_pd12tmzj.s[20]++;
-      this.slider.destroy();
-    } else {
-      cov_pd12tmzj.b[8][1]++;
-    }
+    if (this.slider) this.slider.destroy();
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldRangeSlider.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldRangeSlidervue_type_script_lang_js_ = (fieldRangeSlidervue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldRangeSlider.vue?vue&type=style&index=0&lang=scss&
-var fieldRangeSlidervue_type_style_index_0_lang_scss_ = __webpack_require__("d474");
+// EXTERNAL MODULE: ./src/fields/optional/fieldRangeSlider.vue?vue&type=style&index=0&id=280726e2&prod&lang=scss&
+var fieldRangeSlidervue_type_style_index_0_id_280726e2_prod_lang_scss_ = __webpack_require__("be9d");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldRangeSlider.vue
 
@@ -36822,9 +25046,8 @@ var fieldRangeSlider_component = normalizeComponent(
   
 )
 
-fieldRangeSlider_component.options.__file = "fieldRangeSlider.vue"
 /* harmony default export */ var fieldRangeSlider = (fieldRangeSlider_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSelectEx.vue?vue&type=template&id=31fb0474&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSelectEx.vue?vue&type=template&id=31fb0474&
 var fieldSelectExvue_type_template_id_31fb0474_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],staticClass:"selectpicker",attrs:{"disabled":_vm.disabled,"multiple":_vm.fieldOptions.multiSelect,"title":_vm.placeholder,"data-width":"100%","name":_vm.inputName},on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.value=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[(_vm.fieldOptions.multiSelect !== true)?_c('option',{attrs:{"disabled":_vm.schema.required},domProps:{"value":null,"selected":_vm.value == undefined}}):_vm._e(),_vm._l((_vm.items),function(item){return _c('option',{key:_vm.getItemValue(item),domProps:{"value":_vm.getItemValue(item)}},[_vm._v(" "+_vm._s(_vm.getItemName(item)))])})],2)}
 var fieldSelectExvue_type_template_id_31fb0474_staticRenderFns = []
 
@@ -36832,907 +25055,6 @@ var fieldSelectExvue_type_template_id_31fb0474_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldSelectEx.vue?vue&type=template&id=31fb0474&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSelectEx.vue?vue&type=script&lang=js&
-var cov_1f6zgvf7nu = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSelectEx.vue",
-      hash = "a3de14bf8c2eb2d95d41e6e29f63b7055f5dfc8b",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSelectEx.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 30,
-          column: 16
-        },
-        end: {
-          line: 30,
-          column: 34
-        }
-      },
-      "1": {
-        start: {
-          line: 31,
-          column: 3
-        },
-        end: {
-          line: 33,
-          column: 24
-        }
-      },
-      "2": {
-        start: {
-          line: 32,
-          column: 4
-        },
-        end: {
-          line: 32,
-          column: 57
-        }
-      },
-      "3": {
-        start: {
-          line: 33,
-          column: 10
-        },
-        end: {
-          line: 33,
-          column: 24
-        }
-      },
-      "4": {
-        start: {
-          line: 39,
-          column: 3
-        },
-        end: {
-          line: 52,
-          column: 4
-        }
-      },
-      "5": {
-        start: {
-          line: 40,
-          column: 4
-        },
-        end: {
-          line: 49,
-          column: 5
-        }
-      },
-      "6": {
-        start: {
-          line: 41,
-          column: 5
-        },
-        end: {
-          line: 41,
-          column: 42
-        }
-      },
-      "7": {
-        start: {
-          line: 44,
-          column: 5
-        },
-        end: {
-          line: 48,
-          column: 6
-        }
-      },
-      "8": {
-        start: {
-          line: 45,
-          column: 6
-        },
-        end: {
-          line: 45,
-          column: 21
-        }
-      },
-      "9": {
-        start: {
-          line: 47,
-          column: 6
-        },
-        end: {
-          line: 47,
-          column: 233
-        }
-      },
-      "10": {
-        start: {
-          line: 51,
-          column: 4
-        },
-        end: {
-          line: 51,
-          column: 16
-        }
-      },
-      "11": {
-        start: {
-          line: 56,
-          column: 3
-        },
-        end: {
-          line: 68,
-          column: 4
-        }
-      },
-      "12": {
-        start: {
-          line: 57,
-          column: 4
-        },
-        end: {
-          line: 65,
-          column: 5
-        }
-      },
-      "13": {
-        start: {
-          line: 58,
-          column: 5
-        },
-        end: {
-          line: 58,
-          column: 41
-        }
-      },
-      "14": {
-        start: {
-          line: 60,
-          column: 5
-        },
-        end: {
-          line: 64,
-          column: 6
-        }
-      },
-      "15": {
-        start: {
-          line: 61,
-          column: 6
-        },
-        end: {
-          line: 61,
-          column: 23
-        }
-      },
-      "16": {
-        start: {
-          line: 63,
-          column: 6
-        },
-        end: {
-          line: 63,
-          column: 234
-        }
-      },
-      "17": {
-        start: {
-          line: 67,
-          column: 4
-        },
-        end: {
-          line: 67,
-          column: 16
-        }
-      },
-      "18": {
-        start: {
-          line: 74,
-          column: 3
-        },
-        end: {
-          line: 74,
-          column: 93
-        }
-      },
-      "19": {
-        start: {
-          line: 74,
-          column: 57
-        },
-        end: {
-          line: 74,
-          column: 93
-        }
-      },
-      "20": {
-        start: {
-          line: 79,
-          column: 2
-        },
-        end: {
-          line: 89,
-          column: 5
-        }
-      },
-      "21": {
-        start: {
-          line: 80,
-          column: 3
-        },
-        end: {
-          line: 88,
-          column: 4
-        }
-      },
-      "22": {
-        start: {
-          line: 81,
-          column: 4
-        },
-        end: {
-          line: 83,
-          column: 38
-        }
-      },
-      "23": {
-        start: {
-          line: 85,
-          column: 4
-        },
-        end: {
-          line: 87,
-          column: 6
-        }
-      },
-      "24": {
-        start: {
-          line: 93,
-          column: 2
-        },
-        end: {
-          line: 93,
-          column: 61
-        }
-      },
-      "25": {
-        start: {
-          line: 93,
-          column: 25
-        },
-        end: {
-          line: 93,
-          column: 61
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 29,
-            column: 2
-          },
-          end: {
-            line: 29,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 29,
-            column: 10
-          },
-          end: {
-            line: 34,
-            column: 3
-          }
-        },
-        line: 29
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 38,
-            column: 2
-          },
-          end: {
-            line: 38,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 38,
-            column: 21
-          },
-          end: {
-            line: 53,
-            column: 3
-          }
-        },
-        line: 38
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 55,
-            column: 2
-          },
-          end: {
-            line: 55,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 55,
-            column: 20
-          },
-          end: {
-            line: 69,
-            column: 3
-          }
-        },
-        line: 55
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 73,
-            column: 9
-          },
-          end: {
-            line: 73,
-            column: 10
-          }
-        },
-        loc: {
-          start: {
-            line: 73,
-            column: 20
-          },
-          end: {
-            line: 75,
-            column: 3
-          }
-        },
-        line: 73
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 78,
-            column: 1
-          },
-          end: {
-            line: 78,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 78,
-            column: 11
-          },
-          end: {
-            line: 90,
-            column: 2
-          }
-        },
-        line: 78
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 79,
-            column: 17
-          },
-          end: {
-            line: 79,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 79,
-            column: 23
-          },
-          end: {
-            line: 89,
-            column: 3
-          }
-        },
-        line: 79
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 92,
-            column: 1
-          },
-          end: {
-            line: 92,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 92,
-            column: 17
-          },
-          end: {
-            line: 94,
-            column: 2
-          }
-        },
-        line: 92
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 33,
-            column: 24
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 33,
-            column: 24
-          }
-        }, {
-          start: {
-            line: 31,
-            column: 3
-          },
-          end: {
-            line: 33,
-            column: 24
-          }
-        }],
-        line: 31
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 39,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 39,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 39,
-            column: 3
-          },
-          end: {
-            line: 52,
-            column: 4
-          }
-        }],
-        line: 39
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 40,
-            column: 4
-          },
-          end: {
-            line: 49,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 40,
-            column: 4
-          },
-          end: {
-            line: 49,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 40,
-            column: 4
-          },
-          end: {
-            line: 49,
-            column: 5
-          }
-        }],
-        line: 40
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 44,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 44,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 44,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        }],
-        line: 44
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 56,
-            column: 3
-          },
-          end: {
-            line: 68,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 56,
-            column: 3
-          },
-          end: {
-            line: 68,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 56,
-            column: 3
-          },
-          end: {
-            line: 68,
-            column: 4
-          }
-        }],
-        line: 56
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 57,
-            column: 4
-          },
-          end: {
-            line: 65,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 57,
-            column: 4
-          },
-          end: {
-            line: 65,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 57,
-            column: 4
-          },
-          end: {
-            line: 65,
-            column: 5
-          }
-        }],
-        line: 57
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 60,
-            column: 5
-          },
-          end: {
-            line: 64,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 60,
-            column: 5
-          },
-          end: {
-            line: 64,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 60,
-            column: 5
-          },
-          end: {
-            line: 64,
-            column: 6
-          }
-        }],
-        line: 60
-      },
-      "7": {
-        loc: {
-          start: {
-            line: 74,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 93
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 74,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 93
-          }
-        }, {
-          start: {
-            line: 74,
-            column: 3
-          },
-          end: {
-            line: 74,
-            column: 93
-          }
-        }],
-        line: 74
-      },
-      "8": {
-        loc: {
-          start: {
-            line: 74,
-            column: 7
-          },
-          end: {
-            line: 74,
-            column: 55
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 74,
-            column: 7
-          },
-          end: {
-            line: 74,
-            column: 34
-          }
-        }, {
-          start: {
-            line: 74,
-            column: 38
-          },
-          end: {
-            line: 74,
-            column: 55
-          }
-        }],
-        line: 74
-      },
-      "9": {
-        loc: {
-          start: {
-            line: 80,
-            column: 3
-          },
-          end: {
-            line: 88,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 80,
-            column: 3
-          },
-          end: {
-            line: 88,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 80,
-            column: 3
-          },
-          end: {
-            line: 88,
-            column: 4
-          }
-        }],
-        line: 80
-      },
-      "10": {
-        loc: {
-          start: {
-            line: 80,
-            column: 7
-          },
-          end: {
-            line: 80,
-            column: 55
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 80,
-            column: 7
-          },
-          end: {
-            line: 80,
-            column: 34
-          }
-        }, {
-          start: {
-            line: 80,
-            column: 38
-          },
-          end: {
-            line: 80,
-            column: 55
-          }
-        }],
-        line: 80
-      },
-      "11": {
-        loc: {
-          start: {
-            line: 93,
-            column: 2
-          },
-          end: {
-            line: 93,
-            column: 61
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 93,
-            column: 2
-          },
-          end: {
-            line: 93,
-            column: 61
-          }
-        }, {
-          start: {
-            line: 93,
-            column: 2
-          },
-          end: {
-            line: 93,
-            column: 61
-          }
-        }],
-        line: 93
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0,
-      "16": 0,
-      "17": 0,
-      "18": 0,
-      "19": 0,
-      "20": 0,
-      "21": 0,
-      "22": 0,
-      "23": 0,
-      "24": 0,
-      "25": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0],
-      "7": [0, 0],
-      "8": [0, 0],
-      "9": [0, 0],
-      "10": [0, 0],
-      "11": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 
@@ -37743,139 +25065,70 @@ var cov_1f6zgvf7nu = function () {
   mixins: [abstractField],
   computed: {
     items: function items() {
-      cov_1f6zgvf7nu.f[0]++;
-      var values = (cov_1f6zgvf7nu.s[0]++, this.schema.values);
-      cov_1f6zgvf7nu.s[1]++;
+      var values = this.schema.values;
 
       if (typeof values == "function") {
-        cov_1f6zgvf7nu.b[0][0]++;
-        cov_1f6zgvf7nu.s[2]++;
         return values.apply(this, [this.model, this.schema]);
-      } else {
-        cov_1f6zgvf7nu.b[0][1]++;
-        cov_1f6zgvf7nu.s[3]++;
-        return values;
-      }
+      } else return values;
     }
   },
   methods: {
     getItemValue: function getItemValue(item) {
-      cov_1f6zgvf7nu.f[1]++;
-      cov_1f6zgvf7nu.s[4]++;
-
       if (isObject_default()(item)) {
-        cov_1f6zgvf7nu.b[1][0]++;
-        cov_1f6zgvf7nu.s[5]++;
-
         if (typeof this.fieldOptions["value"] !== "undefined") {
-          cov_1f6zgvf7nu.b[2][0]++;
-          cov_1f6zgvf7nu.s[6]++;
           return item[this.fieldOptions.value];
         } else {
-          cov_1f6zgvf7nu.b[2][1]++;
-          cov_1f6zgvf7nu.s[7]++;
-
           // Use 'id' instead of 'value' cause of backward compatibility
           if (typeof item["id"] !== "undefined") {
-            cov_1f6zgvf7nu.b[3][0]++;
-            cov_1f6zgvf7nu.s[8]++;
             return item.id;
           } else {
-            cov_1f6zgvf7nu.b[3][1]++;
-            cov_1f6zgvf7nu.s[9]++;
             throw "`id` is not defined. If you want to use another key name, add a `value` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/select.html#select-field-with-object-items";
           }
         }
       } else {
-        cov_1f6zgvf7nu.b[1][1]++;
-        cov_1f6zgvf7nu.s[10]++;
         return item;
       }
     },
     getItemName: function getItemName(item) {
-      cov_1f6zgvf7nu.f[2]++;
-      cov_1f6zgvf7nu.s[11]++;
-
       if (isObject_default()(item)) {
-        cov_1f6zgvf7nu.b[4][0]++;
-        cov_1f6zgvf7nu.s[12]++;
-
         if (typeof this.fieldOptions["name"] !== "undefined") {
-          cov_1f6zgvf7nu.b[5][0]++;
-          cov_1f6zgvf7nu.s[13]++;
           return item[this.fieldOptions.name];
         } else {
-          cov_1f6zgvf7nu.b[5][1]++;
-          cov_1f6zgvf7nu.s[14]++;
-
           if (typeof item["name"] !== "undefined") {
-            cov_1f6zgvf7nu.b[6][0]++;
-            cov_1f6zgvf7nu.s[15]++;
             return item.name;
           } else {
-            cov_1f6zgvf7nu.b[6][1]++;
-            cov_1f6zgvf7nu.s[16]++;
             throw "`name` is not defined. If you want to use another key name, add a `name` property under `fieldOptions` in the schema. https://icebob.gitbooks.io/vueformgenerator/content/fields/select.html#select-field-with-object-items";
           }
         }
       } else {
-        cov_1f6zgvf7nu.b[4][1]++;
-        cov_1f6zgvf7nu.s[17]++;
         return item;
       }
     }
   },
   watch: {
     model: function model() {
-      cov_1f6zgvf7nu.f[3]++;
-      cov_1f6zgvf7nu.s[18]++;
-
-      if ((cov_1f6zgvf7nu.b[8][0]++, typeof $.fn !== "undefined") && (cov_1f6zgvf7nu.b[8][1]++, $.fn.selectpicker)) {
-        cov_1f6zgvf7nu.b[7][0]++;
-        cov_1f6zgvf7nu.s[19]++;
-        $(this.$el).selectpicker("refresh");
-      } else {
-        cov_1f6zgvf7nu.b[7][1]++;
-      }
+      if (typeof $.fn !== "undefined" && $.fn.selectpicker) $(this.$el).selectpicker("refresh");
     }
   },
   mounted: function mounted() {
     var _this = this;
 
-    cov_1f6zgvf7nu.f[4]++;
-    cov_1f6zgvf7nu.s[20]++;
     this.$nextTick(function () {
-      cov_1f6zgvf7nu.f[5]++;
-      cov_1f6zgvf7nu.s[21]++;
-
-      if ((cov_1f6zgvf7nu.b[10][0]++, typeof $.fn !== "undefined") && (cov_1f6zgvf7nu.b[10][1]++, $.fn.selectpicker)) {
-        cov_1f6zgvf7nu.b[9][0]++;
-        cov_1f6zgvf7nu.s[22]++;
+      if (typeof $.fn !== "undefined" && $.fn.selectpicker) {
         $(_this.$el).selectpicker("destroy").selectpicker(_this.fieldOptions);
       } else {
-        cov_1f6zgvf7nu.b[9][1]++;
-        cov_1f6zgvf7nu.s[23]++;
         console.warn("Bootstrap-select library is missing. Please download from https://silviomoreto.github.io/bootstrap-select/ and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_1f6zgvf7nu.f[6]++;
-    cov_1f6zgvf7nu.s[24]++;
-
-    if ($.fn.selectpicker) {
-      cov_1f6zgvf7nu.b[11][0]++;
-      cov_1f6zgvf7nu.s[25]++;
-      $(this.$el).selectpicker("destroy");
-    } else {
-      cov_1f6zgvf7nu.b[11][1]++;
-    }
+    if ($.fn.selectpicker) $(this.$el).selectpicker("destroy");
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldSelectEx.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldSelectExvue_type_script_lang_js_ = (fieldSelectExvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldSelectEx.vue?vue&type=style&index=0&lang=scss&
-var fieldSelectExvue_type_style_index_0_lang_scss_ = __webpack_require__("1958");
+// EXTERNAL MODULE: ./src/fields/optional/fieldSelectEx.vue?vue&type=style&index=0&id=31fb0474&prod&lang=scss&
+var fieldSelectExvue_type_style_index_0_id_31fb0474_prod_lang_scss_ = __webpack_require__("7291");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldSelectEx.vue
 
@@ -37897,9 +25150,8 @@ var fieldSelectEx_component = normalizeComponent(
   
 )
 
-fieldSelectEx_component.options.__file = "fieldSelectEx.vue"
 /* harmony default export */ var fieldSelectEx = (fieldSelectEx_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSpectrum.vue?vue&type=template&id=06db34bc&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSpectrum.vue?vue&type=template&id=06db34bc&
 var fieldSpectrumvue_type_template_id_06db34bc_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('input',{attrs:{"type":"text","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"placeholder":_vm.placeholder,"readonly":_vm.readonly,"name":_vm.inputName,"id":_vm.fieldID}})}
 var fieldSpectrumvue_type_template_id_06db34bc_staticRenderFns = []
 
@@ -37907,605 +25159,6 @@ var fieldSpectrumvue_type_template_id_06db34bc_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldSpectrum.vue?vue&type=template&id=06db34bc&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSpectrum.vue?vue&type=script&lang=js&
-var cov_29072icxvt = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSpectrum.vue",
-      hash = "1570739d4fdbe8ea79961e2d26111788dd16cfe2",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSpectrum.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 20,
-          column: 2
-        },
-        end: {
-          line: 22,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 27,
-          column: 3
-        },
-        end: {
-          line: 29,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 28,
-          column: 4
-        },
-        end: {
-          line: 28,
-          column: 44
-        }
-      },
-      "3": {
-        start: {
-          line: 33,
-          column: 3
-        },
-        end: {
-          line: 34,
-          column: 39
-        }
-      },
-      "4": {
-        start: {
-          line: 33,
-          column: 12
-        },
-        end: {
-          line: 33,
-          column: 44
-        }
-      },
-      "5": {
-        start: {
-          line: 34,
-          column: 8
-        },
-        end: {
-          line: 34,
-          column: 39
-        }
-      },
-      "6": {
-        start: {
-          line: 39,
-          column: 2
-        },
-        end: {
-          line: 61,
-          column: 5
-        }
-      },
-      "7": {
-        start: {
-          line: 40,
-          column: 3
-        },
-        end: {
-          line: 60,
-          column: 4
-        }
-      },
-      "8": {
-        start: {
-          line: 41,
-          column: 4
-        },
-        end: {
-          line: 54,
-          column: 7
-        }
-      },
-      "9": {
-        start: {
-          line: 51,
-          column: 8
-        },
-        end: {
-          line: 51,
-          column: 53
-        }
-      },
-      "10": {
-        start: {
-          line: 55,
-          column: 4
-        },
-        end: {
-          line: 55,
-          column: 44
-        }
-      },
-      "11": {
-        start: {
-          line: 57,
-          column: 4
-        },
-        end: {
-          line: 59,
-          column: 6
-        }
-      },
-      "12": {
-        start: {
-          line: 65,
-          column: 2
-        },
-        end: {
-          line: 65,
-          column: 51
-        }
-      },
-      "13": {
-        start: {
-          line: 65,
-          column: 19
-        },
-        end: {
-          line: 65,
-          column: 51
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 19,
-            column: 1
-          },
-          end: {
-            line: 19,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 19,
-            column: 8
-          },
-          end: {
-            line: 23,
-            column: 2
-          }
-        },
-        line: 19
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 26,
-            column: 2
-          },
-          end: {
-            line: 26,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 26,
-            column: 10
-          },
-          end: {
-            line: 30,
-            column: 3
-          }
-        },
-        line: 26
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 32,
-            column: 2
-          },
-          end: {
-            line: 32,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 32,
-            column: 16
-          },
-          end: {
-            line: 35,
-            column: 3
-          }
-        },
-        line: 32
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 38,
-            column: 1
-          },
-          end: {
-            line: 38,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 38,
-            column: 11
-          },
-          end: {
-            line: 62,
-            column: 2
-          }
-        },
-        line: 38
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 39,
-            column: 17
-          },
-          end: {
-            line: 39,
-            column: 18
-          }
-        },
-        loc: {
-          start: {
-            line: 39,
-            column: 28
-          },
-          end: {
-            line: 61,
-            column: 3
-          }
-        },
-        line: 39
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 50,
-            column: 15
-          },
-          end: {
-            line: 50,
-            column: 16
-          }
-        },
-        loc: {
-          start: {
-            line: 50,
-            column: 26
-          },
-          end: {
-            line: 52,
-            column: 8
-          }
-        },
-        line: 50
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 64,
-            column: 1
-          },
-          end: {
-            line: 64,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 64,
-            column: 17
-          },
-          end: {
-            line: 66,
-            column: 2
-          }
-        },
-        line: 64
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 27,
-            column: 3
-          },
-          end: {
-            line: 29,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 27,
-            column: 3
-          },
-          end: {
-            line: 29,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 27,
-            column: 3
-          },
-          end: {
-            line: 29,
-            column: 4
-          }
-        }],
-        line: 27
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 27,
-            column: 7
-          },
-          end: {
-            line: 27,
-            column: 39
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 27,
-            column: 7
-          },
-          end: {
-            line: 27,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 27,
-            column: 19
-          },
-          end: {
-            line: 27,
-            column: 39
-          }
-        }],
-        line: 27
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 33,
-            column: 3
-          },
-          end: {
-            line: 34,
-            column: 39
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 33,
-            column: 3
-          },
-          end: {
-            line: 34,
-            column: 39
-          }
-        }, {
-          start: {
-            line: 33,
-            column: 3
-          },
-          end: {
-            line: 34,
-            column: 39
-          }
-        }],
-        line: 33
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 40,
-            column: 3
-          },
-          end: {
-            line: 60,
-            column: 4
-          }
-        }],
-        line: 40
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 40,
-            column: 7
-          },
-          end: {
-            line: 40,
-            column: 39
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 40,
-            column: 7
-          },
-          end: {
-            line: 40,
-            column: 15
-          }
-        }, {
-          start: {
-            line: 40,
-            column: 19
-          },
-          end: {
-            line: 40,
-            column: 39
-          }
-        }],
-        line: 40
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 51,
-            column: 21
-          },
-          end: {
-            line: 51,
-            column: 52
-          }
-        },
-        type: "cond-expr",
-        locations: [{
-          start: {
-            line: 51,
-            column: 29
-          },
-          end: {
-            line: 51,
-            column: 45
-          }
-        }, {
-          start: {
-            line: 51,
-            column: 48
-          },
-          end: {
-            line: 51,
-            column: 52
-          }
-        }],
-        line: 51
-      },
-      "6": {
-        loc: {
-          start: {
-            line: 65,
-            column: 2
-          },
-          end: {
-            line: 65,
-            column: 51
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 65,
-            column: 2
-          },
-          end: {
-            line: 65,
-            column: 51
-          }
-        }, {
-          start: {
-            line: 65,
-            column: 2
-          },
-          end: {
-            line: 65,
-            column: 51
-          }
-        }],
-        line: 65
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0],
-      "6": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 //
@@ -38525,52 +25178,25 @@ var cov_29072icxvt = function () {
   name: "field-spectrum",
   mixins: [abstractField],
   data: function data() {
-    cov_29072icxvt.f[0]++;
-    cov_29072icxvt.s[0]++;
     return {
       picker: null
     };
   },
   watch: {
     model: function model() {
-      cov_29072icxvt.f[1]++;
-      cov_29072icxvt.s[1]++;
-
-      if ((cov_29072icxvt.b[1][0]++, window.$) && (cov_29072icxvt.b[1][1]++, window.$.fn.spectrum)) {
-        cov_29072icxvt.b[0][0]++;
-        cov_29072icxvt.s[2]++;
+      if (window.$ && window.$.fn.spectrum) {
         this.picker.spectrum("set", this.value);
-      } else {
-        cov_29072icxvt.b[0][1]++;
       }
     },
     disabled: function disabled(val) {
-      cov_29072icxvt.f[2]++;
-      cov_29072icxvt.s[3]++;
-
-      if (val) {
-        cov_29072icxvt.b[2][0]++;
-        cov_29072icxvt.s[4]++;
-        this.picker.spectrum("disable");
-      } else {
-        cov_29072icxvt.b[2][1]++;
-        cov_29072icxvt.s[5]++;
-        this.picker.spectrum("enable");
-      }
+      if (val) this.picker.spectrum("disable");else this.picker.spectrum("enable");
     }
   },
   mounted: function mounted() {
-    cov_29072icxvt.f[3]++;
-    cov_29072icxvt.s[6]++;
     this.$nextTick(function () {
       var _this = this;
 
-      cov_29072icxvt.f[4]++;
-      cov_29072icxvt.s[7]++;
-
-      if ((cov_29072icxvt.b[4][0]++, window.$) && (cov_29072icxvt.b[4][1]++, window.$.fn.spectrum)) {
-        cov_29072icxvt.b[3][0]++;
-        cov_29072icxvt.s[8]++;
+      if (window.$ && window.$.fn.spectrum) {
         this.picker = $(this.$el).spectrum("destroy").spectrum(defaults_default()(this.fieldOptions, {
           showInput: true,
           showAlpha: true,
@@ -38578,31 +25204,17 @@ var cov_29072icxvt = function () {
           allowEmpty: !this.schema.required,
           preferredFormat: "hex",
           change: function change(color) {
-            cov_29072icxvt.f[5]++;
-            cov_29072icxvt.s[9]++;
-            _this.value = color ? (cov_29072icxvt.b[5][0]++, color.toString()) : (cov_29072icxvt.b[5][1]++, null);
+            _this.value = color ? color.toString() : null;
           }
         }));
-        cov_29072icxvt.s[10]++;
         this.picker.spectrum("set", this.value);
       } else {
-        cov_29072icxvt.b[3][1]++;
-        cov_29072icxvt.s[11]++;
         console.warn("Spectrum color library is missing. Please download from http://bgrins.github.io/spectrum/ and load the script and CSS in the HTML head section!");
       }
     });
   },
   beforeDestroy: function beforeDestroy() {
-    cov_29072icxvt.f[6]++;
-    cov_29072icxvt.s[12]++;
-
-    if (this.picker) {
-      cov_29072icxvt.b[6][0]++;
-      cov_29072icxvt.s[13]++;
-      this.picker.spectrum("destroy");
-    } else {
-      cov_29072icxvt.b[6][1]++;
-    }
+    if (this.picker) this.picker.spectrum("destroy");
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldSpectrum.vue?vue&type=script&lang=js&
@@ -38626,9 +25238,8 @@ var fieldSpectrum_component = normalizeComponent(
   
 )
 
-fieldSpectrum_component.options.__file = "fieldSpectrum.vue"
 /* harmony default export */ var fieldSpectrum = (fieldSpectrum_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=04983600&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=04983600&
 var fieldStaticMapvue_type_template_id_04983600_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('img',{attrs:{"src":_vm.mapLink}})}
 var fieldStaticMapvue_type_template_id_04983600_staticRenderFns = []
 
@@ -38636,320 +25247,6 @@ var fieldStaticMapvue_type_template_id_04983600_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=04983600&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js&
-var cov_1a3yv4htpa = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldStaticMap.vue",
-      hash = "ac08caa8ade69a67cbe24c8f4903dc92130db14b",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldStaticMap.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 15,
-          column: 3
-        },
-        end: {
-          line: 53,
-          column: 4
-        }
-      },
-      "1": {
-        start: {
-          line: 17,
-          column: 18
-        },
-        end: {
-          line: 23,
-          column: 6
-        }
-      },
-      "2": {
-        start: {
-          line: 25,
-          column: 4
-        },
-        end: {
-          line: 25,
-          column: 34
-        }
-      },
-      "3": {
-        start: {
-          line: 26,
-          column: 4
-        },
-        end: {
-          line: 26,
-          column: 34
-        }
-      },
-      "4": {
-        start: {
-          line: 28,
-          column: 14
-        },
-        end: {
-          line: 30,
-          column: 45
-        }
-      },
-      "5": {
-        start: {
-          line: 32,
-          column: 16
-        },
-        end: {
-          line: 44,
-          column: 5
-        }
-      },
-      "6": {
-        start: {
-          line: 45,
-          column: 4
-        },
-        end: {
-          line: 49,
-          column: 5
-        }
-      },
-      "7": {
-        start: {
-          line: 46,
-          column: 5
-        },
-        end: {
-          line: 48,
-          column: 6
-        }
-      },
-      "8": {
-        start: {
-          line: 47,
-          column: 6
-        },
-        end: {
-          line: 47,
-          column: 41
-        }
-      },
-      "9": {
-        start: {
-          line: 50,
-          column: 4
-        },
-        end: {
-          line: 52,
-          column: 5
-        }
-      },
-      "10": {
-        start: {
-          line: 51,
-          column: 5
-        },
-        end: {
-          line: 51,
-          column: 16
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 14,
-            column: 2
-          },
-          end: {
-            line: 14,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 14,
-            column: 12
-          },
-          end: {
-            line: 54,
-            column: 3
-          }
-        },
-        line: 14
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 15,
-            column: 3
-          },
-          end: {
-            line: 53,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 15,
-            column: 3
-          },
-          end: {
-            line: 53,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 15,
-            column: 3
-          },
-          end: {
-            line: 53,
-            column: 4
-          }
-        }],
-        line: 15
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 46,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 46,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        }, {
-          start: {
-            line: 46,
-            column: 5
-          },
-          end: {
-            line: 48,
-            column: 6
-          }
-        }],
-        line: 46
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 50,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 5
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 50,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 5
-          }
-        }, {
-          start: {
-            line: 50,
-            column: 4
-          },
-          end: {
-            line: 52,
-            column: 5
-          }
-        }],
-        line: 50
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 50,
-            column: 8
-          },
-          end: {
-            line: 50,
-            column: 18
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 50,
-            column: 8
-          },
-          end: {
-            line: 50,
-            column: 11
-          }
-        }, {
-          start: {
-            line: 50,
-            column: 15
-          },
-          end: {
-            line: 50,
-            column: 18
-          }
-        }],
-        line: 50
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0
-    },
-    f: {
-      "0": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 //
 //
@@ -38961,59 +25258,41 @@ var cov_1a3yv4htpa = function () {
   mixins: [abstractField],
   computed: {
     mapLink: function mapLink() {
-      cov_1a3yv4htpa.f[0]++;
-      cov_1a3yv4htpa.s[0]++;
-
       if (this.value) {
-        cov_1a3yv4htpa.b[0][0]++;
         var lat, lng;
-        var options = (cov_1a3yv4htpa.s[1]++, defaults_default()(this.fieldOptions, {
+
+        var options = defaults_default()(this.fieldOptions, {
           lat: "lat",
           lng: "lng",
           zoom: 8,
           sizeX: 640,
           sizeY: 640
-        }));
-        cov_1a3yv4htpa.s[2]++;
-        lat = this.value[options.lat];
-        cov_1a3yv4htpa.s[3]++;
-        lng = this.value[options.lng];
-        var url = (cov_1a3yv4htpa.s[4]++, "http://maps.googleapis.com/maps/api/staticmap?center=".concat(lat, ",").concat(lng, "&zoom=").concat(options.zoom, "&size=").concat(options.sizeX, "x").concat(options.sizeY));
-        var props = (cov_1a3yv4htpa.s[5]++, ["scale", "format", "maptype", "language", "region", "markers", "path", "visible", "style", "key", "signature"]);
-        cov_1a3yv4htpa.s[6]++;
+        });
 
-        for (var _i = 0; _i < props.length; _i++) {
-          var prop = props[_i];
-          cov_1a3yv4htpa.s[7]++;
+        lat = this.value[options.lat];
+        lng = this.value[options.lng];
+        var url = "http://maps.googleapis.com/maps/api/staticmap?center=".concat(lat, ",").concat(lng, "&zoom=").concat(options.zoom, "&size=").concat(options.sizeX, "x").concat(options.sizeY);
+        var props = ["scale", "format", "maptype", "language", "region", "markers", "path", "visible", "style", "key", "signature"];
+
+        for (var _i = 0, _props = props; _i < _props.length; _i++) {
+          var prop = _props[_i];
 
           if (typeof options[prop] !== "undefined") {
-            cov_1a3yv4htpa.b[1][0]++;
-            cov_1a3yv4htpa.s[8]++;
             url += "&".concat(prop, "=").concat(options[prop]);
-          } else {
-            cov_1a3yv4htpa.b[1][1]++;
           }
         }
 
-        cov_1a3yv4htpa.s[9]++;
-
-        if ((cov_1a3yv4htpa.b[3][0]++, lat) && (cov_1a3yv4htpa.b[3][1]++, lng)) {
-          cov_1a3yv4htpa.b[2][0]++;
-          cov_1a3yv4htpa.s[10]++;
+        if (lat && lng) {
           return url;
-        } else {
-          cov_1a3yv4htpa.b[2][1]++;
         }
-      } else {
-        cov_1a3yv4htpa.b[0][1]++;
       }
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldStaticMapvue_type_script_lang_js_ = (fieldStaticMapvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&lang=scss&
-var fieldStaticMapvue_type_style_index_0_lang_scss_ = __webpack_require__("2149");
+// EXTERNAL MODULE: ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=04983600&prod&lang=scss&
+var fieldStaticMapvue_type_style_index_0_id_04983600_prod_lang_scss_ = __webpack_require__("b44a");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldStaticMap.vue
 
@@ -39035,9 +25314,8 @@ var fieldStaticMap_component = normalizeComponent(
   
 )
 
-fieldStaticMap_component.options.__file = "fieldStaticMap.vue"
 /* harmony default export */ var fieldStaticMap = (fieldStaticMap_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=template&id=2a73e28d&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=template&id=2a73e28d&
 var fieldSwitchvue_type_template_id_2a73e28d_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('label',[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.value),expression:"value"}],attrs:{"type":"checkbox","autocomplete":_vm.fieldOptions.autocomplete,"disabled":_vm.disabled,"name":_vm.inputName,"id":_vm.fieldID},domProps:{"checked":Array.isArray(_vm.value)?_vm._i(_vm.value,null)>-1:(_vm.value)},on:{"change":function($event){var $$a=_vm.value,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v=null,$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.value=$$a.concat([$$v]))}else{$$i>-1&&(_vm.value=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.value=$$c}}}}),_c('span',{staticClass:"label",attrs:{"data-on":_vm.fieldOptions.textOn || 'On',"data-off":_vm.fieldOptions.textOff || 'Off',"for":_vm.fieldID}}),_c('span',{staticClass:"handle"})])}
 var fieldSwitchvue_type_template_id_2a73e28d_staticRenderFns = []
 
@@ -39045,346 +25323,6 @@ var fieldSwitchvue_type_template_id_2a73e28d_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldSwitch.vue?vue&type=template&id=2a73e28d&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=script&lang=js&
-var cov_dv65457ku = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSwitch.vue",
-      hash = "1a9cc3d89c281852f7d842b8ec26a0d89c737eac",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldSwitch.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 26,
-          column: 3
-        },
-        end: {
-          line: 26,
-          column: 94
-        }
-      },
-      "1": {
-        start: {
-          line: 26,
-          column: 51
-        },
-        end: {
-          line: 26,
-          column: 94
-        }
-      },
-      "2": {
-        start: {
-          line: 28,
-          column: 3
-        },
-        end: {
-          line: 28,
-          column: 16
-        }
-      },
-      "3": {
-        start: {
-          line: 32,
-          column: 3
-        },
-        end: {
-          line: 35,
-          column: 4
-        }
-      },
-      "4": {
-        start: {
-          line: 33,
-          column: 4
-        },
-        end: {
-          line: 34,
-          column: 43
-        }
-      },
-      "5": {
-        start: {
-          line: 33,
-          column: 15
-        },
-        end: {
-          line: 33,
-          column: 48
-        }
-      },
-      "6": {
-        start: {
-          line: 34,
-          column: 9
-        },
-        end: {
-          line: 34,
-          column: 43
-        }
-      },
-      "7": {
-        start: {
-          line: 37,
-          column: 3
-        },
-        end: {
-          line: 37,
-          column: 16
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 25,
-            column: 2
-          },
-          end: {
-            line: 25,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 25,
-            column: 28
-          },
-          end: {
-            line: 29,
-            column: 3
-          }
-        },
-        line: 25
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 31,
-            column: 2
-          },
-          end: {
-            line: 31,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 31,
-            column: 28
-          },
-          end: {
-            line: 38,
-            column: 3
-          }
-        },
-        line: 31
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 26,
-            column: 3
-          },
-          end: {
-            line: 26,
-            column: 94
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 26,
-            column: 3
-          },
-          end: {
-            line: 26,
-            column: 94
-          }
-        }, {
-          start: {
-            line: 26,
-            column: 3
-          },
-          end: {
-            line: 26,
-            column: 94
-          }
-        }],
-        line: 26
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 26,
-            column: 7
-          },
-          end: {
-            line: 26,
-            column: 49
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 26,
-            column: 7
-          },
-          end: {
-            line: 26,
-            column: 20
-          }
-        }, {
-          start: {
-            line: 26,
-            column: 24
-          },
-          end: {
-            line: 26,
-            column: 49
-          }
-        }],
-        line: 26
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 32,
-            column: 3
-          },
-          end: {
-            line: 35,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 32,
-            column: 3
-          },
-          end: {
-            line: 35,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 32,
-            column: 3
-          },
-          end: {
-            line: 35,
-            column: 4
-          }
-        }],
-        line: 32
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 32,
-            column: 7
-          },
-          end: {
-            line: 32,
-            column: 49
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 32,
-            column: 7
-          },
-          end: {
-            line: 32,
-            column: 20
-          }
-        }, {
-          start: {
-            line: 32,
-            column: 24
-          },
-          end: {
-            line: 32,
-            column: 49
-          }
-        }],
-        line: 32
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 34,
-            column: 43
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 34,
-            column: 43
-          }
-        }, {
-          start: {
-            line: 33,
-            column: 4
-          },
-          end: {
-            line: 34,
-            column: 43
-          }
-        }],
-        line: 33
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 //
 //
 //
@@ -39407,50 +25345,22 @@ var cov_dv65457ku = function () {
   mixins: [abstractField],
   methods: {
     formatValueToField: function formatValueToField(value) {
-      cov_dv65457ku.f[0]++;
-      cov_dv65457ku.s[0]++;
-
-      if ((cov_dv65457ku.b[1][0]++, value != null) && (cov_dv65457ku.b[1][1]++, this.fieldOptions.valueOn)) {
-        cov_dv65457ku.b[0][0]++;
-        cov_dv65457ku.s[1]++;
-        return value === this.fieldOptions.valueOn;
-      } else {
-        cov_dv65457ku.b[0][1]++;
-      }
-
-      cov_dv65457ku.s[2]++;
+      if (value != null && this.fieldOptions.valueOn) return value === this.fieldOptions.valueOn;
       return value;
     },
     formatValueToModel: function formatValueToModel(value) {
-      cov_dv65457ku.f[1]++;
-      cov_dv65457ku.s[3]++;
-
-      if ((cov_dv65457ku.b[3][0]++, value != null) && (cov_dv65457ku.b[3][1]++, this.fieldOptions.valueOn)) {
-        cov_dv65457ku.b[2][0]++;
-        cov_dv65457ku.s[4]++;
-
-        if (value) {
-          cov_dv65457ku.b[4][0]++;
-          cov_dv65457ku.s[5]++;
-          return this.fieldOptions.valueOn;
-        } else {
-          cov_dv65457ku.b[4][1]++;
-          cov_dv65457ku.s[6]++;
-          return this.fieldOptions.valueOff;
-        }
-      } else {
-        cov_dv65457ku.b[2][1]++;
+      if (value != null && this.fieldOptions.valueOn) {
+        if (value) return this.fieldOptions.valueOn;else return this.fieldOptions.valueOff;
       }
 
-      cov_dv65457ku.s[7]++;
       return value;
     }
   }
 });
 // CONCATENATED MODULE: ./src/fields/optional/fieldSwitch.vue?vue&type=script&lang=js&
  /* harmony default export */ var optional_fieldSwitchvue_type_script_lang_js_ = (fieldSwitchvue_type_script_lang_js_); 
-// EXTERNAL MODULE: ./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&lang=scss&
-var fieldSwitchvue_type_style_index_0_lang_scss_ = __webpack_require__("e0bf");
+// EXTERNAL MODULE: ./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&id=2a73e28d&prod&lang=scss&
+var fieldSwitchvue_type_style_index_0_id_2a73e28d_prod_lang_scss_ = __webpack_require__("473e");
 
 // CONCATENATED MODULE: ./src/fields/optional/fieldSwitch.vue
 
@@ -39472,9 +25382,8 @@ var fieldSwitch_component = normalizeComponent(
   
 )
 
-fieldSwitch_component.options.__file = "fieldSwitch.vue"
 /* harmony default export */ var fieldSwitch = (fieldSwitch_component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=35a248dd&
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=35a248dd&
 var fieldVueMultiSelectvue_type_template_id_35a248dd_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('multiselect',{attrs:{"id":_vm.fieldOptions.id,"options":_vm.options,"value":_vm.value,"multiple":_vm.fieldOptions.multiple,"track-by":_vm.fieldOptions.trackBy || null,"label":_vm.fieldOptions.label || null,"searchable":_vm.fieldOptions.searchable,"clear-on-select":_vm.fieldOptions.clearOnSelect,"hide-selected":_vm.fieldOptions.hideSelected,"placeholder":_vm.placeholder,"allow-empty":_vm.fieldOptions.allowEmpty,"reset-after":_vm.fieldOptions.resetAfter,"close-on-select":_vm.fieldOptions.closeOnSelect,"custom-label":_vm.customLabel,"taggable":_vm.fieldOptions.taggable,"tag-placeholder":_vm.fieldOptions.tagPlaceholder,"max":_vm.fieldOptions.max || null,"options-limit":_vm.fieldOptions.optionsLimit,"group-values":_vm.fieldOptions.groupValues,"group-label":_vm.fieldOptions.groupLabel,"block-keys":_vm.fieldOptions.blockKeys,"internal-search":_vm.fieldOptions.internalSearch,"select-label":_vm.fieldOptions.selectLabel,"selected-label":_vm.fieldOptions.selectedLabel,"deselect-label":_vm.fieldOptions.deselectLabel,"show-labels":_vm.fieldOptions.showLabels,"limit":_vm.fieldOptions.limit,"limit-text":_vm.fieldOptions.limitText,"loading":_vm.fieldOptions.loading,"disabled":_vm.disabled,"max-height":_vm.fieldOptions.maxHeight,"show-pointer":_vm.fieldOptions.showPointer,"option-height":_vm.fieldOptions.optionHeight},on:{"input":_vm.updateSelected,"select":_vm.onSelect,"remove":_vm.onRemove,"search-change":_vm.onSearchChange,"tag":_vm.addTag,"open":_vm.onOpen,"close":_vm.onClose}},[_c('span',{attrs:{"slot":"noResult"},slot:"noResult"},[_vm._v("\n\t\t"+_vm._s(_vm.fieldOptions.noResult)+"\n\t")])])}
 var fieldVueMultiSelectvue_type_template_id_35a248dd_staticRenderFns = []
 
@@ -39482,668 +25391,6 @@ var fieldVueMultiSelectvue_type_template_id_35a248dd_staticRenderFns = []
 // CONCATENATED MODULE: ./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=35a248dd&
 
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=script&lang=js&
-var cov_1bjcv33se6 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldVueMultiSelect.vue",
-      hash = "0309a2278f494ccb823941489749b1ebdcee8fdf",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
-    path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/optional/fieldVueMultiSelect.vue",
-    statementMap: {
-      "0": {
-        start: {
-          line: 56,
-          column: 16
-        },
-        end: {
-          line: 56,
-          column: 34
-        }
-      },
-      "1": {
-        start: {
-          line: 57,
-          column: 3
-        },
-        end: {
-          line: 61,
-          column: 4
-        }
-      },
-      "2": {
-        start: {
-          line: 58,
-          column: 4
-        },
-        end: {
-          line: 58,
-          column: 57
-        }
-      },
-      "3": {
-        start: {
-          line: 60,
-          column: 4
-        },
-        end: {
-          line: 60,
-          column: 18
-        }
-      },
-      "4": {
-        start: {
-          line: 64,
-          column: 3
-        },
-        end: {
-          line: 72,
-          column: 4
-        }
-      },
-      "5": {
-        start: {
-          line: 68,
-          column: 4
-        },
-        end: {
-          line: 68,
-          column: 41
-        }
-      },
-      "6": {
-        start: {
-          line: 71,
-          column: 4
-        },
-        end: {
-          line: 71,
-          column: 21
-        }
-      },
-      "7": {
-        start: {
-          line: 77,
-          column: 3
-        },
-        end: {
-          line: 77,
-          column: 22
-        }
-      },
-      "8": {
-        start: {
-          line: 80,
-          column: 18
-        },
-        end: {
-          line: 80,
-          column: 44
-        }
-      },
-      "9": {
-        start: {
-          line: 81,
-          column: 3
-        },
-        end: {
-          line: 83,
-          column: 4
-        }
-      },
-      "10": {
-        start: {
-          line: 82,
-          column: 4
-        },
-        end: {
-          line: 82,
-          column: 51
-        }
-      },
-      "11": {
-        start: {
-          line: 86,
-          column: 18
-        },
-        end: {
-          line: 86,
-          column: 44
-        }
-      },
-      "12": {
-        start: {
-          line: 87,
-          column: 3
-        },
-        end: {
-          line: 89,
-          column: 4
-        }
-      },
-      "13": {
-        start: {
-          line: 88,
-          column: 4
-        },
-        end: {
-          line: 88,
-          column: 44
-        }
-      },
-      "14": {
-        start: {
-          line: 106,
-          column: 2
-        },
-        end: {
-          line: 110,
-          column: 3
-        }
-      },
-      "15": {
-        start: {
-          line: 107,
-          column: 3
-        },
-        end: {
-          line: 109,
-          column: 5
-        }
-      }
-    },
-    fnMap: {
-      "0": {
-        name: "(anonymous_0)",
-        decl: {
-          start: {
-            line: 55,
-            column: 2
-          },
-          end: {
-            line: 55,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 55,
-            column: 12
-          },
-          end: {
-            line: 62,
-            column: 3
-          }
-        },
-        line: 55
-      },
-      "1": {
-        name: "(anonymous_1)",
-        decl: {
-          start: {
-            line: 63,
-            column: 2
-          },
-          end: {
-            line: 63,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 63,
-            column: 16
-          },
-          end: {
-            line: 73,
-            column: 3
-          }
-        },
-        line: 63
-      },
-      "2": {
-        name: "(anonymous_2)",
-        decl: {
-          start: {
-            line: 76,
-            column: 2
-          },
-          end: {
-            line: 76,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 76,
-            column: 34
-          },
-          end: {
-            line: 78,
-            column: 3
-          }
-        },
-        line: 76
-      },
-      "3": {
-        name: "(anonymous_3)",
-        decl: {
-          start: {
-            line: 79,
-            column: 2
-          },
-          end: {
-            line: 79,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 79,
-            column: 21
-          },
-          end: {
-            line: 84,
-            column: 3
-          }
-        },
-        line: 79
-      },
-      "4": {
-        name: "(anonymous_4)",
-        decl: {
-          start: {
-            line: 85,
-            column: 2
-          },
-          end: {
-            line: 85,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 85,
-            column: 34
-          },
-          end: {
-            line: 90,
-            column: 3
-          }
-        },
-        line: 85
-      },
-      "5": {
-        name: "(anonymous_5)",
-        decl: {
-          start: {
-            line: 91,
-            column: 2
-          },
-          end: {
-            line: 91,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 91,
-            column: 37
-          },
-          end: {
-            line: 93,
-            column: 3
-          }
-        },
-        line: 91
-      },
-      "6": {
-        name: "(anonymous_6)",
-        decl: {
-          start: {
-            line: 94,
-            column: 2
-          },
-          end: {
-            line: 94,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 94,
-            column: 36
-          },
-          end: {
-            line: 96,
-            column: 3
-          }
-        },
-        line: 94
-      },
-      "7": {
-        name: "(anonymous_7)",
-        decl: {
-          start: {
-            line: 97,
-            column: 2
-          },
-          end: {
-            line: 97,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 97,
-            column: 19
-          },
-          end: {
-            line: 99,
-            column: 3
-          }
-        },
-        line: 97
-      },
-      "8": {
-        name: "(anonymous_8)",
-        decl: {
-          start: {
-            line: 100,
-            column: 2
-          },
-          end: {
-            line: 100,
-            column: 3
-          }
-        },
-        loc: {
-          start: {
-            line: 100,
-            column: 27
-          },
-          end: {
-            line: 102,
-            column: 3
-          }
-        },
-        line: 100
-      },
-      "9": {
-        name: "(anonymous_9)",
-        decl: {
-          start: {
-            line: 104,
-            column: 1
-          },
-          end: {
-            line: 104,
-            column: 2
-          }
-        },
-        loc: {
-          start: {
-            line: 104,
-            column: 11
-          },
-          end: {
-            line: 111,
-            column: 2
-          }
-        },
-        line: 104
-      }
-    },
-    branchMap: {
-      "0": {
-        loc: {
-          start: {
-            line: 57,
-            column: 3
-          },
-          end: {
-            line: 61,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 57,
-            column: 3
-          },
-          end: {
-            line: 61,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 57,
-            column: 3
-          },
-          end: {
-            line: 61,
-            column: 4
-          }
-        }],
-        line: 57
-      },
-      "1": {
-        loc: {
-          start: {
-            line: 64,
-            column: 3
-          },
-          end: {
-            line: 72,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 64,
-            column: 3
-          },
-          end: {
-            line: 72,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 64,
-            column: 3
-          },
-          end: {
-            line: 72,
-            column: 4
-          }
-        }],
-        line: 64
-      },
-      "2": {
-        loc: {
-          start: {
-            line: 65,
-            column: 4
-          },
-          end: {
-            line: 66,
-            column: 55
-          }
-        },
-        type: "binary-expr",
-        locations: [{
-          start: {
-            line: 65,
-            column: 4
-          },
-          end: {
-            line: 65,
-            column: 56
-          }
-        }, {
-          start: {
-            line: 66,
-            column: 4
-          },
-          end: {
-            line: 66,
-            column: 55
-          }
-        }],
-        line: 65
-      },
-      "3": {
-        loc: {
-          start: {
-            line: 81,
-            column: 3
-          },
-          end: {
-            line: 83,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 81,
-            column: 3
-          },
-          end: {
-            line: 83,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 81,
-            column: 3
-          },
-          end: {
-            line: 83,
-            column: 4
-          }
-        }],
-        line: 81
-      },
-      "4": {
-        loc: {
-          start: {
-            line: 87,
-            column: 3
-          },
-          end: {
-            line: 89,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 87,
-            column: 3
-          },
-          end: {
-            line: 89,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 87,
-            column: 3
-          },
-          end: {
-            line: 89,
-            column: 4
-          }
-        }],
-        line: 87
-      },
-      "5": {
-        loc: {
-          start: {
-            line: 106,
-            column: 2
-          },
-          end: {
-            line: 110,
-            column: 3
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 106,
-            column: 2
-          },
-          end: {
-            line: 110,
-            column: 3
-          }
-        }, {
-          start: {
-            line: 106,
-            column: 2
-          },
-          end: {
-            line: 110,
-            column: 3
-          }
-        }],
-        line: 106
-      }
-    },
-    s: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0,
-      "10": 0,
-      "11": 0,
-      "12": 0,
-      "13": 0,
-      "14": 0,
-      "15": 0
-    },
-    f: {
-      "0": 0,
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "4": 0,
-      "5": 0,
-      "6": 0,
-      "7": 0,
-      "8": 0,
-      "9": 0
-    },
-    b: {
-      "0": [0, 0],
-      "1": [0, 0],
-      "2": [0, 0],
-      "3": [0, 0],
-      "4": [0, 0],
-      "5": [0, 0]
-    },
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
-
-  if (coverage[path] && coverage[path].hash === hash) {
-    return coverage[path];
-  }
-
-  coverageData.hash = hash;
-  return coverage[path] = coverageData;
-}();
-
 
 
 //
@@ -40199,31 +25446,18 @@ var cov_1bjcv33se6 = function () {
   mixins: [abstractField],
   computed: {
     options: function options() {
-      cov_1bjcv33se6.f[0]++;
-      var values = (cov_1bjcv33se6.s[0]++, this.schema.values);
-      cov_1bjcv33se6.s[1]++;
+      var values = this.schema.values;
 
       if (typeof values == "function") {
-        cov_1bjcv33se6.b[0][0]++;
-        cov_1bjcv33se6.s[2]++;
         return values.apply(this, [this.model, this.schema]);
       } else {
-        cov_1bjcv33se6.b[0][1]++;
-        cov_1bjcv33se6.s[3]++;
         return values;
       }
     },
     customLabel: function customLabel() {
-      cov_1bjcv33se6.f[1]++;
-      cov_1bjcv33se6.s[4]++;
-
-      if ((cov_1bjcv33se6.b[2][0]++, typeof this.fieldOptions.customLabel !== "undefined") && (cov_1bjcv33se6.b[2][1]++, typeof this.fieldOptions.customLabel === "function")) {
-        cov_1bjcv33se6.b[1][0]++;
-        cov_1bjcv33se6.s[5]++;
+      if (typeof this.fieldOptions.customLabel !== "undefined" && typeof this.fieldOptions.customLabel === "function") {
         return this.fieldOptions.customLabel;
       } else {
-        cov_1bjcv33se6.b[1][1]++;
-        cov_1bjcv33se6.s[6]++;
         // this will let the multiselect library use the default behavior if customLabel is not specified
         return undefined;
       }
@@ -40233,72 +25467,35 @@ var cov_1bjcv33se6 = function () {
     updateSelected: function updateSelected(value
     /* , id*/
     ) {
-      cov_1bjcv33se6.f[2]++;
-      cov_1bjcv33se6.s[7]++;
       this.value = value;
     },
     addTag: function addTag(newTag, id) {
-      cov_1bjcv33se6.f[3]++;
-      var onNewTag = (cov_1bjcv33se6.s[8]++, this.fieldOptions.onNewTag);
-      cov_1bjcv33se6.s[9]++;
+      var onNewTag = this.fieldOptions.onNewTag;
 
       if (typeof onNewTag == "function") {
-        cov_1bjcv33se6.b[3][0]++;
-        cov_1bjcv33se6.s[10]++;
         onNewTag(newTag, id, this.options, this.value);
-      } else {
-        cov_1bjcv33se6.b[3][1]++;
       }
     },
     onSearchChange: function onSearchChange(searchQuery, id) {
-      cov_1bjcv33se6.f[4]++;
-      var onSearch = (cov_1bjcv33se6.s[11]++, this.fieldOptions.onSearch);
-      cov_1bjcv33se6.s[12]++;
+      var onSearch = this.fieldOptions.onSearch;
 
       if (typeof onSearch == "function") {
-        cov_1bjcv33se6.b[4][0]++;
-        cov_1bjcv33se6.s[13]++;
         onSearch(searchQuery, id, this.options);
-      } else {
-        cov_1bjcv33se6.b[4][1]++;
       }
     },
-    onSelect: function onSelect()
-    /* selectedOption, id */
-    {// console.log("onSelect", selectedOption, id);
-
-      cov_1bjcv33se6.f[5]++;
+    onSelect: function onSelect() {// console.log("onSelect", selectedOption, id);
     },
-    onRemove: function onRemove()
-    /* removedOption, id */
-    {// console.log("onRemove", removedOption, id);
-
-      cov_1bjcv33se6.f[6]++;
+    onRemove: function onRemove() {// console.log("onRemove", removedOption, id);
     },
-    onOpen: function onOpen()
-    /* id */
-    {// console.log("onOpen", id);
-
-      cov_1bjcv33se6.f[7]++;
+    onOpen: function onOpen() {// console.log("onOpen", id);
     },
-    onClose: function onClose()
-    /* value, id */
-    {// console.log("onClose", value, id);
-
-      cov_1bjcv33se6.f[8]++;
+    onClose: function onClose() {// console.log("onClose", value, id);
     }
   },
   created: function created() {
-    cov_1bjcv33se6.f[9]++;
-    cov_1bjcv33se6.s[14]++;
-
     // Check if the component is loaded globally
     if (!this.$root.$options.components["multiselect"]) {
-      cov_1bjcv33se6.b[5][0]++;
-      cov_1bjcv33se6.s[15]++;
       console.error("'vue-multiselect' is missing. Please download from https://github.com/monterail/vue-multiselect and register the component globally!");
-    } else {
-      cov_1bjcv33se6.b[5][1]++;
     }
   }
 });
@@ -40323,16 +25520,14 @@ var fieldVueMultiSelect_component = normalizeComponent(
   
 )
 
-fieldVueMultiSelect_component.options.__file = "fieldVueMultiSelect.vue"
 /* harmony default export */ var fieldVueMultiSelect = (fieldVueMultiSelect_component.exports);
 // CONCATENATED MODULE: ./src/utils/fieldsLoader.js
 var cov_1hgvkmhje6 = function () {
-  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/fieldsLoader.js",
-      hash = "433c976a18660d7734ea6f4a50e442eeeb0a74e5",
-      Function = function () {}.constructor,
-      global = new Function('return this')(),
-      gcv = "__coverage__",
-      coverageData = {
+  var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/fieldsLoader.js";
+  var hash = "433c976a18660d7734ea6f4a50e442eeeb0a74e5";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
     path: "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/utils/fieldsLoader.js",
     statementMap: {},
     fnMap: {},
@@ -40340,15 +25535,15 @@ var cov_1hgvkmhje6 = function () {
     s: {},
     f: {},
     b: {},
-    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
-  },
-      coverage = global[gcv] || (global[gcv] = {});
+    _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
+    hash: "433c976a18660d7734ea6f4a50e442eeeb0a74e5"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
 
   if (coverage[path] && coverage[path].hash === hash) {
     return coverage[path];
   }
 
-  coverageData.hash = hash;
   return coverage[path] = coverageData;
 }();
 
