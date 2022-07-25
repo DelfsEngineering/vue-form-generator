@@ -10767,12 +10767,12 @@ var component = normalizeComponent(
 
 component.options.__file = "formGroup.vue"
 /* harmony default export */ var formGroup = (component.exports);
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=template&id=ce1ac13e&
-var formElementvue_type_template_id_ce1ac13e_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',_vm._b({staticClass:"form-element",class:[_vm.fieldRowClasses]},'div',_vm.formElement,false),[(_vm.fieldTypeHasLabel)?_c('label',{class:_vm.field.labelClasses,attrs:{"for":_vm.fieldID}},[_vm._t("label",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption}),_vm._t("help",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})],2):_vm._e(),_c('div',{staticClass:"field-wrap"},[_c(_vm.fieldType,{ref:"child",tag:"component",attrs:{"model":_vm.model,"schema":_vm.field,"form-options":_vm.options,"event-bus":_vm.eventBus,"field-id":_vm.fieldID},on:{"field-touched":_vm.onFieldTouched,"errors-updated":_vm.onChildValidated}}),(_vm.buttonsAreVisible)?_c('div',{staticClass:"buttons"},_vm._l((_vm.field.buttons),function(btn,index){return _c('button',{key:index,class:btn.classes,domProps:{"textContent":_vm._s(btn.label)},on:{"click":function($event){_vm.buttonClickHandler(btn, _vm.field, $event)}}})})):_vm._e()],1),(_vm.fieldHasHint)?[_vm._t("hint",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e(),(_vm.fieldHasErrors)?[_vm._t("errors",null,{childErrors:_vm.childErrors,field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e()],2)}
-var formElementvue_type_template_id_ce1ac13e_staticRenderFns = []
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"3f0d5f90-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=template&id=3a9d4efb&
+var formElementvue_type_template_id_3a9d4efb_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',_vm._b({staticClass:"form-element",class:[_vm.fieldRowClasses]},'div',_vm.formElement,false),[(_vm.fieldTypeHasLabel)?_c('label',{class:_vm.field.labelClasses,attrs:{"for":_vm.fieldID}},[_vm._t("label",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption}),_vm._t("help",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})],2):_vm._e(),_c('div',{staticClass:"field-wrap"},[_c(_vm.fieldType,{ref:"child",tag:"component",attrs:{"model":_vm.model,"schema":_vm.field,"form-options":_vm.options,"event-bus":_vm.eventBus,"field-id":_vm.fieldID},on:{"field-touched":_vm.onFieldTouched,"errors-updated":_vm.onChildValidated}}),(_vm.buttonsAreVisible)?_c('div',{staticClass:"buttons"},_vm._l((_vm.field.buttons),function(btn,index){return _c('button',{key:index,class:btn.classes,domProps:{"textContent":_vm._s(btn.label)},on:{"click":function($event){_vm.buttonClickHandler(btn, _vm.field, $event)}}})})):_vm._e()],1),(_vm.fieldHasHint)?[_vm._t("hint",null,{field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e(),(_vm.fieldHasErrors)?[_vm._t("errors",null,{childErrors:_vm.childErrors,field:_vm.field,getValueFromOption:_vm.getValueFromOption})]:_vm._e()],2)}
+var formElementvue_type_template_id_3a9d4efb_staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./src/formElement.vue?vue&type=template&id=ce1ac13e&
+// CONCATENATED MODULE: ./src/formElement.vue?vue&type=template&id=3a9d4efb&
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es7.array.includes.js
 var es7_array_includes = __webpack_require__("6762");
@@ -12066,7 +12066,7 @@ var slugify = function slugify() {
 // CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formElement.vue?vue&type=script&lang=js&
 var cov_7c8vxy7ok = function () {
   var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/formElement.vue",
-      hash = "2eb9fcd22ed432ae9fe97067a7c759b1a886d65b",
+      hash = "2232caa824ff3fed73125e3d6254635609a911e4",
       Function = function () {}.constructor,
       global = new Function('return this')(),
       gcv = "__coverage__",
@@ -12861,6 +12861,39 @@ var cov_7c8vxy7ok = function () {
       "1": {
         loc: {
           start: {
+            line: 106,
+            column: 7
+          },
+          end: {
+            line: 106,
+            column: 93
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 106,
+            column: 7
+          },
+          end: {
+            line: 106,
+            column: 42
+          }
+        }, {
+          start: {
+            line: 106,
+            column: 46
+          },
+          end: {
+            line: 106,
+            column: 93
+          }
+        }],
+        line: 106
+      },
+      "2": {
+        loc: {
+          start: {
             line: 121,
             column: 3
           },
@@ -12891,7 +12924,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 121
       },
-      "2": {
+      "3": {
         loc: {
           start: {
             line: 125,
@@ -12924,7 +12957,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 125
       },
-      "3": {
+      "4": {
         loc: {
           start: {
             line: 126,
@@ -12957,7 +12990,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 126
       },
-      "4": {
+      "5": {
         loc: {
           start: {
             line: 140,
@@ -12990,7 +13023,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 140
       },
-      "5": {
+      "6": {
         loc: {
           start: {
             line: 141,
@@ -13023,7 +13056,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 141
       },
-      "6": {
+      "7": {
         loc: {
           start: {
             line: 150,
@@ -13056,7 +13089,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 150
       },
-      "7": {
+      "8": {
         loc: {
           start: {
             line: 157,
@@ -13089,7 +13122,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 157
       },
-      "8": {
+      "9": {
         loc: {
           start: {
             line: 161,
@@ -13113,7 +13146,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 161
       },
-      "9": {
+      "10": {
         loc: {
           start: {
             line: 162,
@@ -13146,7 +13179,7 @@ var cov_7c8vxy7ok = function () {
         }],
         line: 162
       },
-      "10": {
+      "11": {
         loc: {
           start: {
             line: 166,
@@ -13244,9 +13277,10 @@ var cov_7c8vxy7ok = function () {
       "5": [0, 0],
       "6": [0, 0],
       "7": [0, 0],
-      "8": [0],
-      "9": [0, 0],
-      "10": [0, 0]
+      "8": [0, 0],
+      "9": [0],
+      "10": [0, 0],
+      "11": [0, 0]
     },
     _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184"
   },
@@ -13322,7 +13356,7 @@ var cov_7c8vxy7ok = function () {
       cov_7c8vxy7ok.f[5]++;
       cov_7c8vxy7ok.s[5]++;
 
-      if (this.field.attributes === undefined) {
+      if ((cov_7c8vxy7ok.b[1][0]++, this.field.attributes === undefined) || (cov_7c8vxy7ok.b[1][1]++, this.field.attributes.formElement === undefined)) {
         cov_7c8vxy7ok.b[0][0]++;
         cov_7c8vxy7ok.s[6]++;
         return {};
@@ -13351,16 +13385,16 @@ var cov_7c8vxy7ok = function () {
       cov_7c8vxy7ok.s[11]++;
 
       if (isNil_default()(this.field.label)) {
-        cov_7c8vxy7ok.b[1][0]++;
+        cov_7c8vxy7ok.b[2][0]++;
         cov_7c8vxy7ok.s[12]++;
         return false;
       } else {
-        cov_7c8vxy7ok.b[1][1]++;
+        cov_7c8vxy7ok.b[2][1]++;
       }
 
       var fieldOptions = (cov_7c8vxy7ok.s[13]++, this.getValueFromOption(this.field, "fieldOptions"));
-      var condition = (cov_7c8vxy7ok.s[14]++, (cov_7c8vxy7ok.b[2][0]++, this.field.type === "input") && (cov_7c8vxy7ok.b[2][1]++, !isNil_default()(fieldOptions)));
-      var relevantType = (cov_7c8vxy7ok.s[15]++, condition ? (cov_7c8vxy7ok.b[3][0]++, fieldOptions.inputType) : (cov_7c8vxy7ok.b[3][1]++, this.field.type));
+      var condition = (cov_7c8vxy7ok.s[14]++, (cov_7c8vxy7ok.b[3][0]++, this.field.type === "input") && (cov_7c8vxy7ok.b[3][1]++, !isNil_default()(fieldOptions)));
+      var relevantType = (cov_7c8vxy7ok.s[15]++, condition ? (cov_7c8vxy7ok.b[4][0]++, fieldOptions.inputType) : (cov_7c8vxy7ok.b[4][1]++, this.field.type));
       var typeWithoutLabel = (cov_7c8vxy7ok.s[16]++, ["button", "submit", "reset"]);
       cov_7c8vxy7ok.s[17]++;
       return !typeWithoutLabel.includes(relevantType);
@@ -13379,17 +13413,17 @@ var cov_7c8vxy7ok = function () {
       var _ref;
 
       cov_7c8vxy7ok.f[11]++;
-      var baseClasses = (cov_7c8vxy7ok.s[20]++, (_ref = {}, _defineProperty(_ref, get_default()(this.options, "validationErrorClass", "error"), this.fieldHasErrors), _defineProperty(_ref, get_default()(this.options, "validationSuccessClass", "valid"), (cov_7c8vxy7ok.b[4][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[4][1]++, this.childTouched)), _defineProperty(_ref, get_default()(this.options, "validationCleanClass", "clean"), (cov_7c8vxy7ok.b[5][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[5][1]++, !this.childTouched)), _defineProperty(_ref, "disabled", this.getValueFromOption(this.field, "disabled")), _defineProperty(_ref, "readonly", this.getValueFromOption(this.field, "readonly")), _defineProperty(_ref, "featured", this.getValueFromOption(this.field, "featured")), _defineProperty(_ref, "required", this.getValueFromOption(this.field, "required")), _ref));
+      var baseClasses = (cov_7c8vxy7ok.s[20]++, (_ref = {}, _defineProperty(_ref, get_default()(this.options, "validationErrorClass", "error"), this.fieldHasErrors), _defineProperty(_ref, get_default()(this.options, "validationSuccessClass", "valid"), (cov_7c8vxy7ok.b[5][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[5][1]++, this.childTouched)), _defineProperty(_ref, get_default()(this.options, "validationCleanClass", "clean"), (cov_7c8vxy7ok.b[6][0]++, !this.fieldHasErrors) && (cov_7c8vxy7ok.b[6][1]++, !this.childTouched)), _defineProperty(_ref, "disabled", this.getValueFromOption(this.field, "disabled")), _defineProperty(_ref, "readonly", this.getValueFromOption(this.field, "readonly")), _defineProperty(_ref, "featured", this.getValueFromOption(this.field, "featured")), _defineProperty(_ref, "required", this.getValueFromOption(this.field, "required")), _ref));
       cov_7c8vxy7ok.s[21]++;
       baseClasses = this.getStyleClasses(this.field, baseClasses);
       cov_7c8vxy7ok.s[22]++;
 
       if (!isNil_default()(this.field.type)) {
-        cov_7c8vxy7ok.b[6][0]++;
+        cov_7c8vxy7ok.b[7][0]++;
         cov_7c8vxy7ok.s[23]++;
         baseClasses["field-" + this.field.type] = true;
       } else {
-        cov_7c8vxy7ok.b[6][1]++;
+        cov_7c8vxy7ok.b[7][1]++;
       }
 
       cov_7c8vxy7ok.s[24]++;
@@ -13398,31 +13432,31 @@ var cov_7c8vxy7ok = function () {
     buttonsAreVisible: function buttonsAreVisible() {
       cov_7c8vxy7ok.f[12]++;
       cov_7c8vxy7ok.s[25]++;
-      return (cov_7c8vxy7ok.b[7][0]++, isArray_default()(this.field.buttons)) && (cov_7c8vxy7ok.b[7][1]++, this.field.buttons.length > 0);
+      return (cov_7c8vxy7ok.b[8][0]++, isArray_default()(this.field.buttons)) && (cov_7c8vxy7ok.b[8][1]++, this.field.buttons.length > 0);
     }
   },
   methods: {
     getValueFromOption: function getValueFromOption(field, option) {
-      var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : (cov_7c8vxy7ok.b[8][0]++, false);
+      var defaultValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : (cov_7c8vxy7ok.b[9][0]++, false);
       cov_7c8vxy7ok.f[13]++;
       cov_7c8vxy7ok.s[26]++;
 
       if (isFunction_default()(field[option])) {
-        cov_7c8vxy7ok.b[9][0]++;
+        cov_7c8vxy7ok.b[10][0]++;
         cov_7c8vxy7ok.s[27]++;
         return field[option].call(this, this.model, field, this);
       } else {
-        cov_7c8vxy7ok.b[9][1]++;
+        cov_7c8vxy7ok.b[10][1]++;
       }
 
       cov_7c8vxy7ok.s[28]++;
 
       if (isNil_default()(field[option])) {
-        cov_7c8vxy7ok.b[10][0]++;
+        cov_7c8vxy7ok.b[11][0]++;
         cov_7c8vxy7ok.s[29]++;
         return defaultValue;
       } else {
-        cov_7c8vxy7ok.b[10][1]++;
+        cov_7c8vxy7ok.b[11][1]++;
       }
 
       cov_7c8vxy7ok.s[30]++;
@@ -13461,8 +13495,8 @@ var formElementvue_type_style_index_0_lang_scss_ = __webpack_require__("b7fb");
 
 var formElement_component = normalizeComponent(
   src_formElementvue_type_script_lang_js_,
-  formElementvue_type_template_id_ce1ac13e_render,
-  formElementvue_type_template_id_ce1ac13e_staticRenderFns,
+  formElementvue_type_template_id_3a9d4efb_render,
+  formElementvue_type_template_id_3a9d4efb_staticRenderFns,
   false,
   null,
   null,

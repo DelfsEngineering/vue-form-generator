@@ -103,7 +103,7 @@ export default {
 	
 	computed: {
 		formElement(){
-			if (this.field.attributes === undefined) {
+			if (this.field.attributes === undefined || this.field.attributes.formElement === undefined) {
 				return {};
 			} 
 			return this.field.attributes.formElement;
