@@ -2,8 +2,7 @@
 	<div
 		class="form-element"
 		:class="[fieldRowClasses]"
-		v-bind="field.attributes.formElement"
-		>
+		v-bind="formElement">
 		<label
 			v-if="fieldTypeHasLabel"
 			:for="fieldID"
@@ -102,11 +101,13 @@ export default {
 		};
 	},
 	
-	mounted: function () {
-		console.log("##", this.field.attributes)
-    	console.log("##", this.field.attributes.formElement)
-    },
 	computed: {
+		formElement(){
+			if (this.field.attributes === undefined) {
+				return {};
+			} 
+			return this.field.attributes.formElement;
+		},
 		fieldID() {
 			const idPrefix = objGet(this.options, "fieldIdPrefix", "");
 			return slugifyFormID(this.field, idPrefix);

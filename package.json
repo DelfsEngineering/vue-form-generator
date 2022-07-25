@@ -7,7 +7,7 @@
 	"scripts": {
 	    "inspect": "vue-cli-service inspect",
 		"serve": "vue-cli-service serve",
-		"forcebuild": "vue-cli-service build",
+		"forcebuild": "vue-cli-service build --target lib --name vfg src/index.js",
 		"prebuild": "npm run test:unit",
 		"build": "vue-cli-service build --no-clean --target lib --name vfg src/index.js --report",
 		"lint": "vue-cli-service lint",
