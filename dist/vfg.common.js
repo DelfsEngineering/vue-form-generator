@@ -11661,12 +11661,12 @@ var get_default = /*#__PURE__*/__webpack_require__.n(lodash_get);
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 var external_commonjs_vue_commonjs2_vue_root_Vue_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_vue_commonjs2_vue_root_Vue_);
 
-// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGroup.vue?vue&type=template&id=14295365&
-var formGroupvue_type_template_id_14295365_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (_vm.fields)?_c(_vm.tag,{ref:"group",tag:"fieldset",class:[_vm.groupRowClasses, _vm.validationClass]},[_vm._t("group-legend",null,{group:_vm.group,groupLegend:_vm.groupLegend}),_vm._t("group-help",null,{group:_vm.group}),_vm._l((_vm.fields),function(field,index){return [(_vm.fieldVisible(field))?[(field.type === 'group')?[_c('form-group',_vm._b({key:index,attrs:{"fields":field.fields,"group":field,"tag":_vm.getGroupTag(field),"model":_vm.model,"options":_vm.options,"errors":_vm.errors,"event-bus":_vm.eventBus},scopedSlots:_vm._u([{key:"group-legend",fn:function(slotProps){return [_vm._t("group-legend",null,{group:slotProps.group,groupLegend:slotProps.groupLegend})]}},{key:"group-help",fn:function(slotProps){return [_vm._t("group-help",null,{group:slotProps.group})]}},{key:"element",fn:function(slotProps){return [_vm._t("element",null,{field:slotProps.field,model:slotProps.model,options:slotProps.options,errors:slotProps.errors,eventBus:slotProps.eventBus})]}}])},'form-group',_vm.setFormGroupAttributes(index),false))]:[_vm._t("element",null,{field:field,model:_vm.model,options:_vm.options,errors:_vm.errors,eventBus:_vm.eventBus})]]:_vm._e()]})],2):_vm._e()}
-var formGroupvue_type_template_id_14295365_staticRenderFns = []
+// CONCATENATED MODULE: ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"76f93fea-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/formGroup.vue?vue&type=template&id=b70e7270&
+var formGroupvue_type_template_id_b70e7270_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (_vm.fields)?_c(_vm.tag,{ref:"group",tag:"fieldset",class:[_vm.groupRowClasses, _vm.validationClass]},[_vm._t("group-legend",null,{group:_vm.group,groupLegend:_vm.groupLegend}),_vm._t("group-help",null,{group:_vm.group}),_vm._l((_vm.fields),function(field,index){return [(_vm.fieldVisible(field))?[(field.type === 'group')?[_c('form-group',_vm._b({key:index,attrs:{"fields":field.fields,"group":field,"tag":_vm.getGroupTag(field),"model":_vm.model,"options":_vm.options,"errors":_vm.errors,"event-bus":_vm.eventBus},scopedSlots:_vm._u([{key:"group-legend",fn:function(slotProps){return [_vm._t("group-legend",null,{group:slotProps.group,groupLegend:slotProps.groupLegend})]}},{key:"group-help",fn:function(slotProps){return [_vm._t("group-help",null,{group:slotProps.group})]}},{key:"element",fn:function(slotProps){return [_vm._t("element",null,{field:slotProps.field,model:slotProps.model,options:slotProps.options,errors:slotProps.errors,eventBus:slotProps.eventBus})]}}])},'form-group',_vm.setFormGroupAttributes(index),false))]:[_vm._t("element",null,{field:field,model:_vm.model,options:_vm.options,errors:_vm.errors,eventBus:_vm.eventBus})]]:_vm._e()]})],2):_vm._e()}
+var formGroupvue_type_template_id_b70e7270_staticRenderFns = []
 
 
-// CONCATENATED MODULE: ./src/formGroup.vue?vue&type=template&id=14295365&
+// CONCATENATED MODULE: ./src/formGroup.vue?vue&type=template&id=b70e7270&
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs2/core-js/object/define-property.js
 var define_property = __webpack_require__("85f2");
@@ -11865,9 +11865,9 @@ var isString_default = /*#__PURE__*/__webpack_require__.n(isString);
   },
   methods: {
     setFormGroupAttributes: function setFormGroupAttributes(index) {
-      var _this$fields$index, _this$fields$index$at;
+      var _this$fields$index, _this$fields$index$at, _this$fields$index2;
 
-      return ((_this$fields$index = this.fields[index]) === null || _this$fields$index === void 0 ? void 0 : (_this$fields$index$at = _this$fields$index.attributes) === null || _this$fields$index$at === void 0 ? void 0 : _this$fields$index$at.formGroup) || {};
+      return ((_this$fields$index = this.fields[index]) === null || _this$fields$index === void 0 ? void 0 : (_this$fields$index$at = _this$fields$index.attributes) === null || _this$fields$index$at === void 0 ? void 0 : _this$fields$index$at.formGroup) || ((_this$fields$index2 = this.fields[index]) === null || _this$fields$index2 === void 0 ? void 0 : _this$fields$index2.attributes) || {};
     },
     // Get visible prop of field
     fieldVisible: function fieldVisible(field) {
@@ -12012,8 +12012,8 @@ function normalizeComponent(
 
 var component = normalizeComponent(
   src_formGroupvue_type_script_lang_js_,
-  formGroupvue_type_template_id_14295365_render,
-  formGroupvue_type_template_id_14295365_staticRenderFns,
+  formGroupvue_type_template_id_b70e7270_render,
+  formGroupvue_type_template_id_b70e7270_staticRenderFns,
   false,
   null,
   null,
