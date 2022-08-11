@@ -20,7 +20,9 @@
 						:options="options"
 						:errors="errors"
 						:event-bus="eventBus"
-						:key="index">
+						:key="index"
+						v-bind="setFormGroupAttributes(index)"
+						>
 						<template
 							slot="group-legend"
 							slot-scope="slotProps">
@@ -136,6 +138,9 @@ export default {
 		}
 	},
 	methods: {
+		setFormGroupAttributes(index){
+			return this.fields[index]?.attributes.formGroup || {};
+		},
 		// Get visible prop of field
 		fieldVisible(field) {
 			if (isFunction(field.visible)) {

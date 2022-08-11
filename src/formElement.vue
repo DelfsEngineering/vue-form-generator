@@ -2,7 +2,7 @@
 	<div
 		class="form-element"
 		:class="[fieldRowClasses]"
-		v-bind="formElementAttributes">
+		v-bind="setFormElementAttributes">
 		<label
 			v-if="fieldTypeHasLabel"
 			:for="fieldID"
@@ -102,7 +102,7 @@ export default {
 	},
 	
 	computed: {
-		formElementAttributes(){
+		setFormElementAttributes(){
 			return this.field?.attributes?.formElement || {};
 		},
 		fieldID() {
