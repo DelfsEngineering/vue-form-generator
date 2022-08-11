@@ -139,7 +139,7 @@ export default {
 	},
 	methods: {
 		setFormGroupAttributes(index){
-			return this.fields[index]?.attributes.formGroup || {};
+			return this.fields[index]?.attributes?.formGroup || {};
 		},
 		// Get visible prop of field
 		fieldVisible(field) {
