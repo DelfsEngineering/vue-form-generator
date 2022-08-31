@@ -18583,7 +18583,7 @@ var forEach_default = /*#__PURE__*/__webpack_require__.n(forEach);
 // CONCATENATED MODULE: ./src/fields/abstractField.js
 var cov_1dqv2r7rj8 = function () {
   var path = "/home/ubuntu/environment/VueFormGen/vue-form-generator/src/fields/abstractField.js";
-  var hash = "94fb99ef8be24babed69f47591b52b46bd0f2266";
+  var hash = "8b9247afcdcd71924d0ceecac65997690a0b62a1";
   var global = new Function("return this")();
   var gcv = "__coverage__";
   var coverageData = {
@@ -19825,7 +19825,7 @@ var cov_1dqv2r7rj8 = function () {
           column: 2
         },
         end: {
-          line: 349,
+          line: 347,
           column: 3
         }
       },
@@ -19851,22 +19851,22 @@ var cov_1dqv2r7rj8 = function () {
       },
       "126": {
         start: {
-          line: 346,
-          column: 3
+          line: 350,
+          column: 2
         },
         end: {
-          line: 348,
-          column: 4
+          line: 350,
+          column: 76
         }
       },
       "127": {
         start: {
-          line: 347,
-          column: 4
+          line: 351,
+          column: 2
         },
         end: {
-          line: 347,
-          column: 69
+          line: 351,
+          column: 55
         }
       },
       "128": {
@@ -19876,26 +19876,6 @@ var cov_1dqv2r7rj8 = function () {
         },
         end: {
           line: 352,
-          column: 76
-        }
-      },
-      "129": {
-        start: {
-          line: 353,
-          column: 2
-        },
-        end: {
-          line: 353,
-          column: 55
-        }
-      },
-      "130": {
-        start: {
-          line: 354,
-          column: 2
-        },
-        end: {
-          line: 354,
           column: 51
         }
       }
@@ -20663,7 +20643,7 @@ var cov_1dqv2r7rj8 = function () {
             column: 11
           },
           end: {
-            line: 350,
+            line: 348,
             column: 2
           }
         },
@@ -20721,25 +20701,25 @@ var cov_1dqv2r7rj8 = function () {
         name: "(anonymous_34)",
         decl: {
           start: {
-            line: 351,
+            line: 349,
             column: 1
           },
           end: {
-            line: 351,
+            line: 349,
             column: 2
           }
         },
         loc: {
           start: {
-            line: 351,
+            line: 349,
             column: 17
           },
           end: {
-            line: 355,
+            line: 353,
             column: 2
           }
         },
-        line: 351
+        line: 349
       }
     },
     branchMap: {
@@ -21824,7 +21804,7 @@ var cov_1dqv2r7rj8 = function () {
             column: 2
           },
           end: {
-            line: 349,
+            line: 347,
             column: 3
           }
         },
@@ -21835,7 +21815,7 @@ var cov_1dqv2r7rj8 = function () {
             column: 2
           },
           end: {
-            line: 349,
+            line: 347,
             column: 3
           }
         }, {
@@ -21844,44 +21824,11 @@ var cov_1dqv2r7rj8 = function () {
             column: 2
           },
           end: {
-            line: 349,
+            line: 347,
             column: 3
           }
         }],
         line: 343
-      },
-      "33": {
-        loc: {
-          start: {
-            line: 346,
-            column: 3
-          },
-          end: {
-            line: 348,
-            column: 4
-          }
-        },
-        type: "if",
-        locations: [{
-          start: {
-            line: 346,
-            column: 3
-          },
-          end: {
-            line: 348,
-            column: 4
-          }
-        }, {
-          start: {
-            line: 346,
-            column: 3
-          },
-          end: {
-            line: 348,
-            column: 4
-          }
-        }],
-        line: 346
       }
     },
     s: {
@@ -22013,9 +21960,7 @@ var cov_1dqv2r7rj8 = function () {
       "125": 0,
       "126": 0,
       "127": 0,
-      "128": 0,
-      "129": 0,
-      "130": 0
+      "128": 0
     },
     f: {
       "0": 0,
@@ -22087,11 +22032,10 @@ var cov_1dqv2r7rj8 = function () {
       "29": [0, 0],
       "30": [0, 0],
       "31": [0, 0],
-      "32": [0, 0],
-      "33": [0, 0]
+      "32": [0, 0]
     },
     _coverageSchema: "43e27e138ebf9cfc5966b082cf9a028302ed4184",
-    hash: "94fb99ef8be24babed69f47591b52b46bd0f2266"
+    hash: "8b9247afcdcd71924d0ceecac65997690a0b62a1"
   };
   var coverage = global[gcv] || (global[gcv] = {});
 
@@ -22666,27 +22610,18 @@ function attributesDirective(el, binding, vnode) {
     if (this.schema) {
       cov_1dqv2r7rj8.b[32][0]++;
       var currentKeys = (cov_1dqv2r7rj8.s[124]++, Object.keys(this.schema));
-      var result = (cov_1dqv2r7rj8.s[125]++, diff(allowedKeys, currentKeys));
-      cov_1dqv2r7rj8.s[126]++;
-
-      if (result.length > 0) {
-        cov_1dqv2r7rj8.b[33][0]++;
-        cov_1dqv2r7rj8.s[127]++;
-        console.log("diff", result, this.schema.type, this.schema.model);
-      } else {
-        cov_1dqv2r7rj8.b[33][1]++;
-      }
+      var result = (cov_1dqv2r7rj8.s[125]++, diff(allowedKeys, currentKeys)); //if (result.length > 0) { console.log("diff", result, this.schema.type, this.schema.model); }
     } else {
       cov_1dqv2r7rj8.b[32][1]++;
     }
   },
   beforeDestroy: function beforeDestroy() {
     cov_1dqv2r7rj8.f[34]++;
-    cov_1dqv2r7rj8.s[128]++;
+    cov_1dqv2r7rj8.s[126]++;
     this.eventBus.$off("clear-validation-errors", this.clearValidationErrors);
-    cov_1dqv2r7rj8.s[129]++;
+    cov_1dqv2r7rj8.s[127]++;
     this.eventBus.$off("validate-fields", this.validate);
-    cov_1dqv2r7rj8.s[130]++;
+    cov_1dqv2r7rj8.s[128]++;
     this.eventBus.$emit("field-deregistering", this);
   }
 });
