@@ -343,9 +343,7 @@ export default {
 		if (this.schema) {
 			let currentKeys = Object.keys(this.schema);
 			let result = diff(allowedKeys, currentKeys);
-			if (result.length > 0) {
-				console.log("diff", result, this.schema.type, this.schema.model);
-			}
+			//if (result.length > 0) { console.log("diff", result, this.schema.type, this.schema.model); }
 		}
 	},
 	beforeDestroy() {
