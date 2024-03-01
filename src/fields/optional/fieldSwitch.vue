@@ -1,12 +1,14 @@
 <template>
 	<label>
-		<input type="checkbox"
+		<input
+			type="checkbox"
 			v-model="value"
 			:autocomplete="fieldOptions.autocomplete"
 			:disabled="disabled"
 			:name="inputName"
-			:id="fieldID">
-		<span class="label"
+			:id="fieldID"/>
+		<span
+			class="label"
 			:data-on="fieldOptions.textOn || 'On'"
 			:data-off="fieldOptions.textOff || 'Off'"
 			:for="fieldID"></span>
@@ -18,7 +20,7 @@
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-switch",
+	name: "FieldSwitch",
 	mixins: [abstractField],
 
 	methods: {
@@ -41,6 +43,7 @@ export default {
 </script>
 
 <style lang="scss">
+@use 'sass:math';
 $field-switch-width: 120px;
 $field-switch-height: 30px;
 
@@ -52,7 +55,7 @@ $field-switch-height: 30px;
 		height: $field-switch-height;
 		padding: 0;
 		margin: 0 10px 10px 0;
-		border-radius: $field-switch-height / 2;
+		border-radius: math.div($field-switch-height, 2);
 		box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
 		cursor: pointer;
 	}

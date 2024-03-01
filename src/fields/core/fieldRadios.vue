@@ -1,12 +1,13 @@
 <template>
 	<div class="radio-list"
-		:disabled="disabled"
-		v-attributes="'wrapper'">
-		<label v-for="item in items"
+:disabled="disabled" v-attributes="'wrapper'">
+		<label
+			v-for="item in items"
 			:key="getItemValue(item)"
-			:class="{'is-checked': isItemChecked(item)}"
+			:class="{ 'is-checked': isItemChecked(item) }"
 			v-attributes="'label'">
-			<input :id="fieldID"
+			<input
+				:id="fieldID"
 				type="radio"
 				:disabled="disabled"
 				:name="id"
@@ -15,10 +16,9 @@
 				:checked="isItemChecked(item)"
 				:class="fieldClasses"
 				:required="required"
-				v-attributes="'input'">{{ getItemName(item) }}
+				v-attributes="'input'"/>{{ getItemName(item) }}
 		</label>
 	</div>
-
 </template>
 
 <script>
@@ -26,7 +26,7 @@ import { isObject } from "lodash";
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-radios",
+	name: "FieldRadios",
 	mixins: [abstractField],
 
 	computed: {

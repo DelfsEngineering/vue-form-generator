@@ -1,12 +1,13 @@
 <template>
-	<input :id="fieldID"
+	<input
+		:id="fieldID"
 		type="submit"
 		:value="fieldOptions.buttonText"
 		@click="onClick"
 		:name="inputName"
 		:disabled="disabled"
 		:class="fieldClasses"
-		v-attributes="'input'">
+		v-attributes="'input'"/>
 </template>
 
 <script>
@@ -14,7 +15,7 @@ import abstractField from "../abstractField";
 import { isFunction, isEmpty } from "lodash";
 
 export default {
-	name: "field-submit",
+	name: "FieldSubmit",
 	mixins: [abstractField],
 
 	methods: {

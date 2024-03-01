@@ -1,7 +1,6 @@
 <template>
-	<div
-		class="vue-form-generator"
-		v-if='schema != null'>
+	<div class="vue-form-generator"
+v-if="schema != null">
 		<form-group
 			:tag="tag"
 			:fields="fields"
@@ -9,102 +8,84 @@
 			:options="options"
 			:errors="errors"
 			:event-bus="eventBus">
-			<template
-				slot="group-legend"
-				slot-scope="{ group, groupLegend }">
+			<template slot="group-legend"
+slot-scope="{ group, groupLegend }">
 				<slot
-					name="group-legend"
-					:group="group"
-					:group-legend="groupLegend">
-					<legend v-if="groupLegend"><span v-html="groupLegend"></span></legend>
+name="group-legend" :group="group"
+:group-legend="groupLegend">
+					<legend v-if="groupLegend">
+						<span v-html="groupLegend"></span>
+					</legend>
 				</slot>
 			</template>
-			<template
-				slot="group-help"
-				slot-scope="{ group }">
-				<slot
-					name="group-help"
-					:group="group">
-					<span
-						v-if='group.help'
-						class="help">
+			<template slot="group-help"
+slot-scope="{ group }">
+				<slot name="group-help"
+:group="group">
+					<span v-if="group.help"
+class="help">
 						<i class="icon"></i>
-						<div
-							class="helpText"
-							v-html='group.help'></div>
+						<div class="helpText"
+v-html="group.help"></div>
 					</span>
 				</slot>
 			</template>
 
-			<template
-				slot="element"
-				slot-scope="slotProps">
+			<template slot="element"
+slot-scope="slotProps">
 				<form-element
 					:field="slotProps.field"
 					:model="slotProps.model"
 					:options="slotProps.options"
 					:errors="slotProps.errors"
 					:event-bus="eventBus">
-
-					<template
-						slot="label"
-						slot-scope="{ field, getValueFromOption }">
+					<template slot="label"
+slot-scope="{ field, getValueFromOption }">
 						<slot
-							name="label"
-							:field="field"
-							:getValueFromOption="getValueFromOption">
+name="label" :field="field"
+:get-value-from-option="getValueFromOption">
 							<span v-html="field.label"></span>
 						</slot>
 					</template>
 
-					<template
-						slot="help"
-						slot-scope="{ field, getValueFromOption }">
+					<template slot="help"
+slot-scope="{ field, getValueFromOption }">
 						<slot
-							name="help"
-							:field="field"
-							:getValueFromOption="getValueFromOption">
-							<span
-								v-if='field.help'
-								class="help">
+name="help" :field="field"
+:get-value-from-option="getValueFromOption">
+							<span v-if="field.help"
+class="help">
 								<i class="icon"></i>
-								<div
-									class="helpText"
-									v-html='field.help'></div>
+								<div class="helpText"
+v-html="field.help"></div>
 							</span>
 						</slot>
 					</template>
 
-					<template
-						slot="hint"
-						slot-scope="{ field, getValueFromOption }">
+					<template slot="hint"
+slot-scope="{ field, getValueFromOption }">
 						<slot
-							name="hint"
-							:field="field"
-							:getValueFromOption="getValueFromOption">
-							<div
-								class="hint"
-								v-html="getValueFromOption(field, 'hint', undefined)"></div>
+name="hint" :field="field"
+:get-value-from-option="getValueFromOption">
+							<div class="hint"
+v-html="getValueFromOption(field, 'hint', undefined)"></div>
 						</slot>
 					</template>
 
-					<template
-						slot="errors"
-						slot-scope="{ childErrors, field, getValueFromOption }">
+					<template slot="errors"
+slot-scope="{ childErrors, field, getValueFromOption }">
 						<slot
 							name="errors"
 							:errors="childErrors"
 							:field="field"
-							:getValueFromOption="getValueFromOption">
+							:get-value-from-option="getValueFromOption">
 							<div class="errors help-block">
 								<span
-									v-for="(error, index) in childErrors"
-									:key="index"
-									v-html="error"></span>
+v-for="(error, index) in childErrors" :key="index"
+v-html="error"></span>
 							</div>
 						</slot>
 					</template>
-
 				</form-element>
 			</template>
 		</form-group>
@@ -118,7 +99,7 @@ import formGroup from "./formGroup.vue";
 import formElement from "./formElement.vue";
 
 export default {
-	name: "form-generator",
+	name: "FormGenerator",
 	components: { formGroup, formElement },
 	props: {
 		schema: {
@@ -192,7 +173,10 @@ export default {
 					this.$nextTick(() => {
 						// Model changed!
 						if (this.options.validateAfterLoad === true && this.isNewModel !== true) {
-							this.validate().then(() => {}, () => {});
+							this.validate().then(
+								() => {},
+								() => {}
+							);
 						} else {
 							this.clearValidationErrors();
 						}

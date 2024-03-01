@@ -1,15 +1,13 @@
 <template>
-	<span :id="fieldID"
-		:class="fieldClasses"
-		v-attributes="'label'"
-		v-text="value"></span>
+	<span :id="fieldID" :class="fieldClasses"
+v-attributes="'label'" v-text="value"></span>
 </template>
 
 <script>
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-label",
+	name: "FieldLabel",
 	mixins: [abstractField]
 };
 </script>

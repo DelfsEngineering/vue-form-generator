@@ -1,6 +1,5 @@
 const path = require("path");
 const webpack = require("webpack");
-const LodashModuleReplacementPlugin = require("lodash-webpack-plugin");
 const version = require("./package.json").version;
 const banner = `
 /**
@@ -11,7 +10,7 @@ const banner = `
 `;
 
 const generateDevProjects = () => {
-	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT);
+	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]"); // Ensure fallback for parsing
 	let devConfig = {
 		index: {
 			entry: "./dev/index.js",
@@ -30,7 +29,7 @@ const generateDevProjects = () => {
 };
 
 module.exports = {
-	baseUrl: process.env.NODE_ENV === "production" ? "" : "/",
+	publicPath: process.env.NODE_ENV === "production" ? "" : "/",
 	outputDir: process.env.NODE_ENV === "production" ? "dist" : path.resolve("dev/projects"),
 	lintOnSave: true,
 	runtimeCompiler: false,
@@ -46,47 +45,20 @@ module.exports = {
 					entryOnly: true
 				}
 			]);
-			config.plugin("lodash").use(LodashModuleReplacementPlugin, [
-				{
-					shorthands: true,
-					cloning: true,
-					currying: true,
-					caching: true,
-					collections: true,
-					exotics: true,
-					guards: true,
-					metadata: true,
-					deburring: true,
-					unicode: true,
-					chaining: true,
-					memoizing: true,
-					coercions: true,
-					flattening: true,
-					paths: true,
-					placeholders: true
-				}
-			]);
-		} else if (process.env.NODE_ENV === "test") {
-			config.devtool("eval");
-			config.module
-				.rule("istanbul")
-				.test(/\.(js|vue)$/)
-				.enforce("post")
-				.include.add(path.resolve(__dirname, "/src"))
-				.end()
-				.use("istanbul-instrumenter-loader")
-				.loader("istanbul-instrumenter-loader")
-				.options({ esModules: true });
-		} else {
-			config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
 		}
 	},
 	css: {
-		modules: false,
-		sourceMap: false,
-		loaderOptions: {}
+		loaderOptions: {
+			sass: {}
+		}
 	},
 	devServer: {
-		contentBase: [path.resolve("dev/projects")]
+		static: {
+			directory: path.resolve("dev/projects")
+		}
+	},
+	configureWebpack: {
+		// Explicitly setting 'node' configuration to false to address the validation error
+		node: false
 	}
 };

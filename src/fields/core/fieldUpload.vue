@@ -1,7 +1,8 @@
-<template >
+<template>
 	<div class="wrapper"
-		v-attributes="'wrapper'">
-		<input class="form-control"
+v-attributes="'wrapper'">
+		<input
+			class="form-control"
 			:id="fieldID"
 			type="file"
 			:name="inputName"
@@ -12,7 +13,7 @@
 			:readonly="readonly"
 			:required="schema.required"
 			:disabled="disabled"
-			v-attributes="'input'">
+			v-attributes="'input'"/>
 	</div>
 </template>
 
@@ -21,7 +22,7 @@ import abstractField from "../abstractField";
 import { isFunction } from "lodash";
 
 export default {
-	name: "field-upload",
+	name: "FieldUpload",
 	mixins: [abstractField],
 	methods: {
 		onChange($event) {

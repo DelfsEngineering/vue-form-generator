@@ -1,48 +1,50 @@
 <template>
 	<div class="wrapper"
-		v-attributes="'wrapper'">
+v-attributes="'wrapper'">
 		<div class="listbox form-control"
-			v-if="useListBox"
-			:disabled="disabled">
-			<div class="list-row"
+v-if="useListBox" :disabled="disabled">
+			<div
+				class="list-row"
 				v-for="item in items"
 				:key="getItemValue(item)"
-				:class="{'is-checked': isItemChecked(item)}">
+				:class="{ 'is-checked': isItemChecked(item) }">
 				<label>
-					<input :id="fieldID"
+					<input
+						:id="fieldID"
 						type="checkbox"
 						:checked="isItemChecked(item)"
 						:disabled="disabled"
 						@change="onChanged($event, item)"
 						:name="getInputName(item)"
-						v-attributes="'input'">{{ getItemName(item) }}
+						v-attributes="'input'"/>{{ getItemName(item) }}
 				</label>
 			</div>
 		</div>
 		<div class="combobox form-control"
-			v-if="!useListBox"
-			:disabled="disabled">
+v-if="!useListBox" :disabled="disabled">
 			<div class="mainRow"
-				@click="onExpandCombo"
-				:class="{ expanded: comboExpanded }">
-				<div class="info"> {{ selectedCount }} selected</div>
+@click="onExpandCombo" :class="{ expanded: comboExpanded }">
+				<div class="info">
+{{ selectedCount }} selected</div>
 				<div class="arrow"></div>
 			</div>
 
 			<div class="dropList">
-				<div class="list-row"
+				<div
+					class="list-row"
 					v-if="comboExpanded"
 					v-for="item in items"
 					:key="getItemValue(item)"
-					:class="{'is-checked': isItemChecked(item)}">
+					:class="{ 'is-checked': isItemChecked(item) }">
 					<label>
-						<input :id="fieldID"
+						<input
+							:id="fieldID"
 							type="checkbox"
 							:checked="isItemChecked(item)"
 							:disabled="disabled"
 							@change="onChanged($event, item)"
 							:name="getInputName(item)"
-							v-attributes="'input'" >
+							v-attributes="'input'"/>
 						{{ getItemName(item) }}
 					</label>
 				</div>
@@ -57,7 +59,7 @@ import abstractField from "../abstractField";
 import { slugify } from "../../utils/schema";
 
 export default {
-	name: "field-checklist",
+	name: "FieldChecklist",
 	mixins: [abstractField],
 
 	data() {
@@ -151,7 +153,6 @@ export default {
 	}
 };
 </script>
-
 
 <style lang="scss">
 .vue-form-generator .field-checklist {

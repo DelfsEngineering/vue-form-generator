@@ -1,5 +1,6 @@
 <template>
-	<div class="slider"
+	<div
+		class="slider"
 		:disabled="disabled"
 		:class="{ 'contain-pips': containPips, 'contain-tooltip': containTooltip }"></div>
 </template>
@@ -9,7 +10,7 @@ import abstractField from "../abstractField";
 import { isArray, defaults } from "lodash";
 
 export default {
-	name: "field-noUiSlider",
+	name: "FieldNoUiSlider",
 	mixins: [abstractField],
 
 	data() {

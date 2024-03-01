@@ -1,5 +1,5 @@
 <template>
-	<img :src="mapLink">
+	<img :src="mapLink" >
 </template>
 
 <script>
@@ -7,7 +7,7 @@ import abstractField from "../abstractField";
 import { defaults } from "lodash";
 
 export default {
-	name: "field-staticmap",
+	name: "FieldStaticmap",
 	mixins: [abstractField],
 
 	computed: {
@@ -25,9 +25,7 @@ export default {
 				lat = this.value[options.lat];
 				lng = this.value[options.lng];
 
-				let url = `http://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${
-					options.zoom
-				}&size=${options.sizeX}x${options.sizeY}`;
+				let url = `http://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${options.zoom}&size=${options.sizeX}x${options.sizeY}`;
 
 				let props = [
 					"scale",

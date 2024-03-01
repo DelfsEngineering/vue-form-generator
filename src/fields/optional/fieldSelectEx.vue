@@ -1,18 +1,21 @@
 <template>
-	<select class="selectpicker"
+	<select
+		class="selectpicker"
 		v-model="value"
 		:disabled="disabled"
 		:multiple="fieldOptions.multiSelect"
 		:title="placeholder"
 		data-width="100%"
 		:name="inputName">
-		<option :disabled="schema.required"
+		<option
+			:disabled="schema.required"
 			v-if="fieldOptions.multiSelect !== true"
 			:value="null"
-			:selected="value == undefined" ></option>
+			:selected="value == undefined"></option>
 		<option v-for="item in items"
-			:key="getItemValue(item)"
-			:value="getItemValue(item)"> {{ getItemName(item) }}</option>
+:key="getItemValue(item)" :value="getItemValue(item)">
+			{{ getItemName(item) }}
+		</option>
 	</select>
 </template>
 
@@ -22,7 +25,7 @@ import { isObject } from "lodash";
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-selectex",
+	name: "FieldSelectex",
 	mixins: [abstractField],
 
 	computed: {
@@ -94,7 +97,6 @@ export default {
 	}
 };
 </script>
-
 
 <style lang="scss">
 .vue-form-generator .field-selectEx .bootstrap-select {

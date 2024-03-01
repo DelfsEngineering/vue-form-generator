@@ -1,5 +1,6 @@
 <template>
-	<input type="text"
+	<input
+		type="text"
 		:autocomplete="fieldOptions.autocomplete"
 		:data-disable="disabled"
 		:data-max="fieldOptions.max"
@@ -7,8 +8,7 @@
 		:data-step="fieldOptions.step"
 		:placeholder="placeholder"
 		:readonly="readonly"
-
-		:name="inputName">
+		:name="inputName"/>
 </template>
 
 <script>
@@ -17,7 +17,7 @@ import abstractField from "../abstractField";
 import { defaults, isArray } from "lodash";
 
 export default {
-	name: "field-rangeSlider",
+	name: "FieldRangeSlider",
 	mixins: [abstractField],
 
 	data() {
@@ -83,7 +83,6 @@ export default {
 	}
 };
 </script>
-
 
 <style lang="scss">
 .vue-form-generator .field-rangeSlider .irs {

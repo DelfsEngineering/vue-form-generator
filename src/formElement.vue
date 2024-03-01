@@ -1,20 +1,12 @@
 <template>
-	<div
-		class="form-element"
-		:class="[fieldRowClasses]"
-		v-bind="setFormElementAttributes">
-		<label
-			v-if="fieldTypeHasLabel"
-			:for="fieldID"
-			:class="field.labelClasses">
-			<slot
-				name="label"
-				:field="field"
-				:getValueFromOption="getValueFromOption"></slot>
-			<slot
-				name="help"
-				:field="field"
-				:getValueFromOption="getValueFromOption"></slot>
+	<div class="form-element"
+:class="[fieldRowClasses]" v-bind="setFormElementAttributes">
+		<label v-if="fieldTypeHasLabel"
+:for="fieldID" :class="field.labelClasses">
+			<slot name="label"
+:field="field" :get-value-from-option="getValueFromOption"></slot>
+			<slot name="help"
+:field="field" :get-value-from-option="getValueFromOption"></slot>
 		</label>
 
 		<div class="field-wrap">
@@ -28,9 +20,8 @@
 				:field-id="fieldID"
 				@field-touched="onFieldTouched"
 				@errors-updated="onChildValidated"></component>
-			<div
-				v-if="buttonsAreVisible"
-				class="buttons">
+			<div v-if="buttonsAreVisible"
+class="buttons">
 				<button
 					v-for="(btn, index) in field.buttons"
 					@click="buttonClickHandler(btn, field, $event)"
@@ -41,18 +32,16 @@
 		</div>
 
 		<template v-if="fieldHasHint">
-			<slot
-				name="hint"
-				:field="field"
-				:getValueFromOption="getValueFromOption"></slot>
+			<slot name="hint"
+:field="field" :get-value-from-option="getValueFromOption"></slot>
 		</template>
 
 		<template v-if="fieldHasErrors">
 			<slot
 				name="errors"
-				:childErrors="childErrors"
+				:child-errors="childErrors"
 				:field="field"
-				:getValueFromOption="getValueFromOption" ></slot>
+				:get-value-from-option="getValueFromOption"></slot>
 		</template>
 	</div>
 </template>
@@ -62,7 +51,7 @@ import { slugifyFormID } from "./utils/schema";
 import formMixin from "./formMixin.js";
 
 export default {
-	name: "form-element",
+	name: "FormElement",
 	mixins: [formMixin],
 	props: {
 		model: {
@@ -100,9 +89,9 @@ export default {
 			childTouched: false
 		};
 	},
-	
+
 	computed: {
-		setFormElementAttributes(){
+		setFormElementAttributes() {
 			return this.field?.attributes?.formElement || {};
 		},
 		fieldID() {

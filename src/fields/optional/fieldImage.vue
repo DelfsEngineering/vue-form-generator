@@ -1,26 +1,27 @@
 <template>
 	<div class="wrapper">
-		<input class="form-control link"
+		<input
+			class="form-control link"
 			type="text"
 			v-show="fieldOptions.hideInput !== true"
 			v-model="wrappedValue"
 			:autocomplete="fieldOptions.autocomplete"
 			:disabled="disabled"
 			:placeholder="placeholder"
-			:readonly="readonly">
+			:readonly="readonly"/>
 
-		<input class="form-control file"
+		<input
+			class="form-control file"
 			type="file"
 			v-if="fieldOptions.browse !== false"
 			:disabled="disabled"
 			@change="fileChanged"
-			:name="inputName">
+			:name="inputName"/>
 
 		<div class="preview"
-			:style="previewStyle">
+:style="previewStyle">
 			<div class="remove"
-				title="Remove image"
-				@click="remove"></div>
+title="Remove image" @click="remove"></div>
 		</div>
 	</div>
 </template>
@@ -29,7 +30,7 @@
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-image",
+	name: "FieldImage",
 	mixins: [abstractField],
 
 	computed: {

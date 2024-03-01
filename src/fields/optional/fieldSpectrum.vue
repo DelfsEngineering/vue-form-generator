@@ -1,11 +1,12 @@
 <template>
-	<input type="text"
+	<input
+		type="text"
 		:autocomplete="fieldOptions.autocomplete"
 		:disabled="disabled"
 		:placeholder="placeholder"
 		:readonly="readonly"
 		:name="inputName"
-		:id="fieldID" >
+		:id="fieldID"/>
 </template>
 
 <script>
@@ -13,7 +14,7 @@
 import abstractField from "../abstractField";
 import { defaults } from "lodash";
 export default {
-	name: "field-spectrum",
+	name: "FieldSpectrum",
 	mixins: [abstractField],
 
 	data() {

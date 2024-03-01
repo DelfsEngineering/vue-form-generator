@@ -1,5 +1,6 @@
 <template>
-	<input class="form-control"
+	<input
+		class="form-control"
 		type="text"
 		v-model="value"
 		:autocomplete="fieldOptions.autocomplete"
@@ -9,7 +10,7 @@
 		:name="inputName"
 		debounce="500"
 		@focus="geolocate()"
-		:id="fieldID">
+		:id="fieldID"/>
 </template>
 
 <script>
@@ -23,7 +24,7 @@ import { isFunction } from "lodash";
 
 /* global google */
 export default {
-	name: "field-googleAddress",
+	name: "FieldGoogleAddress",
 	mixins: [abstractField],
 
 	data() {

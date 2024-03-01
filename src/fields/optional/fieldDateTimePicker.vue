@@ -1,6 +1,7 @@
 <template>
 	<div class="input-group date">
-		<input class="form-control"
+		<input
+			class="form-control"
 			type="text"
 			v-model="value"
 			:autocomplete="fieldOptions.autocomplete"
@@ -8,7 +9,7 @@
 			:placeholder="placeholder"
 			:readonly="readonly"
 			:name="inputName"
-			:id="fieldID">
+			:id="fieldID"/>
 
 		<span class="input-group-addon">
 			<span class="glyphicon glyphicon-calendar"></span>
@@ -23,7 +24,7 @@ import { defaults } from "lodash";
 import dateFieldHelper from "../../utils/dateFieldHelper";
 
 export default {
-	name: "field-dateTimePicker",
+	name: "FieldDateTimePicker",
 	mixins: [abstractField],
 
 	methods: {

@@ -1,5 +1,6 @@
 <template>
-	<input class="form-control"
+	<input
+		class="form-control"
 		type="text"
 		v-model="value"
 		:autocomplete="fieldOptions.autocomplete"
@@ -7,7 +8,7 @@
 		:placeholder="placeholder"
 		:readonly="readonly"
 		:name="inputName"
-		:id="fieldID">
+		:id="fieldID"/>
 </template>
 
 <script>
@@ -15,7 +16,7 @@
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-masked",
+	name: "FieldMasked",
 	mixins: [abstractField],
 
 	mounted() {

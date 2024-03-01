@@ -1,5 +1,6 @@
 <template>
-	<input :id="fieldID"
+	<input
+		:id="fieldID"
 		type="checkbox"
 		v-model="value"
 		:autocomplete="fieldOptions.autocomplete"
@@ -7,14 +8,14 @@
 		:name="inputName"
 		:class="fieldClasses"
 		:required="required"
-		v-attributes="'input'" >
+		v-attributes="'input'"/>
 </template>
 
 <script>
 import abstractField from "../abstractField";
 
 export default {
-	name: "field-checkbox",
+	name: "FieldCheckbox",
 	mixins: [abstractField]
 };
 </script>
