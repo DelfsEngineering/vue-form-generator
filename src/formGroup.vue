@@ -1,8 +1,9 @@
 <template>
-	<fieldset v-if="fields" :is="tag"
-:class="[groupRowClasses, validationClass]" ref="group">
-		<slot name="group-legend"
-:group="group" :group-legend="groupLegend"></slot>
+	<fieldset v-if="fields"
+:is="tag" :class="[groupRowClasses, validationClass]" ref="group">
+		<slot
+name="group-legend" :group="group"
+:group-legend="groupLegend"></slot>
 		<slot name="group-help"
 :group="group"></slot>
 		<template v-for="(field, index) in fields">

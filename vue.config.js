@@ -37,6 +37,8 @@ module.exports = {
 	productionSourceMap: false,
 	pages: process.env.NODE_ENV !== "development" ? {} : generateDevProjects(),
 	chainWebpack: (config) => {
+		config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+
 		if (process.env.NODE_ENV === "production") {
 			config.plugin("banner").use(webpack.BannerPlugin, [
 				{

@@ -20,8 +20,9 @@
 
 		<div class="preview"
 :style="previewStyle">
-			<div class="remove"
-title="Remove image" @click="remove"></div>
+			<div
+class="remove" title="Remove image"
+@click="remove"></div>
 		</div>
 	</div>
 </template>

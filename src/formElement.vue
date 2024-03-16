@@ -1,12 +1,16 @@
 <template>
-	<div class="form-element"
-:class="[fieldRowClasses]" v-bind="setFormElementAttributes">
-		<label v-if="fieldTypeHasLabel"
-:for="fieldID" :class="field.labelClasses">
-			<slot name="label"
-:field="field" :get-value-from-option="getValueFromOption"></slot>
-			<slot name="help"
-:field="field" :get-value-from-option="getValueFromOption"></slot>
+	<div
+class="form-element" :class="[fieldRowClasses]"
+v-bind="setFormElementAttributes">
+		<label
+v-if="fieldTypeHasLabel" :for="fieldID"
+:class="field.labelClasses">
+			<slot
+name="label" :field="field"
+:get-value-from-option="getValueFromOption"></slot>
+			<slot
+name="help" :field="field"
+:get-value-from-option="getValueFromOption"></slot>
 		</label>
 
 		<div class="field-wrap">
@@ -32,8 +36,9 @@ class="buttons">
 		</div>
 
 		<template v-if="fieldHasHint">
-			<slot name="hint"
-:field="field" :get-value-from-option="getValueFromOption"></slot>
+			<slot
+name="hint" :field="field"
+:get-value-from-option="getValueFromOption"></slot>
 		</template>
 
 		<template v-if="fieldHasErrors">

@@ -39,8 +39,9 @@ v-attributes="'wrapper'">
 			:width="fieldOptions.width"
 			:files="fieldOptions.files"
 			v-attributes="'input'"/>
-		<span class="helper"
-v-if="inputType === 'color' || inputType === 'range'" v-text="value"></span>
+		<span
+class="helper" v-if="inputType === 'color' || inputType === 'range'"
+v-text="value"></span>
 	</div>
 </template>
 

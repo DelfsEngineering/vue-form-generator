@@ -12,8 +12,9 @@
 			v-if="fieldOptions.multiSelect !== true"
 			:value="null"
 			:selected="value == undefined"></option>
-		<option v-for="item in items"
-:key="getItemValue(item)" :value="getItemValue(item)">
+		<option
+v-for="item in items" :key="getItemValue(item)"
+:value="getItemValue(item)">
 			{{ getItemName(item) }}
 		</option>
 	</select>

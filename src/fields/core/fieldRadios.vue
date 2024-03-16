@@ -1,6 +1,7 @@
 <template>
-	<div class="radio-list"
-:disabled="disabled" v-attributes="'wrapper'">
+	<div
+class="radio-list" :disabled="disabled"
+v-attributes="'wrapper'">
 		<label
 			v-for="item in items"
 			:key="getItemValue(item)"

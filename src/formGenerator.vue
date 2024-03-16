@@ -10,9 +10,7 @@ v-if="schema != null">
 			:event-bus="eventBus">
 			<template slot="group-legend"
 slot-scope="{ group, groupLegend }">
-				<slot
-name="group-legend" :group="group"
-:group-legend="groupLegend">
+				<slot name="group-legend" :group="group" :group-legend="groupLegend">
 					<legend v-if="groupLegend">
 						<span v-html="groupLegend"></span>
 					</legend>
@@ -41,18 +39,14 @@ slot-scope="slotProps">
 					:event-bus="eventBus">
 					<template slot="label"
 slot-scope="{ field, getValueFromOption }">
-						<slot
-name="label" :field="field"
-:get-value-from-option="getValueFromOption">
+						<slot name="label" :field="field" :get-value-from-option="getValueFromOption">
 							<span v-html="field.label"></span>
 						</slot>
 					</template>
 
 					<template slot="help"
 slot-scope="{ field, getValueFromOption }">
-						<slot
-name="help" :field="field"
-:get-value-from-option="getValueFromOption">
+						<slot name="help" :field="field" :get-value-from-option="getValueFromOption">
 							<span v-if="field.help"
 class="help">
 								<i class="icon"></i>
@@ -64,9 +58,7 @@ v-html="field.help"></div>
 
 					<template slot="hint"
 slot-scope="{ field, getValueFromOption }">
-						<slot
-name="hint" :field="field"
-:get-value-from-option="getValueFromOption">
+						<slot name="hint" :field="field" :get-value-from-option="getValueFromOption">
 							<div class="hint"
 v-html="getValueFromOption(field, 'hint', undefined)"></div>
 						</slot>
@@ -80,9 +72,7 @@ slot-scope="{ childErrors, field, getValueFromOption }">
 							:field="field"
 							:get-value-from-option="getValueFromOption">
 							<div class="errors help-block">
-								<span
-v-for="(error, index) in childErrors" :key="index"
-v-html="error"></span>
+								<span v-for="(error, index) in childErrors" :key="index" v-html="error"></span>
 							</div>
 						</slot>
 					</template>

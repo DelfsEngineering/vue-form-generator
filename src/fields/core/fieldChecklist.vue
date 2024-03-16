@@ -1,8 +1,9 @@
 <template>
 	<div class="wrapper"
 v-attributes="'wrapper'">
-		<div class="listbox form-control"
-v-if="useListBox" :disabled="disabled">
+		<div
+class="listbox form-control" v-if="useListBox"
+:disabled="disabled">
 			<div
 				class="list-row"
 				v-for="item in items"
@@ -20,10 +21,12 @@ v-if="useListBox" :disabled="disabled">
 				</label>
 			</div>
 		</div>
-		<div class="combobox form-control"
-v-if="!useListBox" :disabled="disabled">
-			<div class="mainRow"
-@click="onExpandCombo" :class="{ expanded: comboExpanded }">
+		<div
+class="combobox form-control" v-if="!useListBox"
+:disabled="disabled">
+			<div
+class="mainRow" @click="onExpandCombo"
+:class="{ expanded: comboExpanded }">
 				<div class="info">
 {{ selectedCount }} selected</div>
 				<div class="arrow"></div>
