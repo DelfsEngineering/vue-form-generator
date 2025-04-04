@@ -8,7 +8,8 @@
 		:name="inputName"
 		:class="fieldClasses"
 		:required="required"
-		v-attributes="'input'"/>
+		v-attributes="'input'"
+	/>
 </template>
 
 <script>

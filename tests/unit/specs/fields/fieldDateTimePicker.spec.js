@@ -68,7 +68,7 @@ describe("fieldDateTimePicker.vue", () => {
 		describe("check optional attribute", () => {
 			let attributes = ["disabled", "placeholder", "readonly", "inputName"];
 
-			attributes.forEach(function(name) {
+			attributes.forEach(function (name) {
 				it("should set " + name, () => {
 					checkAttribute(name, wrapper, schema);
 				});

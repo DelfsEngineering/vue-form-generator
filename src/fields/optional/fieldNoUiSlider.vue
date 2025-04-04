@@ -2,7 +2,8 @@
 	<div
 		class="slider"
 		:disabled="disabled"
-		:class="{ 'contain-pips': containPips, 'contain-tooltip': containTooltip }"></div>
+		:class="{ 'contain-pips': containPips, 'contain-tooltip': containTooltip }"
+	></div>
 </template>
 
 <script>
@@ -20,7 +21,7 @@ export default {
 	},
 
 	watch: {
-		model: function() {
+		model: function () {
 			if (window.noUiSlider && this.slider && this.slider.noUiSlider) {
 				this.slider.noUiSlider.set(this.value);
 			}

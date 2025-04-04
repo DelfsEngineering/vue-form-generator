@@ -1,16 +1,8 @@
 <template>
-	<div
-class="form-element" :class="[fieldRowClasses]"
-v-bind="setFormElementAttributes">
-		<label
-v-if="fieldTypeHasLabel" :for="fieldID"
-:class="field.labelClasses">
-			<slot
-name="label" :field="field"
-:get-value-from-option="getValueFromOption"></slot>
-			<slot
-name="help" :field="field"
-:get-value-from-option="getValueFromOption"></slot>
+	<div class="form-element" :class="[fieldRowClasses]" v-bind="setFormElementAttributes">
+		<label v-if="fieldTypeHasLabel" :for="fieldID" :class="field.labelClasses">
+			<slot name="label" :field="field" :get-value-from-option="getValueFromOption"></slot>
+			<slot name="help" :field="field" :get-value-from-option="getValueFromOption"></slot>
 		</label>
 
 		<div class="field-wrap">
@@ -23,22 +15,21 @@ name="help" :field="field"
 				:event-bus="eventBus"
 				:field-id="fieldID"
 				@field-touched="onFieldTouched"
-				@errors-updated="onChildValidated"></component>
-			<div v-if="buttonsAreVisible"
-class="buttons">
+				@errors-updated="onChildValidated"
+			></component>
+			<div v-if="buttonsAreVisible" class="buttons">
 				<button
 					v-for="(btn, index) in field.buttons"
 					@click="buttonClickHandler(btn, field, $event)"
 					:class="btn.classes"
 					:key="index"
-					v-text="btn.label"></button>
+					v-text="btn.label"
+				></button>
 			</div>
 		</div>
 
 		<template v-if="fieldHasHint">
-			<slot
-name="hint" :field="field"
-:get-value-from-option="getValueFromOption"></slot>
+			<slot name="hint" :field="field" :get-value-from-option="getValueFromOption"></slot>
 		</template>
 
 		<template v-if="fieldHasErrors">
@@ -46,7 +37,8 @@ name="hint" :field="field"
 				name="errors"
 				:child-errors="childErrors"
 				:field="field"
-				:get-value-from-option="getValueFromOption"></slot>
+				:get-value-from-option="getValueFromOption"
+			></slot>
 		</template>
 	</div>
 </template>

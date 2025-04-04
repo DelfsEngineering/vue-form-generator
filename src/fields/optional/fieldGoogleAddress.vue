@@ -10,7 +10,8 @@
 		:name="inputName"
 		debounce="500"
 		@focus="geolocate()"
-		:id="fieldID"/>
+		:id="fieldID"
+	/>
 </template>
 
 <script>

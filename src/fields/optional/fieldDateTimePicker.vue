@@ -9,7 +9,8 @@
 			:placeholder="placeholder"
 			:readonly="readonly"
 			:name="inputName"
-			:id="fieldID"/>
+			:id="fieldID"
+		/>
 
 		<span class="input-group-addon">
 			<span class="glyphicon glyphicon-calendar"></span>
@@ -54,9 +55,7 @@ export default {
 
 	beforeDestroy() {
 		if (window.$ && window.$.fn.datetimepicker) {
-			$(this.$el)
-				.data("DateTimePicker")
-				.destroy();
+			$(this.$el).data("DateTimePicker").destroy();
 		}
 	}
 };

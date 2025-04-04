@@ -8,7 +8,8 @@
 			:autocomplete="fieldOptions.autocomplete"
 			:disabled="disabled"
 			:placeholder="placeholder"
-			:readonly="readonly"/>
+			:readonly="readonly"
+		/>
 
 		<input
 			class="form-control file"
@@ -16,13 +17,11 @@
 			v-if="fieldOptions.browse !== false"
 			:disabled="disabled"
 			@change="fileChanged"
-			:name="inputName"/>
+			:name="inputName"
+		/>
 
-		<div class="preview"
-:style="previewStyle">
-			<div
-class="remove" title="Remove image"
-@click="remove"></div>
+		<div class="preview" :style="previewStyle">
+			<div class="remove" title="Remove image" @click="remove"></div>
 		</div>
 	</div>
 </template>

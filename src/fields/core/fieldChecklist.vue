@@ -1,14 +1,12 @@
 <template>
-	<div class="wrapper"
-v-attributes="'wrapper'">
-		<div
-class="listbox form-control" v-if="useListBox"
-:disabled="disabled">
+	<div class="wrapper" v-attributes="'wrapper'">
+		<div class="listbox form-control" v-if="useListBox" :disabled="disabled">
 			<div
 				class="list-row"
 				v-for="item in items"
 				:key="getItemValue(item)"
-				:class="{ 'is-checked': isItemChecked(item) }">
+				:class="{ 'is-checked': isItemChecked(item) }"
+			>
 				<label>
 					<input
 						:id="fieldID"
@@ -17,18 +15,14 @@ class="listbox form-control" v-if="useListBox"
 						:disabled="disabled"
 						@change="onChanged($event, item)"
 						:name="getInputName(item)"
-						v-attributes="'input'"/>{{ getItemName(item) }}
+						v-attributes="'input'"
+					/>{{ getItemName(item) }}
 				</label>
 			</div>
 		</div>
-		<div
-class="combobox form-control" v-if="!useListBox"
-:disabled="disabled">
-			<div
-class="mainRow" @click="onExpandCombo"
-:class="{ expanded: comboExpanded }">
-				<div class="info">
-{{ selectedCount }} selected</div>
+		<div class="combobox form-control" v-if="!useListBox" :disabled="disabled">
+			<div class="mainRow" @click="onExpandCombo" :class="{ expanded: comboExpanded }">
+				<div class="info">{{ selectedCount }} selected</div>
 				<div class="arrow"></div>
 			</div>
 
@@ -38,7 +32,8 @@ class="mainRow" @click="onExpandCombo"
 					v-if="comboExpanded"
 					v-for="item in items"
 					:key="getItemValue(item)"
-					:class="{ 'is-checked': isItemChecked(item) }">
+					:class="{ 'is-checked': isItemChecked(item) }"
+				>
 					<label>
 						<input
 							:id="fieldID"
@@ -47,7 +42,8 @@ class="mainRow" @click="onExpandCombo"
 							:disabled="disabled"
 							@change="onChanged($event, item)"
 							:name="getInputName(item)"
-							v-attributes="'input'"/>
+							v-attributes="'input'"
+						/>
 						{{ getItemName(item) }}
 					</label>
 				</div>

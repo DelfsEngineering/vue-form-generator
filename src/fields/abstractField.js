@@ -296,13 +296,17 @@ export default {
 		}
 	},
 	created() {
-		this.eventBus.$on("clear-validation-errors", this.clearValidationErrors);
-		this.eventBus.$on("validate-fields", this.validate);
-		this.eventBus.$emit("field-registering");
+		if (this.eventBus && typeof this.eventBus.$on === 'function') {
+			this.eventBus.$on("clear-validation-errors", this.clearValidationErrors);
+			this.eventBus.$on("validate-fields", this.validate);
+		}
+		if (this.eventBus && typeof this.eventBus.$emit === 'function') {
+			this.eventBus.$emit("field-registering");
+		}
 	},
 	mounted() {
-		const diff = function(a, b) {
-			return b.filter(function(i) {
+		const diff = function (a, b) {
+			return b.filter(function (i) {
 				return a.indexOf(i) < 0;
 			});
 		};
@@ -347,8 +351,12 @@ export default {
 		}
 	},
 	beforeDestroy() {
-		this.eventBus.$off("clear-validation-errors", this.clearValidationErrors);
-		this.eventBus.$off("validate-fields", this.validate);
-		this.eventBus.$emit("field-deregistering", this);
+		if (this.eventBus && typeof this.eventBus.$off === 'function') {
+			this.eventBus.$off("clear-validation-errors", this.clearValidationErrors);
+			this.eventBus.$off("validate-fields", this.validate);
+		}
+		if (this.eventBus && typeof this.eventBus.$emit === 'function') {
+			this.eventBus.$emit("field-deregistering", this);
+		}
 	}
 };

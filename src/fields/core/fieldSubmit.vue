@@ -7,7 +7,8 @@
 		:name="inputName"
 		:disabled="disabled"
 		:class="fieldClasses"
-		v-attributes="'input'"/>
+		v-attributes="'input'"
+	/>
 </template>
 
 <script>

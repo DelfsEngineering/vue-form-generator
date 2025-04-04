@@ -1,5 +1,5 @@
 <template>
-	<img :src="mapLink">
+	<img :src="mapLink" />
 </template>
 
 <script>

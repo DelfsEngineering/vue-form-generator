@@ -7,7 +7,8 @@
 		:disabled="disabled"
 		:placeholder="placeholder"
 		:readonly="readonly"
-		:name="inputName"/>
+		:name="inputName"
+	/>
 </template>
 
 <script>

@@ -1,6 +1,5 @@
 <template>
-	<div class="wrapper"
-v-attributes="'wrapper'">
+	<div class="wrapper" v-attributes="'wrapper'">
 		<input
 			class="form-control"
 			:id="fieldID"
@@ -13,7 +12,8 @@ v-attributes="'wrapper'">
 			:readonly="readonly"
 			:required="schema.required"
 			:disabled="disabled"
-			v-attributes="'input'"/>
+			v-attributes="'input'"
+		/>
 	</div>
 </template>
 

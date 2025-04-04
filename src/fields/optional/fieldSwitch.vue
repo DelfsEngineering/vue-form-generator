@@ -6,12 +6,14 @@
 			:autocomplete="fieldOptions.autocomplete"
 			:disabled="disabled"
 			:name="inputName"
-			:id="fieldID"/>
+			:id="fieldID"
+		/>
 		<span
 			class="label"
 			:data-on="fieldOptions.textOn || 'On'"
 			:data-off="fieldOptions.textOff || 'Off'"
-			:for="fieldID"></span>
+			:for="fieldID"
+		></span>
 		<span class="handle"></span>
 	</label>
 </template>
@@ -43,7 +45,7 @@ export default {
 </script>
 
 <style lang="scss">
-@use 'sass:math';
+@use "sass:math";
 $field-switch-width: 120px;
 $field-switch-height: 30px;
 
@@ -56,7 +58,9 @@ $field-switch-height: 30px;
 		padding: 0;
 		margin: 0 10px 10px 0;
 		border-radius: math.div($field-switch-height, 2);
-		box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		box-shadow:
+			inset 0 -1px white,
+			inset 0 1px 1px rgba(0, 0, 0, 0.05);
 		cursor: pointer;
 	}
 	input {
@@ -73,7 +77,9 @@ $field-switch-height: 30px;
 		text-transform: uppercase;
 		background: #eceeef;
 		border-radius: inherit;
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+		box-shadow:
+			inset 0 1px 2px rgba(0, 0, 0, 0.12),
+			inset 0 0 2px rgba(0, 0, 0, 0.15);
 	}
 	.label:before,
 	.label:after {
@@ -101,7 +107,9 @@ $field-switch-height: 30px;
 	}
 	input:checked ~ .label {
 		background: #e1b42b;
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+		box-shadow:
+			inset 0 1px 2px rgba(0, 0, 0, 0.15),
+			inset 0 0 3px rgba(0, 0, 0, 0.2);
 	}
 	input:checked ~ .label:before {
 		opacity: 0;

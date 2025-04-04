@@ -6,15 +6,15 @@
 		:multiple="fieldOptions.multiSelect"
 		:title="placeholder"
 		data-width="100%"
-		:name="inputName">
+		:name="inputName"
+	>
 		<option
 			:disabled="schema.required"
 			v-if="fieldOptions.multiSelect !== true"
 			:value="null"
-			:selected="value == undefined"></option>
-		<option
-v-for="item in items" :key="getItemValue(item)"
-:value="getItemValue(item)">
+			:selected="value == undefined"
+		></option>
+		<option v-for="item in items" :key="getItemValue(item)" :value="getItemValue(item)">
 			{{ getItemName(item) }}
 		</option>
 	</select>
@@ -74,7 +74,7 @@ export default {
 	},
 
 	watch: {
-		model: function() {
+		model: function () {
 			if (typeof $.fn !== "undefined" && $.fn.selectpicker) $(this.$el).selectpicker("refresh");
 		}
 	},
@@ -82,9 +82,7 @@ export default {
 	mounted() {
 		this.$nextTick(() => {
 			if (typeof $.fn !== "undefined" && $.fn.selectpicker) {
-				$(this.$el)
-					.selectpicker("destroy")
-					.selectpicker(this.fieldOptions);
+				$(this.$el).selectpicker("destroy").selectpicker(this.fieldOptions);
 			} else {
 				console.warn(
 					"Bootstrap-select library is missing. Please download from https://silviomoreto.github.io/bootstrap-select/ and load the script and CSS in the HTML head section!"

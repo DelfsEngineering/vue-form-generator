@@ -12,7 +12,8 @@
 		:readonly="readonly"
 		:rows="fieldOptions.rows || 2"
 		:name="inputName"
-		v-attributes="'input'"></textarea>
+		v-attributes="'input'"
+	></textarea>
 </template>
 
 <script>

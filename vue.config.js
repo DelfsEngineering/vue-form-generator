@@ -55,8 +55,14 @@ module.exports = {
 		}
 	},
 	devServer: {
+		allowedHosts: "all", // Allow all hosts
+		host: "0.0.0.0", // Listen on all network interfaces
+		port: 8080, // Ensure it's listening on the same port
 		static: {
 			directory: path.resolve("dev/projects")
+		},
+		client: {
+			webSocketURL: "auto://0.0.0.0:8080/ws" // Update WebSocket URL to match the dynamic preview
 		}
 	},
 	configureWebpack: {

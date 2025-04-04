@@ -1,6 +1,6 @@
 {
 	"name": "vue-form-generator",
-	"version": "3.1.0",
+	"version": "3.1.3",
 	"description": "A schema-based form generator component for Vue.js",
 	"homepage": "https://github.com/vue-generators/vue-form-generator/",
 	"main": "dist/vfg.umd.min.js",
@@ -39,7 +39,8 @@
 		"src"
 	],
 	"author": "Icebob",
-	"maintainers": [{
+	"maintainers": [
+		{
 			"name": "David Higgins",
 			"email": "higginsd@zoulcreations.com",
 			"web": "http://www.fragmentedcode.com"
@@ -62,7 +63,7 @@
 		"@vue/cli-plugin-eslint": "^5.0.8",
 		"@vue/cli-plugin-unit-mocha": "^5.0.8",
 		"@vue/cli-service": "^5.0.8",
-		"@vue/eslint-config-prettier": "3.0.5",
+		"@vue/eslint-config-prettier": "^10.1.0",
 		"@vue/test-utils": "1.0.0-beta.25",
 		"babel-plugin-istanbul": "5.1.0",
 		"babel-plugin-lodash": "3.3.4",
@@ -84,6 +85,7 @@
 		"nouislider": "11.1.0",
 		"nyc": "^15.1.0",
 		"pikaday": "1.8.0",
+		"prettier": "^3.4.2",
 		"sass": "^1.71.1",
 		"sass-loader": "^14.1.1",
 		"sinon": "7.0.0",
@@ -105,24 +107,9 @@
 		"extends": [
 			"eslint:recommended",
 			"plugin:vue/strongly-recommended",
-			"@vue/prettier"
+			"plugin:prettier/recommended"
 		],
 		"rules": {
-			"indent": [
-				1,
-				"tab",
-				{
-					"SwitchCase": 1
-				}
-			],
-			"quotes": [
-				1,
-				"double",
-				{
-					"allowTemplateLiterals": true,
-					"avoidEscape": true
-				}
-			],
 			"semi": [
 				2,
 				"always"
@@ -145,10 +132,13 @@
 				0,
 				"kebab-case"
 			],
-			"vue/first-attribute-linebreak": ["error", {
-				"singleline": "ignore",
-				"multiline": "below"
-			}],
+			"vue/first-attribute-linebreak": [
+				"error",
+				{
+					"singleline": "ignore",
+					"multiline": "below"
+				}
+			],
 			"vue/html-closing-bracket-newline": [
 				2,
 				{
@@ -193,16 +183,6 @@
 		"last 2 versions",
 		"not ie <= 8"
 	],
-	"prettier": {
-		"printWidth": 120,
-		"tabWidth": 4,
-		"singleQuote": false,
-		"trailingComma": "none",
-		"bracketSpacing": true,
-		"semi": true,
-		"useTabs": true,
-		"arrowParens": "always"
-	},
 	"nyc": {
 		"check-coverage": false,
 		"per-file": true,

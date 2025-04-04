@@ -39,7 +39,8 @@
 		@tag="addTag"
 		@open="onOpen"
 		@close="onClose"
-		:option-height="fieldOptions.optionHeight">
+		:option-height="fieldOptions.optionHeight"
+	>
 		<span slot="noResult">
 			{{ fieldOptions.noResult }}
 		</span>

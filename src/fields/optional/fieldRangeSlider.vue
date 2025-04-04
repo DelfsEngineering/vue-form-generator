@@ -8,7 +8,8 @@
 		:data-step="fieldOptions.step"
 		:placeholder="placeholder"
 		:readonly="readonly"
-		:name="inputName"/>
+		:name="inputName"
+	/>
 </template>
 
 <script>
@@ -27,7 +28,7 @@ export default {
 	},
 
 	watch: {
-		model: function() {
+		model: function () {
 			if (window.$ && window.$.fn.ionRangeSlider) {
 				let valueFrom, valueTo;
 				if (isArray(this.value)) {
@@ -45,7 +46,7 @@ export default {
 	},
 
 	mounted() {
-		this.$nextTick(function() {
+		this.$nextTick(function () {
 			if (window.$ && window.$.fn.ionRangeSlider) {
 				let valueFrom, valueTo;
 				if (isArray(this.value)) {

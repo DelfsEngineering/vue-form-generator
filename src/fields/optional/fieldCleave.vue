@@ -8,7 +8,8 @@
 		:placeholder="placeholder"
 		:readonly="readonly"
 		:name="inputName"
-		:id="fieldID"/>
+		:id="fieldID"
+	/>
 </template>
 
 <script>
@@ -26,7 +27,7 @@ export default {
 	},
 
 	mounted() {
-		this.$nextTick(function() {
+		this.$nextTick(function () {
 			if (window.Cleave) {
 				this.cleave = new window.Cleave(
 					this.$el,

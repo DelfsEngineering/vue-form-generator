@@ -1,4 +1,6 @@
 import { mount, createLocalVue } from "@vue/test-utils";
+import { expect } from 'chai';
+import sinon from 'sinon';
 
 import Vue from "vue";
 import AbstractField from "@/fields/abstractField";
@@ -152,11 +154,11 @@ describe("abstractField.vue", () => {
 
 		beforeEach(() => {
 			createField({ schema, model });
-			field.formatValueToField = function(value) {
+			field.formatValueToField = function (value) {
 				return "**" + value + "**";
 			};
 
-			field.formatValueToModel = function(value) {
+			field.formatValueToModel = function (value) {
 				return "!!" + value + "!!";
 			};
 		});
@@ -497,6 +499,59 @@ describe("abstractField.vue", () => {
 			expect(field.fieldClasses.length).to.be.equal(2);
 			expect(field.fieldClasses[0]).to.be.equal("applied-class");
 			expect(field.fieldClasses[1]).to.be.equal("another-class");
+		});
+	});
+
+	// New test suite for eventBus handling
+	describe("check eventBus prop handling", () => {
+		let schema = { type: "text", model: "name" };
+		let model = { name: "Test" };
+
+		it("should mount without error if eventBus prop is missing", () => {
+			// Mount the component WITHOUT the eventBus prop
+			const mountWithoutBus = () => {
+				mount(AbstractField, {
+					localVue,
+					attachToDocument: true,
+					mocks: {
+						$parent: {
+							getValueFromOption: global.getValueFromOption
+						}
+					},
+					propsData: {
+						// Intentionally omit eventBus here
+						schema,
+						model
+					},
+					template: `<div><input type="text" v-model=\"value\"></div>`
+				});
+			};
+
+			// Assert that mounting does not throw an error
+			// (Specifically the 'Cannot read properties of undefined (reading $on)')
+			expect(mountWithoutBus).to.not.throw();
+		});
+
+		it("should destroy without error if eventBus prop is missing", () => {
+			// Mount the component WITHOUT the eventBus prop
+			const wrapperWithoutBus = mount(AbstractField, {
+				 localVue,
+				 attachToDocument: true,
+				 mocks: {
+					 $parent: {
+						 getValueFromOption: global.getValueFromOption
+					 }
+				 },
+				 propsData: {
+					 // Intentionally omit eventBus here
+					 schema,
+					 model
+				 },
+				 template: `<div><input type="text" v-model=\"value\"></div>`
+			 });
+
+			// Assert that destroying does not throw an error
+			expect(() => wrapperWithoutBus.destroy()).to.not.throw();
 		});
 	});
 });
