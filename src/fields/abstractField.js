@@ -296,66 +296,122 @@ export default {
 		}
 	},
 	created() {
-		if (this.eventBus && typeof this.eventBus.$on === 'function') {
-			this.eventBus.$on("clear-validation-errors", this.clearValidationErrors);
-			this.eventBus.$on("validate-fields", this.validate);
+		// Unused function, commenting out
+		// const diff = function (a, b) {
+		//	return a.filter(function (i) {
+		//		return b.indexOf(i) < 0;
+		//	});
+		// };
+
+		// Propagate validate method to the parent
+		if (this.eventBus && typeof this.eventBus.$emit === "function") {
+			this.eventBus.$emit("field-registering", this);
 		}
-		if (this.eventBus && typeof this.eventBus.$emit === 'function') {
-			this.eventBus.$emit("field-registering");
-		}
+
+		// Unused array, commenting out
+		// let allowedKeys = [
+		//	"fieldType",
+		//	"fieldOptions",
+		//	"auto",
+		//	"autocomplete",
+		//	"attributes",
+		//	"validateAfterLoad",
+		//	"validateAfterChanged",
+		//	"buttons",
+		//	"disabled",
+		//	"help",
+		//	"hint",
+		//	"htmlAttributes",
+		//	"featured",
+		//	"label",
+		//	"legend",
+		//	"model",
+		//	"min",
+		//	"max",
+		//	"multi",
+		//	"multiSelect",
+		//	"id",
+		//	"inputType",
+		//	"inputName",
+		//	"placeholder",
+		//	"readonly",
+		//	"required",
+		//	"rows",
+		//	"styleClasses",
+		//	"type",
+		//	"validator",
+		//	"values",
+		//	"visible",
+		//	// field-lists fields (e.g. <select multiple>)
+		//	"listBox",
+		//	"multiple",
+		//	"selectOptions",
+		//	"trackBy",
+		//	"valueFormat",
+		//	"onChanged",
+		//	"onValidated"
+		// ];
+
+		// if (this.schema) {
+		//	let currentKeys = Object.keys(this.schema);
+		//	// let result = diff(allowedKeys, currentKeys);
+		//	//if (result.length > 0) { console.log("diff", result, this.schema.type, this.schema.model); }
+		// }
 	},
 	mounted() {
-		const diff = function (a, b) {
-			return b.filter(function (i) {
-				return a.indexOf(i) < 0;
-			});
-		};
-		const allowedKeys = [
-			// Minimal
-			"type",
-			"model",
-			// Identity
-			"id",
-			"inputName",
-			// Texts
-			"label",
-			"placeholder",
-			"hint",
-			"help",
-			// Modifiers
-			"featured",
-			"visible",
-			"disabled",
-			"required",
-			"readonly",
-			"validator",
-			// Other options
-			"styleClasses",
-			"labelClasses",
-			"fieldClasses",
-			"fieldOptions",
-			"values",
-			"buttons",
-			"attributes",
-			// Getter/Setter
-			"get",
-			"set",
-			// Events
-			"onChanged",
-			"onValidated"
-		];
-		if (this.schema) {
-			let currentKeys = Object.keys(this.schema);
-			let result = diff(allowedKeys, currentKeys);
-			//if (result.length > 0) { console.log("diff", result, this.schema.type, this.schema.model); }
-		}
+		// Unused function, commenting out
+		// const diff = function (a, b) {
+		//	return b.filter(function (i) {
+		//		return a.indexOf(i) < 0;
+		//	});
+		// };
+		// Unused array, commenting out
+		// const allowedKeys = [
+		//	// Minimal
+		//	"type",
+		//	"model",
+		//	// Identity
+		//	"id",
+		//	"inputName",
+		//	// Texts
+		//	"label",
+		//	"placeholder",
+		//	"hint",
+		//	"help",
+		//	// Modifiers
+		//	"featured",
+		//	"visible",
+		//	"disabled",
+		//	"required",
+		//	"readonly",
+		//	"validator",
+		//	// Other options
+		//	"styleClasses",
+		//	"labelClasses",
+		//	"fieldClasses",
+		//	"fieldOptions",
+		//	"values",
+		//	"buttons",
+		//	"attributes",
+		//	// Getter/Setter
+		//	"get",
+		//	"set",
+		//	// Events
+		//	"onChanged",
+		//	"onValidated"
+		// ];
+		// if (this.schema) {
+		//	let currentKeys = Object.keys(this.schema);
+		//	// let result = diff(allowedKeys, currentKeys);
+		//	//if (result.length > 0) { console.log("diff", result, this.schema.type, this.schema.model); }
+		// }
 	},
 	beforeDestroy() {
-		if (this.eventBus && typeof this.eventBus.$off === 'function') {
+		if (this.eventBus && typeof this.eventBus.$off === "function") {
 			this.eventBus.$off("clear-validation-errors", this.clearValidationErrors);
 			this.eventBus.$off("validate-fields", this.validate);
 		}
-		if (this.eventBus && typeof this.eventBus.$emit === 'function') {
+		if (this.eventBus && typeof this.eventBus.$emit === "function") {
 			this.eventBus.$emit("field-deregistering", this);
 		}
 	}

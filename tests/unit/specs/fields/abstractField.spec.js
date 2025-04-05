@@ -1,6 +1,6 @@
 import { mount, createLocalVue } from "@vue/test-utils";
-import { expect } from 'chai';
-import sinon from 'sinon';
+import { expect } from "chai";
+import sinon from "sinon";
 
 import Vue from "vue";
 import AbstractField from "@/fields/abstractField";
@@ -523,7 +523,7 @@ describe("abstractField.vue", () => {
 						schema,
 						model
 					},
-					template: `<div><input type="text" v-model=\"value\"></div>`
+					template: `<div><input type="text" v-model="value"></div>`
 				});
 			};
 
@@ -535,20 +535,20 @@ describe("abstractField.vue", () => {
 		it("should destroy without error if eventBus prop is missing", () => {
 			// Mount the component WITHOUT the eventBus prop
 			const wrapperWithoutBus = mount(AbstractField, {
-				 localVue,
-				 attachToDocument: true,
-				 mocks: {
-					 $parent: {
-						 getValueFromOption: global.getValueFromOption
-					 }
-				 },
-				 propsData: {
-					 // Intentionally omit eventBus here
-					 schema,
-					 model
-				 },
-				 template: `<div><input type="text" v-model=\"value\"></div>`
-			 });
+				localVue,
+				attachToDocument: true,
+				mocks: {
+					$parent: {
+						getValueFromOption: global.getValueFromOption
+					}
+				},
+				propsData: {
+					// Intentionally omit eventBus here
+					schema,
+					model
+				},
+				template: `<div><input type="text" v-model="value"></div>`
+			});
 
 			// Assert that destroying does not throw an error
 			expect(() => wrapperWithoutBus.destroy()).to.not.throw();

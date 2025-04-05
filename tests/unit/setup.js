@@ -2,6 +2,19 @@
 global.sinon = require("sinon");
 global.expect = require("chai").expect;
 
+// Mock the noUiSlider library globally before tests run
+window.noUiSlider = {
+	create: (element /* options */) => {
+		// Simulate the library attaching its API to the element
+		// Need to mock methods called by the component: on, off, set
+		element.noUiSlider = {
+			on: () => {},
+			off: () => {},
+			set: () => {}
+		};
+	}
+};
+
 const attributesList = {
 	// autocomplete: { before: "on", after: "off", name: "autocomplete" },
 	disabled: { before: true, after: false, field: true, name: "disabled" },
