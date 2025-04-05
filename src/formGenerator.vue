@@ -136,6 +136,7 @@ export default {
 			if (this.schema && this.schema.fields) {
 				return this.schema.fields;
 			}
+			return [];
 		}
 	},
 

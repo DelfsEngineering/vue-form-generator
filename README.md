@@ -203,37 +203,6 @@ This command will start a `webpack-dev-server` with content of `dev` folder.
 npm run dev
 ```
 
-### Running Demo Projects
-
-The `dev/projects/` directory contains various example projects demonstrating different features. To run a specific demo project (e.g., `basic`):
-
-1.  Set the `VUE_APP_DEV_PROJECT` environment variable to a JSON array containing the name(s) of the project(s) you want to run.
-2.  Run the `serve` script.
-
-Example (Linux/macOS):
-
-```bash
-# Ensure you are in the vue-form-generator directory
-export VUE_APP_DEV_PROJECT='["basic"]'
-npm run serve
-```
-
-Example (Windows Command Prompt):
-
-```cmd
-set VUE_APP_DEV_PROJECT=["basic"]
-npm run serve
-```
-
-Example (Windows PowerShell):
-
-```powershell
-$env:VUE_APP_DEV_PROJECT = '["basic"]'
-npm run serve
-```
-
-This will start the development server. Access the running demo in your browser, typically at a URL like `http://localhost:8080/basic/index.html` (adjust the project name in the path as needed). If using an environment like Cloud9, use the provided preview URL.
-
 ## Build
 
 This command will build a distributable version in the `dist` directory.

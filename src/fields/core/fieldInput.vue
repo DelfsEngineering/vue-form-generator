@@ -63,6 +63,7 @@ export default {
 				return this.fieldOptions.inputType.toLowerCase();
 			} else {
 				console.warn("Missing inputType", this.fieldOptions, this.fieldOptions.inputType);
+				return null;
 			}
 		}
 	},
