@@ -13,6 +13,7 @@ describe("formGroup.vue", () => {
 				field: {},
 				fields: [],
 				model: {},
+				eventBus: { $on: () => {}, $off: () => {} }, // Restore simple mock
 				...propsData
 			}
 		});

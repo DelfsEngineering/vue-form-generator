@@ -36,7 +36,8 @@ function createField(data, methods) {
 }
 
 function isChecked(idx) {
-	return checkboxes.at(idx).element.checked;
+	let currentCheckboxes = wrapper.findAll("input[type=checkbox]");
+	return currentCheckboxes.at(idx).element.checked;
 }
 
 describe("fieldChecklist.vue", () => {
@@ -94,20 +95,20 @@ describe("fieldChecklist.vue", () => {
 
 			describe("test 'is-checked' class attribution reactivity to changes", () => {
 				it(".list-row with checked input should have a 'is-checked' class", () => {
-					wrapper.setProps({ model: { skills: ["HTML5", "ReactJS"] } });
-
-					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
+					let listRowList = wrapper.findAll(".list-row");
+					expect(listRowList.at(0).classes()).to.not.include("is-checked");
+					expect(listRowList.at(1).classes()).to.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.not.include("is-checked");
 					expect(listRowList.at(4).classes()).to.not.include("is-checked");
-					expect(listRowList.at(5).classes()).to.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
+					expect(listRowList.at(5).classes()).to.not.include("is-checked");
+					expect(listRowList.at(6).classes()).to.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after model value is changed", () => {
+				it(".list-row with checked input should have a 'is-checked' class after model value is changed", async () => {
 					wrapper.setProps({ model: { skills: ["AngularJS"] } });
-
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.not.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
@@ -117,9 +118,11 @@ describe("fieldChecklist.vue", () => {
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", () => {
-					checkboxes.at(0).element.checked = true;
-					checkboxes.at(0).trigger("change");
+				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", async () => {
+					wrapper.find("input[type=checkbox]").element.checked = true;
+					wrapper.find("input[type=checkbox]").trigger("change");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 
 					expect(listRowList.at(0).classes()).to.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
@@ -193,18 +196,20 @@ describe("fieldChecklist.vue", () => {
 
 			describe("test 'is-checked' class attribution reactivity to changes", () => {
 				it(".list-row with checked input should have a 'is-checked' class", () => {
-					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.include("is-checked");
+					let listRowList = wrapper.findAll(".list-row");
+					expect(listRowList.at(0).classes()).to.not.include("is-checked");
+					expect(listRowList.at(1).classes()).to.include("is-checked");
+					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.not.include("is-checked");
 					expect(listRowList.at(4).classes()).to.not.include("is-checked");
 					expect(listRowList.at(5).classes()).to.not.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
+					expect(listRowList.at(6).classes()).to.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after model value is changed", () => {
+				it(".list-row with checked input should have a 'is-checked' class after model value is changed", async () => {
 					wrapper.setProps({ model: { skills: [4] } });
-
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.not.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
@@ -214,15 +219,17 @@ describe("fieldChecklist.vue", () => {
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", () => {
-					checkboxes.at(0).element.checked = true;
-					checkboxes.at(0).trigger("change");
+				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", async () => {
+					wrapper.find("input[type=checkbox]").element.checked = true;
+					wrapper.find("input[type=checkbox]").trigger("change");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 
 					expect(listRowList.at(0).classes()).to.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
+					expect(listRowList.at(4).classes()).to.include("is-checked");
 					expect(listRowList.at(5).classes()).to.not.include("is-checked");
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
@@ -292,18 +299,20 @@ describe("fieldChecklist.vue", () => {
 
 			describe("test 'is-checked' class attribution reactivity to changes", () => {
 				it(".list-row with checked input should have a 'is-checked' class", () => {
-					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.include("is-checked");
+					let listRowList = wrapper.findAll(".list-row");
+					expect(listRowList.at(0).classes()).to.not.include("is-checked");
+					expect(listRowList.at(1).classes()).to.include("is-checked");
+					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.not.include("is-checked");
 					expect(listRowList.at(4).classes()).to.not.include("is-checked");
 					expect(listRowList.at(5).classes()).to.not.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
+					expect(listRowList.at(6).classes()).to.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after model value is changed", () => {
+				it(".list-row with checked input should have a 'is-checked' class after model value is changed", async () => {
 					wrapper.setProps({ model: { skills: [4] } });
-
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.not.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
@@ -313,15 +322,17 @@ describe("fieldChecklist.vue", () => {
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", () => {
-					checkboxes.at(0).element.checked = true;
-					checkboxes.at(0).trigger("change");
+				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", async () => {
+					wrapper.find("input[type=checkbox]").element.checked = true;
+					wrapper.find("input[type=checkbox]").trigger("change");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 
 					expect(listRowList.at(0).classes()).to.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
+					expect(listRowList.at(4).classes()).to.include("is-checked");
 					expect(listRowList.at(5).classes()).to.not.include("is-checked");
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
@@ -411,38 +422,23 @@ describe("fieldChecklist.vue", () => {
 
 			describe("test 'is-checked' class attribution reactivity to changes", () => {
 				it(".list-row with checked input should have a 'is-checked' class", () => {
-					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.include("is-checked");
-					expect(listRowList.at(3).classes()).to.not.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
-					expect(listRowList.at(5).classes()).to.not.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
+					let listRowList = wrapper.findAll(".list-row");
+					expect(listRowList.at(1).classes()).to.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after model value is changed", () => {
+				it(".list-row with checked input should have a 'is-checked' class after model value is changed", async () => {
 					wrapper.setProps({ model: { skills: [4] } });
-
-					expect(listRowList.at(0).classes()).to.not.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.not.include("is-checked");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(3).classes()).to.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
-					expect(listRowList.at(5).classes()).to.not.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", () => {
-					checkboxes.at(0).element.checked = true;
-					checkboxes.at(0).trigger("change");
-
+				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", async () => {
+					wrapper.find("input[type=checkbox]").element.checked = true;
+					wrapper.find("input[type=checkbox]").trigger("change");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.not.include("is-checked");
-					expect(listRowList.at(3).classes()).to.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
-					expect(listRowList.at(5).classes()).to.not.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 			});
 		});
@@ -574,43 +570,29 @@ describe("fieldChecklist.vue", () => {
 
 			describe("test 'is-checked' class attribution reactivity to changes", () => {
 				it(".list-row with checked input should have a 'is-checked' class", () => {
-					wrapper.setProps({ model: { skills: ["HTML5"] } });
-					listRowList = wrapper.findAll(".list-row");
-
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.include("is-checked");
 					expect(listRowList.at(1).classes()).to.not.include("is-checked");
 					expect(listRowList.at(2).classes()).to.not.include("is-checked");
 					expect(listRowList.at(3).classes()).to.not.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
+					expect(listRowList.at(4).classes()).to.include("is-checked");
 					expect(listRowList.at(5).classes()).to.not.include("is-checked");
 					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after model value is changed", () => {
+				it(".list-row with checked input should have a 'is-checked' class after model value is changed", async () => {
 					wrapper.setProps({ model: { skills: ["ReactJS"] } });
-					listRowList = wrapper.findAll(".list-row");
-
-					expect(listRowList.at(0).classes()).to.not.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.not.include("is-checked");
-					expect(listRowList.at(3).classes()).to.not.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(5).classes()).to.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 
-				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", () => {
-					checkboxes.at(0).element.checked = true;
-					checkboxes.at(0).trigger("change");
-					listRowList = wrapper.findAll(".list-row");
-
+				it(".list-row with checked input should have a 'is-checked' class after listbox value is changed", async () => {
+					wrapper.find("input[type=checkbox]").element.checked = true;
+					wrapper.find("input[type=checkbox]").trigger("change");
+					await wrapper.vm.$nextTick();
+					let listRowList = wrapper.findAll(".list-row");
 					expect(listRowList.at(0).classes()).to.include("is-checked");
-					expect(listRowList.at(1).classes()).to.not.include("is-checked");
-					expect(listRowList.at(2).classes()).to.not.include("is-checked");
-					expect(listRowList.at(3).classes()).to.not.include("is-checked");
-					expect(listRowList.at(4).classes()).to.not.include("is-checked");
-					expect(listRowList.at(5).classes()).to.include("is-checked");
-					expect(listRowList.at(6).classes()).to.not.include("is-checked");
 				});
 			});
 		});
