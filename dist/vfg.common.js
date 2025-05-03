@@ -20847,8 +20847,8 @@ var fieldCheckbox_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldCheckbox = (fieldCheckbox_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=3555e654
-var fieldChecklistvue_type_template_id_3555e654_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=7b1f4d72
+var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('div', {
@@ -20864,27 +20864,23 @@ var fieldChecklistvue_type_template_id_3555e654_render = function render() {
     attrs: {
       "disabled": _vm.disabled
     }
-  }, _vm._l(_vm.items, function (item) {
-    return _c('div', {
-      key: _vm.getItemValue(item),
-      staticClass: "list-row",
-      class: {
-        'is-checked': _vm.isItemChecked(item)
-      }
-    }, [_c('label', [_c('input', {
-      directives: [{
-        name: "attributes",
-        rawName: "v-attributes",
-        value: 'input',
-        expression: "'input'"
-      }],
+  }, [_vm._l(_vm.items, function (item) {
+    return [_c('div', {
+      key: _vm.getItemValue(item) + 'wrapper',
+      class: _vm.getItemCssClasses(item)
+    }, [_c('label', [_vm.isInputVisible(item) ? [_c('input', {
+      class: _vm.schema.fieldClasses,
       attrs: {
-        "id": _vm.fieldID,
+        "id": _vm.getFieldID(item),
         "type": "checkbox",
-        "disabled": _vm.disabled,
-        "name": _vm.getInputName(item)
+        "name": _vm.getInputName(item),
+        "disabled": _vm.isItemDisabled(item),
+        "required": _vm.schema.required,
+        "true-value": _vm.schema.checklistTrueValue || true,
+        "false-value": _vm.schema.checklistFalseValue || false
       },
       domProps: {
+        "value": _vm.getItemValue(item),
         "checked": _vm.isItemChecked(item)
       },
       on: {
@@ -20892,8 +20888,8 @@ var fieldChecklistvue_type_template_id_3555e654_render = function render() {
           return _vm.onChanged($event, item);
         }
       }
-    }), _vm._v(_vm._s(_vm.getItemName(item)) + " ")])]);
-  }), 0) : _vm._e(), !_vm.useListBox ? _c('div', {
+    })] : _vm._e(), _vm._v(" " + _vm._s(_vm.getItemName(item)) + " ")], 2)])];
+  })], 2) : _vm._e(), !_vm.useListBox ? _c('div', {
     staticClass: "combobox form-control",
     attrs: {
       "disabled": _vm.disabled
@@ -20912,27 +20908,23 @@ var fieldChecklistvue_type_template_id_3555e654_render = function render() {
     staticClass: "arrow"
   })]), _c('div', {
     staticClass: "dropList"
-  }, _vm._l(_vm.items, function (item) {
-    return _vm.comboExpanded ? _c('div', {
+  }, [_vm.comboExpanded ? [_vm._l(_vm.items, function (item) {
+    return [_c('div', {
       key: _vm.getItemValue(item),
-      staticClass: "list-row",
-      class: {
-        'is-checked': _vm.isItemChecked(item)
-      }
-    }, [_c('label', [_c('input', {
-      directives: [{
-        name: "attributes",
-        rawName: "v-attributes",
-        value: 'input',
-        expression: "'input'"
-      }],
+      class: _vm.getItemCssClasses(item)
+    }, [_c('label', [_vm.isInputVisible(item) ? [_c('input', {
+      class: _vm.schema.fieldClasses,
       attrs: {
-        "id": _vm.fieldID,
+        "id": _vm.getFieldID(item),
         "type": "checkbox",
-        "disabled": _vm.disabled,
-        "name": _vm.getInputName(item)
+        "name": _vm.getInputName(item),
+        "disabled": _vm.isItemDisabled(item),
+        "required": _vm.schema.required,
+        "true-value": _vm.schema.checklistTrueValue || true,
+        "false-value": _vm.schema.checklistFalseValue || false
       },
       domProps: {
+        "value": _vm.getItemValue(item),
         "checked": _vm.isItemChecked(item)
       },
       on: {
@@ -20940,10 +20932,12 @@ var fieldChecklistvue_type_template_id_3555e654_render = function render() {
           return _vm.onChanged($event, item);
         }
       }
-    }), _vm._v(" " + _vm._s(_vm.getItemName(item)) + " ")])]) : _vm._e();
-  }), 0)]) : _vm._e()]);
+    })] : _vm._e(), _c('span', {
+      class: _vm.schema.labelClasses
+    }, [_vm._v(_vm._s(_vm.getItemName(item)))])], 2)])];
+  })] : _vm._e()], 2)]) : _vm._e()]);
 };
-var fieldChecklistvue_type_template_id_3555e654_staticRenderFns = [];
+var fieldChecklistvue_type_template_id_7b1f4d72_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/lodash/clone.js
 var clone = __webpack_require__(32629);
@@ -21048,10 +21042,10 @@ var values_default = /*#__PURE__*/__webpack_require__.n(instance_values);
 });
 ;// ./src/fields/core/fieldChecklist.vue?vue&type=script&lang=js
  /* harmony default export */ var core_fieldChecklistvue_type_script_lang_js = (fieldChecklistvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=3555e654&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=7b1f4d72&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=3555e654&prod&lang=scss
+;// ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=7b1f4d72&prod&lang=scss
 
 ;// ./src/fields/core/fieldChecklist.vue
 
@@ -21064,8 +21058,8 @@ var values_default = /*#__PURE__*/__webpack_require__.n(instance_values);
 
 var fieldChecklist_component = normalizeComponent(
   core_fieldChecklistvue_type_script_lang_js,
-  fieldChecklistvue_type_template_id_3555e654_render,
-  fieldChecklistvue_type_template_id_3555e654_staticRenderFns,
+  fieldChecklistvue_type_template_id_7b1f4d72_render,
+  fieldChecklistvue_type_template_id_7b1f4d72_staticRenderFns,
   false,
   null,
   null,
@@ -21488,10 +21482,11 @@ var fieldRadios_component = normalizeComponent(
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
 var map = __webpack_require__(48079);
 var map_default = /*#__PURE__*/__webpack_require__.n(map);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=template&id=6dbab8e4
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=template&id=2d32f023
 
 
-var fieldSelectvue_type_template_id_6dbab8e4_render = function render() {
+
+var fieldSelectvue_type_template_id_2d32f023_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('select', {
@@ -21530,32 +21525,41 @@ var fieldSelectvue_type_template_id_6dbab8e4_render = function render() {
       "disabled": _vm.schema.required
     },
     domProps: {
-      "value": null
+      "value": null,
+      "textContent": _vm._s(_vm.fieldOptions.noneSelectedText || '<Nothing selected>')
     }
-  }, [_vm._v(" " + _vm._s(_vm.fieldOptions.noneSelectedText || "<Nothing selected>") + " ")]) : _vm._e(), _vm._l(_vm.items, function (item) {
-    return [item.group ? _c('optgroup', {
-      key: _vm.getItemValue(item),
+  }) : _vm._e(), _vm._l(_vm.items, function (item) {
+    return [item !== null && _typeof(item) === 'object' && item.group ? [_c('optgroup', {
+      key: _vm.getGroupName(item),
       attrs: {
         "label": _vm.getGroupName(item)
       }
     }, _vm._l(item.ops, function (i) {
-      return item.ops ? _c('option', {
+      return _c('option', {
         key: _vm.getItemValue(i),
+        attrs: {
+          "disabled": _vm.isItemDisabled(i)
+        },
         domProps: {
-          "value": _vm.getItemValue(i)
+          "value": _vm.getItemValue(i),
+          "textContent": _vm._s(_vm.getItemName(i))
         }
-      }, [_vm._v(" " + _vm._s(_vm.getItemName(i)) + " ")]) : _vm._e();
-    }), 0) : _vm._e(), !item.group ? _c('option', {
+      });
+    }), 0)] : _c('option', {
       key: _vm.getItemValue(item),
+      attrs: {
+        "disabled": _vm.isItemDisabled(item)
+      },
       domProps: {
-        "value": _vm.getItemValue(item)
+        "value": _vm.getItemValue(item),
+        "textContent": _vm._s(_vm.getItemName(item))
       }
-    }, [_vm._v(" " + _vm._s(_vm.getItemName(item)) + " ")]) : _vm._e()];
+    })];
   })], 2);
 };
-var fieldSelectvue_type_template_id_6dbab8e4_staticRenderFns = [];
+var fieldSelectvue_type_template_id_2d32f023_staticRenderFns = [];
 
-;// ./src/fields/core/fieldSelect.vue?vue&type=template&id=6dbab8e4
+;// ./src/fields/core/fieldSelect.vue?vue&type=template&id=2d32f023
 
 // EXTERNAL MODULE: ./node_modules/lodash/find.js
 var find = __webpack_require__(7309);
@@ -21675,6 +21679,11 @@ var find_default = /*#__PURE__*/__webpack_require__.n(find);
       } else {
         return item;
       }
+    },
+    isItemDisabled: function isItemDisabled() {
+      // Implement the logic to determine if an item is disabled
+      // This is a placeholder and should be replaced with the actual implementation
+      return false;
     }
   }
 });
@@ -21690,8 +21699,8 @@ var find_default = /*#__PURE__*/__webpack_require__.n(find);
 ;
 var fieldSelect_component = normalizeComponent(
   core_fieldSelectvue_type_script_lang_js,
-  fieldSelectvue_type_template_id_6dbab8e4_render,
-  fieldSelectvue_type_template_id_6dbab8e4_staticRenderFns,
+  fieldSelectvue_type_template_id_2d32f023_render,
+  fieldSelectvue_type_template_id_2d32f023_staticRenderFns,
   false,
   null,
   null,
@@ -23254,8 +23263,8 @@ var fieldSpectrum_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldSpectrum = (fieldSpectrum_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=cc0e5496
-var fieldStaticMapvue_type_template_id_cc0e5496_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=3a589bd4
+var fieldStaticMapvue_type_template_id_3a589bd4_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('img', {
@@ -23264,9 +23273,10 @@ var fieldStaticMapvue_type_template_id_cc0e5496_render = function render() {
     }
   });
 };
-var fieldStaticMapvue_type_template_id_cc0e5496_staticRenderFns = [];
+var fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns = [];
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js
+
 
 
 
@@ -23285,8 +23295,18 @@ var fieldStaticMapvue_type_template_id_cc0e5496_staticRenderFns = [];
           sizeX: 640,
           sizeY: 640
         });
-        lat = this.value[options.lat];
-        lng = this.value[options.lng];
+        if (options.autoDetectSchema && isObject_default()(this.value) && this.value.lat && this.value.lng) {
+          lat = this.value.lat;
+          lng = this.value.lng;
+        } else {
+          var LL = String(this.value).split(",");
+          if (LL.length === 2) {
+            lat = LL[0];
+            lng = LL[1];
+          } else {
+            // Use address
+          }
+        }
         var url = concat_default()(_context = concat_default()(_context2 = concat_default()(_context3 = concat_default()(_context4 = "http://maps.googleapis.com/maps/api/staticmap?center=".concat(lat, ",")).call(_context4, lng, "&zoom=")).call(_context3, options.zoom, "&size=")).call(_context2, options.sizeX, "x")).call(_context, options.sizeY);
         var props = ["scale", "format", "maptype", "language", "region", "markers", "path", "visible", "style", "key", "signature"];
         for (var _i = 0, _props = props; _i < _props.length; _i++) {
@@ -23299,16 +23319,18 @@ var fieldStaticMapvue_type_template_id_cc0e5496_staticRenderFns = [];
         if (lat && lng) {
           return url;
         }
+      } else {
+        return null; // Ensure a value is always returned
       }
     }
   }
 });
 ;// ./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js
  /* harmony default export */ var optional_fieldStaticMapvue_type_script_lang_js = (fieldStaticMapvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=cc0e5496&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=3a589bd4&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=cc0e5496&prod&lang=scss
+;// ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=3a589bd4&prod&lang=scss
 
 ;// ./src/fields/optional/fieldStaticMap.vue
 
@@ -23321,8 +23343,8 @@ var fieldStaticMapvue_type_template_id_cc0e5496_staticRenderFns = [];
 
 var fieldStaticMap_component = normalizeComponent(
   optional_fieldStaticMapvue_type_script_lang_js,
-  fieldStaticMapvue_type_template_id_cc0e5496_render,
-  fieldStaticMapvue_type_template_id_cc0e5496_staticRenderFns,
+  fieldStaticMapvue_type_template_id_3a589bd4_render,
+  fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns,
   false,
   null,
   null,

@@ -8,20 +8,32 @@
 		:class="fieldClasses"
 		v-attributes="'input'"
 	>
-		<option v-if="!fieldOptions.hideNoneSelectedText" :disabled="schema.required" :value="null">
-			{{ fieldOptions.noneSelectedText || "&lt;Nothing selected&gt;" }}
-		</option>
+		<option
+			v-if="!fieldOptions.hideNoneSelectedText"
+			:value="null"
+			:disabled="schema.required"
+			v-text="fieldOptions.noneSelectedText || '&lt;Nothing selected&gt;'"
+		></option>
 
 		<template v-for="item in items">
-			<optgroup v-if="item.group" :label="getGroupName(item)" :key="getItemValue(item)">
-				<option v-if="item.ops" v-for="i in item.ops" :value="getItemValue(i)" :key="getItemValue(i)">
-					{{ getItemName(i) }}
-				</option>
-			</optgroup>
-
-			<option v-if="!item.group" :value="getItemValue(item)" :key="getItemValue(item)">
-				{{ getItemName(item) }}
-			</option>
+			<template v-if="item !== null && typeof item === 'object' && item.group">
+				<optgroup :key="getGroupName(item)" :label="getGroupName(item)">
+					<option
+						v-for="i in item.ops"
+						:key="getItemValue(i)"
+						:value="getItemValue(i)"
+						:disabled="isItemDisabled(i)"
+						v-text="getItemName(i)"
+					></option>
+				</optgroup>
+			</template>
+			<option
+				v-else
+				:key="getItemValue(item)"
+				:value="getItemValue(item)"
+				:disabled="isItemDisabled(item)"
+				v-text="getItemName(item)"
+			></option>
 		</template>
 	</select>
 </template>
@@ -141,6 +153,12 @@ export default {
 			} else {
 				return item;
 			}
+		},
+
+		isItemDisabled() {
+			// Implement the logic to determine if an item is disabled
+			// This is a placeholder and should be replaced with the actual implementation
+			return false;
 		}
 	}
 };

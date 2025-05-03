@@ -26,7 +26,8 @@ const generateDevProjects = () => {
 		}
 	};
 	// projectNames.forEach((projectName) => { // Reverted
-	devProjects.forEach((projectName) => { // Reverted: Use original env var list
+	devProjects.forEach((projectName) => {
+		// Reverted: Use original env var list
 		devConfig[projectName] = {
 			entry: `./dev/projects/${projectName}/main.js`,
 			template: `./dev/projects/${projectName}/index.html`,

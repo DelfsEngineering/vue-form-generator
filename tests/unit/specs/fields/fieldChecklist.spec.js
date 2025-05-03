@@ -7,7 +7,6 @@ const localVue = createLocalVue();
 let wrapper;
 let listbox;
 let checkboxes;
-let listRowList;
 
 function createField(data, methods) {
 	let _wrapper = mount(FieldChecklist, {
@@ -30,7 +29,6 @@ function createField(data, methods) {
 
 	listbox = wrapper.find(".listbox");
 	checkboxes = wrapper.findAll("input[type=checkbox]");
-	listRowList = wrapper.findAll(".list-row");
 
 	return _wrapper;
 }

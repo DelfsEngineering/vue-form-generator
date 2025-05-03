@@ -4,7 +4,7 @@
 
 <script>
 import abstractField from "../abstractField";
-import { defaults } from "lodash";
+import { defaults, isObject } from "lodash";
 
 export default {
 	name: "FieldStaticmap",
@@ -22,8 +22,18 @@ export default {
 					sizeY: 640
 				});
 
-				lat = this.value[options.lat];
-				lng = this.value[options.lng];
+				if (options.autoDetectSchema && isObject(this.value) && this.value.lat && this.value.lng) {
+					lat = this.value.lat;
+					lng = this.value.lng;
+				} else {
+					let LL = String(this.value).split(",");
+					if (LL.length === 2) {
+						lat = LL[0];
+						lng = LL[1];
+					} else {
+						// Use address
+					}
+				}
 
 				let url = `http://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${options.zoom}&size=${options.sizeX}x${options.sizeY}`;
 
@@ -48,6 +58,8 @@ export default {
 				if (lat && lng) {
 					return url;
 				}
+			} else {
+				return null; // Ensure a value is always returned
 			}
 		}
 	}

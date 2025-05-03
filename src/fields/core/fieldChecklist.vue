@@ -1,24 +1,28 @@
 <template>
 	<div class="wrapper" v-attributes="'wrapper'">
 		<div class="listbox form-control" v-if="useListBox" :disabled="disabled">
-			<div
-				class="list-row"
-				v-for="item in items"
-				:key="getItemValue(item)"
-				:class="{ 'is-checked': isItemChecked(item) }"
-			>
-				<label>
-					<input
-						:id="fieldID"
-						type="checkbox"
-						:checked="isItemChecked(item)"
-						:disabled="disabled"
-						@change="onChanged($event, item)"
-						:name="getInputName(item)"
-						v-attributes="'input'"
-					/>{{ getItemName(item) }}
-				</label>
-			</div>
+			<template v-for="item in items">
+				<div :class="getItemCssClasses(item)" :key="getItemValue(item) + 'wrapper'">
+					<label>
+						<template v-if="isInputVisible(item)">
+							<input
+								:id="getFieldID(item)"
+								:class="schema.fieldClasses"
+								type="checkbox"
+								:name="getInputName(item)"
+								:value="getItemValue(item)"
+								:disabled="isItemDisabled(item)"
+								:required="schema.required"
+								:checked="isItemChecked(item)"
+								@change="onChanged($event, item)"
+								:true-value="schema.checklistTrueValue || true"
+								:false-value="schema.checklistFalseValue || false"
+							/>
+						</template>
+						{{ getItemName(item) }}
+					</label>
+				</div>
+			</template>
 		</div>
 		<div class="combobox form-control" v-if="!useListBox" :disabled="disabled">
 			<div class="mainRow" @click="onExpandCombo" :class="{ expanded: comboExpanded }">
@@ -27,26 +31,30 @@
 			</div>
 
 			<div class="dropList">
-				<div
-					class="list-row"
-					v-if="comboExpanded"
-					v-for="item in items"
-					:key="getItemValue(item)"
-					:class="{ 'is-checked': isItemChecked(item) }"
-				>
-					<label>
-						<input
-							:id="fieldID"
-							type="checkbox"
-							:checked="isItemChecked(item)"
-							:disabled="disabled"
-							@change="onChanged($event, item)"
-							:name="getInputName(item)"
-							v-attributes="'input'"
-						/>
-						{{ getItemName(item) }}
-					</label>
-				</div>
+				<template v-if="comboExpanded">
+					<template v-for="item in items">
+						<div :class="getItemCssClasses(item)" :key="getItemValue(item)">
+							<label>
+								<template v-if="isInputVisible(item)">
+									<input
+										:id="getFieldID(item)"
+										:class="schema.fieldClasses"
+										type="checkbox"
+										:name="getInputName(item)"
+										:value="getItemValue(item)"
+										:disabled="isItemDisabled(item)"
+										:required="schema.required"
+										:checked="isItemChecked(item)"
+										@change="onChanged($event, item)"
+										:true-value="schema.checklistTrueValue || true"
+										:false-value="schema.checklistFalseValue || false"
+									/>
+								</template>
+								<span :class="schema.labelClasses">{{ getItemName(item) }}</span>
+							</label>
+						</div>
+					</template>
+				</template>
 			</div>
 		</div>
 	</div>
