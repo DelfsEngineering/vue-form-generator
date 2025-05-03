@@ -1,4 +1,5 @@
 const path = require("path");
+// const fs = require("fs"); // Reverted
 const webpack = require("webpack");
 const version = require("./package.json").version;
 const banner = `
@@ -10,14 +11,22 @@ const banner = `
 `;
 
 const generateDevProjects = () => {
-	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]"); // Ensure fallback for parsing
+	// Reverted: const projectRoot = path.resolve(__dirname, "dev/projects");
+	// Reverted: const projectNames = fs.readdirSync(projectRoot, { withFileTypes: true })
+	// Reverted:		.filter(dirent => dirent.isDirectory())
+	// Reverted:		.map(dirent => dirent.name);
+	// Reverted: console.log("Detected example projects:", projectNames);
+
+	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]"); // Reverted: Restore original env var usage
+
 	let devConfig = {
 		index: {
 			entry: "./dev/index.js",
 			title: "vue-form-generator index"
 		}
 	};
-	devProjects.forEach((projectName) => {
+	// projectNames.forEach((projectName) => { // Reverted
+	devProjects.forEach((projectName) => { // Reverted: Use original env var list
 		devConfig[projectName] = {
 			entry: `./dev/projects/${projectName}/main.js`,
 			template: `./dev/projects/${projectName}/index.html`,
@@ -25,8 +34,14 @@ const generateDevProjects = () => {
 			title: `vue-form-generator ${projectName} demo`
 		};
 	});
-	return devConfig;
+	// Reverted: return {
+	// Reverted:    pages: devConfig,
+	// Reverted:    projectNames: projectNames
+	// Reverted: };
+	return devConfig; // Reverted: Return only pages config
 };
+
+// Reverted: const { pages, projectNames } = generateDevProjects();
 
 module.exports = {
 	publicPath: process.env.NODE_ENV === "production" ? "" : "/",
@@ -35,9 +50,15 @@ module.exports = {
 	runtimeCompiler: false,
 	transpileDependencies: [],
 	productionSourceMap: false,
-	pages: process.env.NODE_ENV !== "development" ? {} : generateDevProjects(),
+	// pages: pages, // Reverted
+	pages: process.env.NODE_ENV !== "development" ? {} : generateDevProjects(), // Reverted: Original dynamic pages config
 	chainWebpack: (config) => {
-		config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src"));
+		config.resolve.alias.set("vue-form-generator", path.resolve(__dirname, "src")); // <-- Restore this alias
+
+		// Reverted: config.plugin('define').tap(args => {
+		// Reverted: 	args[0]['process.env.AVAILABLE_PROJECTS'] = JSON.stringify(projectNames);
+		// Reverted: 	return args;
+		// Reverted: });
 
 		if (process.env.NODE_ENV === "production") {
 			config.plugin("banner").use(webpack.BannerPlugin, [
@@ -55,18 +76,17 @@ module.exports = {
 		}
 	},
 	devServer: {
-		allowedHosts: "all", // Allow all hosts
-		host: "0.0.0.0", // Listen on all network interfaces
-		port: 8080, // Ensure it's listening on the same port
+		allowedHosts: "all",
+		host: "0.0.0.0",
+		port: 8080,
 		static: {
 			directory: path.resolve("dev/projects")
 		},
 		client: {
-			webSocketURL: "auto://0.0.0.0:8080/ws" // Update WebSocket URL to match the dynamic preview
+			webSocketURL: "auto://0.0.0.0:8080/ws"
 		}
 	},
 	configureWebpack: {
-		// Explicitly setting 'node' configuration to false to address the validation error
 		node: false
 	}
 };

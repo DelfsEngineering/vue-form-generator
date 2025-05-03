@@ -308,6 +308,9 @@ export default {
 			this.eventBus.$emit("field-registering", this);
 		}
 
+		this.eventBus.$on("clear-validation-errors", this.clearValidationErrors);
+		this.eventBus.$on("validate-fields", this.validate);
+
 		// Unused array, commenting out
 		// let allowedKeys = [
 		//	"fieldType",
