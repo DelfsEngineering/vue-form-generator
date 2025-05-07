@@ -56,7 +56,7 @@ export default {
 						maxLength: 0
 					})
 				);
-
+				// eslint-disable-next-line no-prototype-builtins
 				if (this.cleave.properties && this.cleave.properties.hasOwnProperty("result")) {
 					this.$watch("cleave.properties.result", () => {
 						this.value = this.cleave.properties.result;
