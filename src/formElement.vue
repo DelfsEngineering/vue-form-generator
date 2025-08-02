@@ -166,6 +166,8 @@ export default {
 };
 </script>
 <style lang="scss">
+@use "sass:color";
+
 $errorColor: #f00;
 .form-element:not([class*=" col-"]) {
 	width: 100%;
@@ -213,7 +215,7 @@ $errorColor: #f00;
 		textarea,
 		select {
 			border: 1px solid $errorColor;
-			background-color: rgba($errorColor, 0.15);
+			background-color: color.change($errorColor, $alpha: 0.15);
 		}
 
 		.errors {

@@ -1,4 +1,3 @@
-process.stdout.write = console.log;
 import { mount, createLocalVue } from "@vue/test-utils";
 import Vue from "vue";
 import fieldVueMultiSelect from "@/fields/optional/fieldVueMultiSelect.vue";
@@ -61,7 +60,6 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 
 		it("should contain a select element", async () => {
-			console.log("Testing: should contain a select element");
 			expect(wrapper.exists()).to.be.true;
 			await Vue.nextTick();
 			expect(input.exists()).to.be.true;
@@ -70,7 +68,6 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 
 		it("should contain option elements", async () => {
-			console.log("Testing: should contain option elements");
 			let options = input.findAll("li.multiselect__element .multiselect__option");
 			expect(options.length).to.be.equal(schema.values.length);
 			await Vue.nextTick();
@@ -79,7 +76,6 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 
 		it("should set disabled", async () => {
-			console.log("Testing: should set disabled");
 			schema.disabled = true;
 			wrapper.setProps({ schema: { ...schema } });
 			await Vue.nextTick();
@@ -112,7 +108,6 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 
 		it("model value should work with objects", async () => {
-			console.log("Testing: model value should work with objects");
 			schema.fieldOptions = { label: "name", trackBy: "name" };
 			wrapper.setProps({ schema: { ...schema } });
 			await Vue.nextTick();
@@ -122,7 +117,6 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 
 		it("options should contain only text specified in label", async () => {
-			console.log("Testing: options should contain only text specified in label");
 			schema.fieldOptions = { label: "language", trackBy: "language" };
 			wrapper.setProps({ schema: { ...schema } });
 

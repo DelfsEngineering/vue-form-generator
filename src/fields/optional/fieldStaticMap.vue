@@ -58,6 +58,7 @@ export default {
 				if (lat && lng) {
 					return url;
 				}
+				return null; // Return null if lat/lng are not available
 			} else {
 				return null; // Ensure a value is always returned
 			}

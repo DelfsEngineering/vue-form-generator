@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.1.5
+ * vue-form-generator 3.1.6
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -19554,8 +19554,8 @@ var component = normalizeComponent(
 )
 
 /* harmony default export */ var formGroup = (component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formElement.vue?vue&type=template&id=8a526144
-var formElementvue_type_template_id_8a526144_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formElement.vue?vue&type=template&id=600f821e
+var formElementvue_type_template_id_600f821e_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('div', _vm._b({
@@ -19612,7 +19612,7 @@ var formElementvue_type_template_id_8a526144_render = function render() {
     "getValueFromOption": _vm.getValueFromOption
   })] : _vm._e()], 2);
 };
-var formElementvue_type_template_id_8a526144_staticRenderFns = [];
+var formElementvue_type_template_id_600f821e_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/includes.js
 var includes = __webpack_require__(8628);
@@ -19855,10 +19855,10 @@ var slugify = function slugify() {
 });
 ;// ./src/formElement.vue?vue&type=script&lang=js
  /* harmony default export */ var src_formElementvue_type_script_lang_js = (formElementvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formElement.vue?vue&type=style&index=0&id=8a526144&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formElement.vue?vue&type=style&index=0&id=600f821e&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/formElement.vue?vue&type=style&index=0&id=8a526144&prod&lang=scss
+;// ./src/formElement.vue?vue&type=style&index=0&id=600f821e&prod&lang=scss
 
 ;// ./src/formElement.vue
 
@@ -19871,8 +19871,8 @@ var slugify = function slugify() {
 
 var formElement_component = normalizeComponent(
   src_formElementvue_type_script_lang_js,
-  formElementvue_type_template_id_8a526144_render,
-  formElementvue_type_template_id_8a526144_staticRenderFns,
+  formElementvue_type_template_id_600f821e_render,
+  formElementvue_type_template_id_600f821e_staticRenderFns,
   false,
   null,
   null,
@@ -20200,10 +20200,11 @@ var validators = {
     }
     var err = [];
     if (isNumber_default()(value)) {
-      if (!isNil_default()(field.fieldOptions) && !isNil_default()(field.fieldOptions.min) && value < field.fieldOptions.min) {
+      var _field$fieldOptions, _field$fieldOptions2, _field$fieldOptions3, _field$fieldOptions4;
+      if (!isNil_default()((_field$fieldOptions = field.fieldOptions) === null || _field$fieldOptions === void 0 ? void 0 : _field$fieldOptions.min) && value < ((_field$fieldOptions2 = field.fieldOptions) === null || _field$fieldOptions2 === void 0 ? void 0 : _field$fieldOptions2.min)) {
         err.push(msg(messages.numberTooSmall, field.fieldOptions.min));
       }
-      if (!isNil_default()(field.fieldOptions) && !isNil_default()(field.fieldOptions.max) && value > field.fieldOptions.max) {
+      if (!isNil_default()((_field$fieldOptions3 = field.fieldOptions) === null || _field$fieldOptions3 === void 0 ? void 0 : _field$fieldOptions3.max) && value > ((_field$fieldOptions4 = field.fieldOptions) === null || _field$fieldOptions4 === void 0 ? void 0 : _field$fieldOptions4.max)) {
         err.push(msg(messages.numberTooBig, field.fieldOptions.max));
       }
     } else {
@@ -20236,11 +20237,11 @@ var validators = {
     if (res != null) return res;
     var err = [];
     if (isString_default()(value)) {
-      var _field$fieldOptions, _field$fieldOptions2, _field$fieldOptions3, _field$fieldOptions4;
-      if (!isNil_default()((_field$fieldOptions = field.fieldOptions) === null || _field$fieldOptions === void 0 ? void 0 : _field$fieldOptions.min) && value.length < ((_field$fieldOptions2 = field.fieldOptions) === null || _field$fieldOptions2 === void 0 ? void 0 : _field$fieldOptions2.min)) {
+      var _field$fieldOptions5, _field$fieldOptions6, _field$fieldOptions7, _field$fieldOptions8;
+      if (!isNil_default()((_field$fieldOptions5 = field.fieldOptions) === null || _field$fieldOptions5 === void 0 ? void 0 : _field$fieldOptions5.min) && value.length < ((_field$fieldOptions6 = field.fieldOptions) === null || _field$fieldOptions6 === void 0 ? void 0 : _field$fieldOptions6.min)) {
         err.push(msg(messages.textTooSmall, value.length, field.fieldOptions.min));
       }
-      if (!isNil_default()((_field$fieldOptions3 = field.fieldOptions) === null || _field$fieldOptions3 === void 0 ? void 0 : _field$fieldOptions3.max) && value.length > ((_field$fieldOptions4 = field.fieldOptions) === null || _field$fieldOptions4 === void 0 ? void 0 : _field$fieldOptions4.max)) {
+      if (!isNil_default()((_field$fieldOptions7 = field.fieldOptions) === null || _field$fieldOptions7 === void 0 ? void 0 : _field$fieldOptions7.max) && value.length > ((_field$fieldOptions8 = field.fieldOptions) === null || _field$fieldOptions8 === void 0 ? void 0 : _field$fieldOptions8.max)) {
         err.push(msg(messages.textTooBig, value.length, field.fieldOptions.max));
       }
     } else {
@@ -20259,15 +20260,17 @@ var validators = {
       }
     }
     if (!isNil_default()(value)) {
-      if (!isNil_default()(field.fieldOptions.min) && value.length < field.fieldOptions.min) {
+      var _field$fieldOptions9, _field$fieldOptions0, _field$fieldOptions1, _field$fieldOptions10;
+      if (!isNil_default()((_field$fieldOptions9 = field.fieldOptions) === null || _field$fieldOptions9 === void 0 ? void 0 : _field$fieldOptions9.min) && value.length < ((_field$fieldOptions0 = field.fieldOptions) === null || _field$fieldOptions0 === void 0 ? void 0 : _field$fieldOptions0.min)) {
         return [msg(messages.selectMinItems, field.fieldOptions.min)];
       }
-      if (!isNil_default()(field.fieldOptions.max) && value.length > field.fieldOptions.max) {
+      if (!isNil_default()((_field$fieldOptions1 = field.fieldOptions) === null || _field$fieldOptions1 === void 0 ? void 0 : _field$fieldOptions1.max) && value.length > ((_field$fieldOptions10 = field.fieldOptions) === null || _field$fieldOptions10 === void 0 ? void 0 : _field$fieldOptions10.max)) {
         return [msg(messages.selectMaxItems, field.fieldOptions.max)];
       }
     }
   },
   date: function date(value, field, model) {
+    var _field$fieldOptions11, _field$fieldOptions12;
     var messages = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : resources;
     var res = checkEmpty(value, field.required, messages);
     if (res != null) return res;
@@ -20276,13 +20279,13 @@ var validators = {
       return [msg(messages.invalidDate)];
     }
     var err = [];
-    if (!isNil_default()(field.fieldOptions.min)) {
+    if (!isNil_default()((_field$fieldOptions11 = field.fieldOptions) === null || _field$fieldOptions11 === void 0 ? void 0 : _field$fieldOptions11.min)) {
       var min = new Date(field.fieldOptions.min);
       if (m.valueOf() < min.valueOf()) {
         err.push(msg(messages.dateIsEarly, fecha_default().format(m), fecha_default().format(min)));
       }
     }
-    if (!isNil_default()(field.fieldOptions.max)) {
+    if (!isNil_default()((_field$fieldOptions12 = field.fieldOptions) === null || _field$fieldOptions12 === void 0 ? void 0 : _field$fieldOptions12.max)) {
       var max = new Date(field.fieldOptions.max);
       if (m.valueOf() > max.valueOf()) {
         err.push(msg(messages.dateIsLate, fecha_default().format(m), fecha_default().format(max)));
@@ -22203,17 +22206,21 @@ var inputFormat = "YYYY-MM-DD HH:mm:ss";
     return inputFormat;
   },
   getDateFormat: function getDateFormat() {
-    if (typeof this.fieldOptions.format !== "undefined") {
-      return this.fieldOptions.format;
+    var _this$fieldOptions;
+    if (typeof ((_this$fieldOptions = this.fieldOptions) === null || _this$fieldOptions === void 0 ? void 0 : _this$fieldOptions.format) !== "undefined") {
+      var _this$fieldOptions2;
+      return (_this$fieldOptions2 = this.fieldOptions) === null || _this$fieldOptions2 === void 0 ? void 0 : _this$fieldOptions2.format;
     } else {
       return this.getDefaultInputFormat();
     }
   },
   formatValueToField: function formatValueToField(value) {
     if (value != null) {
+      var _this$fieldOptions3;
       var dt;
-      if (typeof this.fieldOptions.format !== "undefined") {
-        dt = fecha_default().parse(value, this.fieldOptions.format);
+      if (typeof ((_this$fieldOptions3 = this.fieldOptions) === null || _this$fieldOptions3 === void 0 ? void 0 : _this$fieldOptions3.format) !== "undefined") {
+        var _this$fieldOptions4;
+        dt = fecha_default().parse(value, (_this$fieldOptions4 = this.fieldOptions) === null || _this$fieldOptions4 === void 0 ? void 0 : _this$fieldOptions4.format);
       } else {
         dt = new Date(value);
       }
@@ -22223,9 +22230,11 @@ var inputFormat = "YYYY-MM-DD HH:mm:ss";
   },
   formatValueToModel: function formatValueToModel(value) {
     if (value != null) {
+      var _this$fieldOptions5;
       var m = fecha_default().parse(value, this.getDateFormat());
-      if (typeof this.fieldOptions.format !== "undefined") {
-        value = fecha_default().format(m, this.fieldOptions.format);
+      if (typeof ((_this$fieldOptions5 = this.fieldOptions) === null || _this$fieldOptions5 === void 0 ? void 0 : _this$fieldOptions5.format) !== "undefined") {
+        var _this$fieldOptions6;
+        value = fecha_default().format(m, (_this$fieldOptions6 = this.fieldOptions) === null || _this$fieldOptions6 === void 0 ? void 0 : _this$fieldOptions6.format);
       } else {
         value = m.valueOf();
       }
@@ -23306,8 +23315,8 @@ var fieldSpectrum_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldSpectrum = (fieldSpectrum_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=3a589bd4
-var fieldStaticMapvue_type_template_id_3a589bd4_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=template&id=137fe725
+var fieldStaticMapvue_type_template_id_137fe725_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('img', {
@@ -23316,7 +23325,7 @@ var fieldStaticMapvue_type_template_id_3a589bd4_render = function render() {
     }
   });
 };
-var fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns = [];
+var fieldStaticMapvue_type_template_id_137fe725_staticRenderFns = [];
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js
 
@@ -23362,6 +23371,7 @@ var fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns = [];
         if (lat && lng) {
           return url;
         }
+        return null; // Return null if lat/lng are not available
       } else {
         return null; // Ensure a value is always returned
       }
@@ -23370,10 +23380,10 @@ var fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns = [];
 });
 ;// ./src/fields/optional/fieldStaticMap.vue?vue&type=script&lang=js
  /* harmony default export */ var optional_fieldStaticMapvue_type_script_lang_js = (fieldStaticMapvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=3a589bd4&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=137fe725&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=3a589bd4&prod&lang=scss
+;// ./src/fields/optional/fieldStaticMap.vue?vue&type=style&index=0&id=137fe725&prod&lang=scss
 
 ;// ./src/fields/optional/fieldStaticMap.vue
 
@@ -23386,8 +23396,8 @@ var fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns = [];
 
 var fieldStaticMap_component = normalizeComponent(
   optional_fieldStaticMapvue_type_script_lang_js,
-  fieldStaticMapvue_type_template_id_3a589bd4_render,
-  fieldStaticMapvue_type_template_id_3a589bd4_staticRenderFns,
+  fieldStaticMapvue_type_template_id_137fe725_render,
+  fieldStaticMapvue_type_template_id_137fe725_staticRenderFns,
   false,
   null,
   null,

@@ -336,6 +336,6 @@ describe("Minimal FormGenerator Mount Test", () => {
 			expect(submitButton.attributes("value")).to.equal("Register");
 		}
 
-		console.log("Minimal test completed with ALL core and optional fields.");
+		// Minimal test completed with ALL core and optional fields.
 	});
 });
