@@ -1,19 +1,59 @@
 import { expect } from "chai";
 import { mount, createLocalVue } from "@vue/test-utils";
 import formGroup from "@/formGroup.vue";
+import formElement from "@/formElement.vue";
+import fieldInput from "@/fields/core/fieldInput.vue";
 
 const localVue = createLocalVue();
+
+// Parent wrapper to provide named scoped slots for FormGroup
+const GroupWrapper = {
+	components: { FormGroup: formGroup },
+	props: {
+		fields: { type: Array, default: () => [] },
+		group: { type: Object, default: () => ({}) },
+		model: { type: Object, default: () => ({}) },
+		options: { type: Object, default: () => ({}) },
+		errors: { type: Array, default: () => [] },
+		eventBus: { type: Object, default: () => ({ $on: () => {}, $off: () => {} }) },
+		tag: { type: String, default: "fieldset" }
+	},
+	template: `
+		<form-group
+			:fields="fields"
+			:group="group"
+			:model="model"
+			:options="options"
+			:errors="errors"
+			:event-bus="eventBus"
+			:tag="tag"
+		>
+			<template slot="group-legend" slot-scope="slotProps">
+				<legend v-if="slotProps.groupLegend">{{ slotProps.groupLegend }}</legend>
+			</template>
+			<template slot="element" slot-scope="slotProps">
+				<div class="form-group"></div>
+			</template>
+		</form-group>
+	`
+};
+
+// Register components that formGroup might need
+localVue.component("FormElement", formElement);
+localVue.component("FieldInput", fieldInput);
 
 describe("formGroup.vue", () => {
 	let wrapper;
 	const createWrapper = (propsData = {}) => {
-		return mount(formGroup, {
+		return mount(GroupWrapper, {
 			localVue,
 			propsData: {
-				field: {},
 				fields: [],
+				group: {},
 				model: {},
-				eventBus: { $on: () => {}, $off: () => {} }, // Restore simple mock
+				options: {},
+				errors: [],
+				eventBus: { $on: () => {}, $off: () => {} },
 				...propsData
 			}
 		});
@@ -32,16 +72,16 @@ describe("formGroup.vue", () => {
 			expect(wrapper.find("fieldset").exists()).to.be.true;
 		});
 
-		it("should render legend if field has a legend property", () => {
+		it("should render legend if group has a legend property", () => {
 			wrapper = createWrapper({
-				field: { legend: "Test Legend" }
+				group: { legend: "Test Legend" }
 			});
 			const legend = wrapper.find("legend");
 			expect(legend.exists()).to.be.true;
 			expect(legend.text()).to.equal("Test Legend");
 		});
 
-		it("should not render legend if field has no legend property", () => {
+		it("should not render legend if group has no legend property", () => {
 			expect(wrapper.find("legend").exists()).to.be.false;
 		});
 	});
@@ -70,42 +110,46 @@ describe("formGroup.vue", () => {
 
 		it("should respect visible property when false", () => {
 			wrapper = createWrapper({
-				field: { visible: false }
+				fields: [
+					{ type: "input", model: "name", visible: false }
+				]
 			});
-			expect(wrapper.isVisible()).to.be.false;
+			expect(wrapper.find(".form-group").exists()).to.be.false;
 		});
 
 		it("should respect visible property when true", () => {
 			wrapper = createWrapper({
-				field: { visible: true }
+				fields: [
+					{ type: "input", model: "name", visible: true }
+				]
 			});
-			expect(wrapper.isVisible()).to.be.true;
+			expect(wrapper.find(".form-group").exists()).to.be.true;
 		});
 
 		it("should handle visible as a function", () => {
 			wrapper = createWrapper({
-				field: {
-					visible: (model) => model.showField
-				},
+				fields: [
+					{ type: "input", model: "name", visible: (model) => model.showField }
+				],
 				model: { showField: false }
 			});
-			expect(wrapper.isVisible()).to.be.false;
+			expect(wrapper.find(".form-group").exists()).to.be.false;
 		});
 	});
 
 	describe("styling", () => {
-		it("should apply custom class from field.styleClasses", () => {
+		it("should apply custom class from group.styleClasses", () => {
 			wrapper = createWrapper({
-				field: { styleClasses: "custom-class" }
+				group: { styleClasses: "custom-class" }
 			});
-			expect(wrapper.classes()).to.include("custom-class");
+			expect(wrapper.find("fieldset").classes()).to.include("custom-class");
 		});
 
 		it("should handle multiple style classes", () => {
 			wrapper = createWrapper({
-				field: { styleClasses: ["class1", "class2"] }
+				group: { styleClasses: ["class1", "class2"] }
 			});
-			expect(wrapper.classes()).to.include.members(["class1", "class2"]);
+			expect(wrapper.find("fieldset").classes()).to.include.members(["class1", "class2"]);
 		});
 	});
 

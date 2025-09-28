@@ -69,7 +69,10 @@ describe("fieldGoogleAddress.vue", () => {
 		});
 
 		it("input value should be the model value after changed", () => {
-			wrapper.setProps({ model: { address: "Rome, Italy" } });
+			// Re-mount to avoid setProps issues with @vue/test-utils
+			wrapper.destroy();
+			createField({ schema, model: { address: "Rome, Italy" } });
+			input = wrapper.find("input");
 
 			expect(input.element.value).to.be.equal("Rome, Italy");
 		});

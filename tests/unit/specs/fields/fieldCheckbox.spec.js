@@ -59,8 +59,9 @@ describe("FieldCheckbox.vue", () => {
 			expect(input.element.checked).to.be.true;
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { status: false } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.checked).to.be.false;
 		});

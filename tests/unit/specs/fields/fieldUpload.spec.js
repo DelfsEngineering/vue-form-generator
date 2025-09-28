@@ -40,7 +40,8 @@ describe("fieldUpload.vue", () => {
 			disabled: false,
 			fieldOptions: {
 				multiple: true,
-				accept: "image/*"
+				accept: "image/*",
+				inputType: "file"
 			}
 		};
 		let model = {};
@@ -50,7 +51,6 @@ describe("fieldUpload.vue", () => {
 		before(() => {
 			createField({ schema, model });
 			input = wrapper.find("input");
-			schema.fieldOptions = { inputType: "file" };
 		});
 
 		it("should contain an input text element", () => {
@@ -95,7 +95,8 @@ describe("fieldUpload.vue", () => {
 			disabled: false,
 			fieldOptions: {
 				multiple: true,
-				accept: "image/*"
+				accept: "image/*",
+				inputType: "file"
 			}
 		};
 		let model = {};
@@ -104,7 +105,6 @@ describe("fieldUpload.vue", () => {
 		before(() => {
 			createField({ schema, model });
 			input = wrapper.find("input");
-			schema.fieldOptions = { inputType: "file" };
 		});
 
 		it("should contain an input text element", () => {

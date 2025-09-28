@@ -92,9 +92,10 @@ describe("fieldInput.vue", () => {
 		]);
 		for (let [inputType, attributes] of inputTypes) {
 			describe("change type of input", () => {
-				it("should become a " + inputType, () => {
+				it("should become a " + inputType, async () => {
 					schema.fieldOptions.inputType = inputType;
 					wrapper.setProps({ schema: { ...schema } });
+					await wrapper.vm.$nextTick();
 
 					expect(input.attributes().type).to.be.equal(inputType);
 				});
@@ -109,8 +110,9 @@ describe("fieldInput.vue", () => {
 			});
 		}
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { name: "Jane Doe" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("Jane Doe");
 		});

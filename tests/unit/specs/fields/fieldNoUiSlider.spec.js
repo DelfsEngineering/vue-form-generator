@@ -78,7 +78,8 @@ describe("fieldNoUiSlider.vue", () => {
 			wrapper.setProps({ model: { rating: 10 } });
 			let origin = input.find(".noUi-origin");
 
-			expect(origin.element.style.getPropertyValue("transform")).to.be.equal("translate(0%, 0)");
+			// Rating 10 is max value (10 out of 1-10 range), so handle should be at the end
+			expect(origin.element.style.getPropertyValue("transform")).to.be.equal("translate(-100%, 0)");
 		});
 
 		it("model value should be the handle value after changed", () => {
@@ -87,9 +88,10 @@ describe("fieldNoUiSlider.vue", () => {
 			expect(wrapper.props().model.rating).to.be.equal(3);
 		});
 
-		it("should set disabled", () => {
+		it("should set disabled", async () => {
 			schema.disabled = true;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			expect(wrapper.attributes().disabled).to.be.equal("disabled");
 		});

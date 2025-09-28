@@ -74,8 +74,9 @@ describe("fieldMasked.vue", () => {
 			});
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { phone: "(70) 555- 4433" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("(70) 555- 4433");
 		});

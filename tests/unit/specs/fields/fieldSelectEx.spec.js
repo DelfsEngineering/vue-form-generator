@@ -85,8 +85,9 @@ describe("fieldSelectEx.vue", () => {
 			});
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: "Rome" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("Rome");
 		});
@@ -97,11 +98,14 @@ describe("fieldSelectEx.vue", () => {
 			expect(wrapper.props().model.city).to.be.equal("London");
 		});
 
-		it("should not be multiple", () => {
+		it("should not be multiple", async () => {
 			// For multiselect need empty array
 			wrapper.setProps({ model: { city: [] } });
+			await wrapper.vm.$nextTick();
+
 			schema.fieldOptions.multiSelect = true;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.attributes().multiple).to.equal("multiple");
 			let options = input.findAll("option");
@@ -141,8 +145,9 @@ describe("fieldSelectEx.vue", () => {
 			expect(options.at(2).element.value).to.be.equal("2");
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: 3 } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("3");
 		});
@@ -180,8 +185,9 @@ describe("fieldSelectEx.vue", () => {
 			expect(options.at(2).element.value).to.be.equal("2");
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: 3 } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("3");
 		});

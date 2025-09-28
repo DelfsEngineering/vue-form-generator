@@ -244,8 +244,10 @@ describe("VueFormGenerator.vue", () => {
 			expect(formElement.classes()).to.include("classA");
 		});
 
-		it("should be add more custom classes", () => {
+		it("should be add more custom classes", async () => {
 			schema.fields[0].styleClasses = ["classB", "classC"];
+			formGenerator.vm.schema = { ...schema };
+			await wrapper.vm.$nextTick();
 
 			expect(formElement.classes()).to.include("classB");
 			expect(formElement.classes()).to.include("classC");
@@ -306,8 +308,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(label.text()).to.be.equal("Name");
 		});
 
-		it("should be a question icon if has helpText", () => {
+		it("should be a question icon if has helpText", async () => {
 			wrapper.vm.schema.fields[0].help = "Sample help";
+			await wrapper.vm.$nextTick();
 
 			let span = group.find(".help");
 
@@ -402,8 +405,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(input.attributes().disabled).to.be.undefined;
 		});
 
-		it("should be disabled the name field", () => {
+		it("should be disabled the name field", async () => {
 			wrapper.vm.model.status = false;
+			await wrapper.vm.$nextTick();
 
 			expect(input.attributes().disabled).to.be.equal("disabled");
 		});
@@ -467,8 +471,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(input.attributes().disabled).to.be.undefined;
 		});
 
-		it("should be disabled the name field", () => {
+		it("should be disabled the name field", async () => {
 			wrapper.vm.schema.fields[0].disabled = true;
+			await wrapper.vm.$nextTick();
 
 			expect(input.attributes().disabled).to.be.equal("disabled");
 		});
@@ -507,8 +512,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(group.classes()).to.include("readonly");
 		});
 
-		it("should be writable", () => {
+		it("should be writable", async () => {
 			wrapper.vm.model.status = false;
+			await wrapper.vm.$nextTick();
 
 			expect(group.classes()).to.not.include("readonly");
 		});
@@ -546,8 +552,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(wrapper.find(".form-element .hint").text()).to.be.equal("8 of max 500 characters used!");
 		});
 
-		it("should be changed", () => {
+		it("should be changed", async () => {
 			model.note = "Dr. John Doe";
+			await wrapper.vm.$nextTick();
 
 			expect(wrapper.find(".form-element .hint").text()).to.be.equal("12 of max 500 characters used!");
 		});
@@ -586,8 +593,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(group.classes()).to.include("featured");
 		});
 
-		it("should not be featured", () => {
+		it("should not be featured", async () => {
 			wrapper.vm.model.status = false;
+			await wrapper.vm.$nextTick();
 
 			expect(group.classes()).to.not.include("featured");
 		});
@@ -626,8 +634,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(group.classes()).to.include("required");
 		});
 
-		it("should be optional", () => {
+		it("should be optional", async () => {
 			wrapper.vm.model.status = false;
+			await wrapper.vm.$nextTick();
 
 			expect(group.classes()).to.not.include("required");
 		});
@@ -664,8 +673,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(input.exists()).to.be.true;
 		});
 
-		it("should be hidden the name field", () => {
+		it("should be hidden the name field", async () => {
 			wrapper.vm.model.status = false;
+			await wrapper.vm.$nextTick();
 
 			let input = wrapper.find("input[type=text]");
 			expect(input.exists()).to.be.false;
@@ -698,8 +708,9 @@ describe("VueFormGenerator.vue", () => {
 			expect(input.exists()).to.be.true;
 		});
 
-		it("should be disabled the name field", () => {
+		it("should be disabled the name field", async () => {
 			wrapper.vm.schema.fields[0].visible = false;
+			await wrapper.vm.$nextTick();
 
 			let input = wrapper.find("input[type=text]");
 			expect(input.exists()).to.be.false;

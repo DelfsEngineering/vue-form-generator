@@ -88,8 +88,13 @@ describe("FieldRadios.vue", () => {
 		});
 
 		describe("test values reactivity to changes", () => {
-			it("radioList value should be the model value after changed", () => {
+			it("radioList value should be the model value after changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
 
 				expect(isChecked(0)).to.be.false;
 				expect(isChecked(1)).to.be.false;
@@ -108,8 +113,16 @@ describe("FieldRadios.vue", () => {
 		});
 
 		describe("test 'is-checked' class attribution reactivity to changes", () => {
-			it("label with checked input should have a 'is-checked' class after model value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after model value is changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				// Refresh labelList after model change
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");
@@ -120,8 +133,15 @@ describe("FieldRadios.vue", () => {
 				expect(labelList.at(6).classes()).to.not.include("is-checked");
 			});
 
-			it("label with checked input should have a 'is-checked' class after radioList value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after radioList value is changed", async () => {
 				radios.at(2).trigger("click");
+				await wrapper.vm.$nextTick();
+
+				// Still need workaround even with @vue/test-utils 1.3.6
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");
@@ -184,8 +204,13 @@ describe("FieldRadios.vue", () => {
 			expect(labelList.at(6).classes()).to.not.include("is-checked");
 		});
 		describe("test values reactivity to changes", () => {
-			it("radioList value should be the model value after changed", () => {
+			it("radioList value should be the model value after changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS-123" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
 
 				expect(isChecked(0)).to.be.false;
 				expect(isChecked(1)).to.be.false;
@@ -204,8 +229,16 @@ describe("FieldRadios.vue", () => {
 		});
 
 		describe("test 'is-checked' class attribution reactivity to changes", () => {
-			it("label with checked input should have a 'is-checked' class after model value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after model value is changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS-123" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				// Refresh labelList after model change
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");
@@ -216,8 +249,15 @@ describe("FieldRadios.vue", () => {
 				expect(labelList.at(6).classes()).to.not.include("is-checked");
 			});
 
-			it("label with checked input should have a 'is-checked' class after radioList value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after radioList value is changed", async () => {
 				radios.at(2).trigger("click");
+				await wrapper.vm.$nextTick();
+
+				// Still need workaround even with @vue/test-utils 1.3.6
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");
@@ -284,8 +324,13 @@ describe("FieldRadios.vue", () => {
 			expect(labelList.at(6).classes()).to.not.include("is-checked");
 		});
 		describe("test values reactivity to changes", () => {
-			it("radioList value should be the model value after changed", () => {
+			it("radioList value should be the model value after changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS-123" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
 
 				expect(isChecked(0)).to.be.false;
 				expect(isChecked(1)).to.be.false;
@@ -304,8 +349,16 @@ describe("FieldRadios.vue", () => {
 		});
 
 		describe("test 'is-checked' class attribution reactivity to changes", () => {
-			it("label with checked input should have a 'is-checked' class after model value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after model value is changed", async () => {
 				wrapper.setProps({ model: { skills: "ReactJS-123" } });
+				await wrapper.vm.$nextTick();
+
+				// Workaround for @vue/test-utils reactivity issue with Vue 2.7
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				// Refresh labelList after model change
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");
@@ -316,8 +369,15 @@ describe("FieldRadios.vue", () => {
 				expect(labelList.at(6).classes()).to.not.include("is-checked");
 			});
 
-			it("label with checked input should have a 'is-checked' class after radioList value is changed", () => {
+			it("label with checked input should have a 'is-checked' class after radioList value is changed", async () => {
 				radios.at(2).trigger("click");
+				await wrapper.vm.$nextTick();
+
+				// Still need workaround even with @vue/test-utils 1.3.6
+				wrapper.vm.$forceUpdate();
+				await wrapper.vm.$nextTick();
+
+				labelList = wrapper.findAll("label");
 
 				expect(labelList.at(0).classes()).to.not.include("is-checked");
 				expect(labelList.at(1).classes()).to.not.include("is-checked");

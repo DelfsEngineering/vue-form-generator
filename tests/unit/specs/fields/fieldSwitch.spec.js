@@ -74,18 +74,21 @@ describe("FieldSwitch.vue", () => {
 			expect(span.attributes()["data-off"]).to.be.equal("Off");
 		});
 
-		it("should set disabled", () => {
+		it("should set disabled", async () => {
 			schema.disabled = true;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.attributes().disabled).to.be.equal("disabled");
 
 			schema.disabled = false;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { status: false } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.checked).to.be.false;
 		});
@@ -144,8 +147,9 @@ describe("FieldSwitch.vue", () => {
 			expect(input.element.checked).to.be.true;
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { sex: "male" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.checked).to.be.false;
 		});

@@ -398,10 +398,11 @@ describe("abstractField.vue", () => {
 			expect(wrapper.emitted().validated).to.be.undefined;
 		});
 
-		it("should return empty array", () => {
+		it("should return empty array", async () => {
 			const spy = sinon.spy(wrapper.props().eventBus, "$emit");
 
 			wrapper.setProps({ model: { name: "Al" } });
+			await wrapper.vm.$nextTick();
 
 			let res = field.validate();
 

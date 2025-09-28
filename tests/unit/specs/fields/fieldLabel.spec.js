@@ -53,8 +53,9 @@ describe("fieldLabel.vue", () => {
 			expect(span.text()).to.be.equal("2 days ago");
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { timestamp: "Foo bar" } });
+			await wrapper.vm.$nextTick();
 
 			expect(span.text()).to.be.equal("Foo bar");
 		});

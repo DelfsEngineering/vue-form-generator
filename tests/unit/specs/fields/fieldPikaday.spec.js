@@ -72,8 +72,9 @@ describe("fieldPikaday.vue", () => {
 			});
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { event: 1234567890123 } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal(fecha.format(new Date(1234567890123), "YYYY-MM-DD HH:mm:ss"));
 		});

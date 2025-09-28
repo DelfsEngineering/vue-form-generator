@@ -84,8 +84,9 @@ describe("fieldSelect.vue", () => {
 			});
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: "Rome" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("Rome");
 		});
@@ -96,9 +97,10 @@ describe("fieldSelect.vue", () => {
 			expect(wrapper.props().model.city).to.be.equal("London");
 		});
 
-		it("should contain a disabled <non selected> element if required", () => {
+		it("should contain a disabled <non selected> element if required", async () => {
 			schema.required = true;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			let options = input.findAll("option");
 
@@ -107,11 +109,12 @@ describe("fieldSelect.vue", () => {
 			expect(options.at(0).text()).to.be.equal("<Nothing selected>");
 		});
 
-		it("should show the customized <non selected> text", () => {
+		it("should show the customized <non selected> text", async () => {
 			schema.fieldOptions = {
 				noneSelectedText: "Empty list"
 			};
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			let options = input.findAll("option");
 
@@ -120,14 +123,17 @@ describe("fieldSelect.vue", () => {
 
 			schema.fieldOptions = null;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 		});
 
-		it("should hide the customized <non selected> text", () => {
+		it("should hide the customized <non selected> text", async () => {
 			schema.fieldOptions = {
 				noneSelectedText: "Empty list",
 				hideNoneSelectedText: true
 			};
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
+
 			let options = input.findAll("option");
 
 			expect(options.length).to.be.equal(4);
@@ -136,6 +142,7 @@ describe("fieldSelect.vue", () => {
 
 			schema.fieldOptions = null;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 		});
 	});
 
@@ -196,8 +203,9 @@ describe("fieldSelect.vue", () => {
 			expect(input.element.value).to.be.equal("2");
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: 3 } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("3");
 		});
@@ -237,8 +245,9 @@ describe("fieldSelect.vue", () => {
 			expect(input.element.value).to.be.equal("2");
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { city: 3 } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("3");
 		});

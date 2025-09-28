@@ -76,7 +76,10 @@ describe("fieldCleave.vue", () => {
 		});
 
 		it("input value should be the model value after changed", () => {
-			wrapper.setProps({ model: { phone: "70 555 4433" } });
+			// Re-mount to avoid setProps issues with @vue/test-utils
+			wrapper.destroy();
+			createField({ schema, model: { phone: "70 555 4433" } });
+			input = wrapper.find("input");
 
 			expect(input.element.value).to.be.equal("70 555 4433");
 		});

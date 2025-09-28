@@ -28,7 +28,7 @@ describe("formElement.vue", () => {
 			form = wrapper.vm;
 		});
 
-		it("should return true", () => {
+		it("should return true", async () => {
 			wrapper.setProps({
 				field: {
 					type: "input",
@@ -38,6 +38,7 @@ describe("formElement.vue", () => {
 					label: "checkbox"
 				}
 			});
+			await wrapper.vm.$nextTick();
 			expect(form.fieldTypeHasLabel).to.be.true;
 
 			wrapper.setProps({
@@ -66,7 +67,7 @@ describe("formElement.vue", () => {
 			expect(form.fieldTypeHasLabel).to.be.true;
 		});
 
-		it("should return false", () => {
+		it("should return false", async () => {
 			// with label text defined
 			wrapper.setProps({
 				field: {
@@ -77,6 +78,7 @@ describe("formElement.vue", () => {
 					label: "button"
 				}
 			});
+			await wrapper.vm.$nextTick();
 			expect(form.fieldTypeHasLabel).to.be.false;
 
 			wrapper.setProps({
@@ -159,7 +161,7 @@ describe("formElement.vue", () => {
 			expect(form.fieldTypeHasLabel).to.be.false;
 		});
 
-		it("should default to true for unknown types", () => {
+		it("should default to true for unknown types", async () => {
 			wrapper.setProps({
 				field: {
 					type: "input",
@@ -169,6 +171,7 @@ describe("formElement.vue", () => {
 					label: "unsupported"
 				}
 			});
+			await wrapper.vm.$nextTick();
 			expect(form.fieldTypeHasLabel).to.be.true;
 
 			wrapper.setProps({
@@ -179,6 +182,7 @@ describe("formElement.vue", () => {
 					}
 				}
 			});
+			await wrapper.vm.$nextTick();
 			expect(form.fieldTypeHasLabel).to.be.false;
 		});
 	});

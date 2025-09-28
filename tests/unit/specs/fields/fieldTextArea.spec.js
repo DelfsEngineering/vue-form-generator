@@ -59,9 +59,10 @@ describe("fieldTextArea.vue", () => {
 			expect(input.attributes().maxlength).to.be.equal("500");
 		});
 
-		it("should change rows to 4", () => {
+		it("should change rows to 4", async () => {
 			schema.fieldOptions.rows = 4;
 			wrapper.setProps({ schema: { ...schema } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.attributes().rows).to.be.equal("4");
 		});
@@ -80,8 +81,9 @@ describe("fieldTextArea.vue", () => {
 			});
 		});
 
-		it("input value should be the model value after changed", () => {
+		it("input value should be the model value after changed", async () => {
 			wrapper.setProps({ model: { desc: "Jane Doe" } });
+			await wrapper.vm.$nextTick();
 
 			expect(input.element.value).to.be.equal("Jane Doe");
 		});
