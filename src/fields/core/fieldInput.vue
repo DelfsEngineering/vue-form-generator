@@ -1,12 +1,19 @@
 <template>
-	<div class="wrapper" v-attributes="'wrapper'">
+	<div
+		class="wrapper"
+		v-attributes="'wrapper'"
+		:style="flattenControlWrapper ? 'display: contents' : null"
+		v-bind="controlWrapperAttrs"
+	>
 		<input
 			class="form-control"
+			v-bind="controlAttrs"
 			:id="fieldID"
 			:type="inputType"
 			:value="value"
 			@input="onInput"
 			@blur="onBlur"
+			@focus="onFocus"
 			:class="fieldClasses"
 			@change="schema.onChange || null"
 			:disabled="disabled"
@@ -57,6 +64,7 @@ const DATETIME_FORMATS = {
 export default {
 	name: "FieldInput",
 	mixins: [abstractField],
+
 	computed: {
 		inputType() {
 			if (typeof this.fieldOptions.inputType !== "undefined") {
@@ -65,9 +73,48 @@ export default {
 				console.warn("Missing inputType", this.fieldOptions, this.fieldOptions.inputType);
 				return null;
 			}
+		},
+		ariaDescribedBy() {
+			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+		},
+		controlAttrs() {
+			const attrs = { "aria-describedby": this.ariaDescribedBy };
+			if (this.isMinimalMode()) {
+				attrs["data-vfg-role"] = "control";
+			}
+			return attrs;
+		},
+		flattenControlWrapper() {
+			const keepWrapper =
+				objGet(this.schema || {}, "keepWrapper", false) ||
+				objGet(this.schema || {}, "wrapperMode", null) === "legacy";
+			return this.isMinimalMode() && !keepWrapper;
+		},
+		controlWrapperAttrs() {
+			if (this.flattenControlWrapper) {
+				return { "data-vfg-role": "control-wrapper" };
+			}
+			return {};
 		}
 	},
 	methods: {
+		onFocus() {
+			this.$emit("focus");
+			this.$emit("state-focused", true);
+			// Also dispatch a bubbling focusin to help parent containers react in tests/environments
+			try {
+				if (this.$el && typeof this.$el.dispatchEvent === "function") {
+					this.$el.dispatchEvent(new window.Event("focusin", { bubbles: true }));
+				}
+			} catch (e) {
+				// no-op
+			}
+		},
+		isMinimalMode() {
+			const fieldLegacy = objGet(this.schema || {}, "legacy");
+			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			return resolvedLegacy === false;
+		},
 		formatValueToModel(value) {
 			if (value != null) {
 				switch (this.inputType) {
@@ -118,6 +165,15 @@ export default {
 		onBlur() {
 			if (isFunction(this.debouncedFormatFunc)) {
 				this.debouncedFormatFunc.flush();
+			}
+			this.$emit("blur");
+			this.$emit("state-focused", false);
+			try {
+				if (this.$el && typeof this.$el.dispatchEvent === "function") {
+					this.$el.dispatchEvent(new window.Event("focusout", { bubbles: true }));
+				}
+			} catch (e) {
+				// no-op
 			}
 		}
 	},

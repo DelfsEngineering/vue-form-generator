@@ -1,5 +1,5 @@
 <template>
-	<div class="wrapper">
+	<div class="wrapper" :style="flattenControlWrapper ? 'display: contents' : null" v-bind="controlWrapperAttrs">
 		<input
 			class="form-control link"
 			type="text"
@@ -28,12 +28,26 @@
 
 <script>
 import abstractField from "../abstractField";
+import { get as objGet } from "lodash";
 
 export default {
 	name: "FieldImage",
 	mixins: [abstractField],
 
 	computed: {
+		flattenControlWrapper() {
+			const keepWrapper =
+				objGet(this.schema || {}, "keepWrapper", false) ||
+				objGet(this.schema || {}, "wrapperMode", null) === "legacy";
+			const legacy = objGet(this.formOptions || {}, "legacy", true);
+			return legacy === false && !keepWrapper;
+		},
+		controlWrapperAttrs() {
+			if (this.flattenControlWrapper) {
+				return { "data-vfg-role": "control-wrapper" };
+			}
+			return {};
+		},
 		previewStyle() {
 			if (this.fieldOptions.preview !== false) {
 				return {

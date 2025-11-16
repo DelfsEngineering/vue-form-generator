@@ -7,6 +7,8 @@
 		:title="placeholder"
 		data-width="100%"
 		:name="inputName"
+		:id="fieldID"
+		v-bind="controlAttrs"
 	>
 		<option
 			:disabled="schema.required"
@@ -22,7 +24,7 @@
 
 <script>
 /* global $ */
-import { isObject } from "lodash";
+import { isObject, get as objGet } from "lodash";
 import abstractField from "../abstractField";
 
 export default {
@@ -30,6 +32,16 @@ export default {
 	mixins: [abstractField],
 
 	computed: {
+		ariaDescribedBy() {
+			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+		},
+		controlAttrs() {
+			const attrs = { "aria-describedby": this.ariaDescribedBy };
+			if (this.isMinimalMode()) {
+				attrs["data-vfg-role"] = "control";
+			}
+			return attrs;
+		},
 		items() {
 			let values = this.schema.values;
 			if (typeof values == "function") {
@@ -39,6 +51,12 @@ export default {
 	},
 
 	methods: {
+		isMinimalMode() {
+			const fieldLegacy = objGet(this.schema || {}, "legacy");
+			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			return resolvedLegacy === false;
+		},
+
 		getItemValue(item) {
 			if (isObject(item)) {
 				if (typeof this.fieldOptions["value"] !== "undefined") {

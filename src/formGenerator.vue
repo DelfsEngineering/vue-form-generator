@@ -1,10 +1,12 @@
 <template>
-	<div class="vue-form-generator" v-if="schema != null">
-		<form-group
+    <div class="vue-form-generator" v-if="schema != null">
+
+
+        <form-group
 			:tag="tag"
 			:fields="fields"
 			:model="model"
-			:options="options"
+			:options="optionsWithLegacy"
 			:errors="errors"
 			:event-bus="eventBus"
 		>
@@ -47,27 +49,46 @@
 						</slot>
 					</template>
 
-					<template slot="hint" slot-scope="{ field, getValueFromOption }">
-						<slot name="hint" :field="field" :get-value-from-option="getValueFromOption">
-							<div class="hint" v-html="getValueFromOption(field, 'hint', undefined)"></div>
+					<template slot="hint" slot-scope="{ field, getValueFromOption, fieldId }">
+						<slot
+							name="hint"
+							:field="field"
+							:get-value-from-option="getValueFromOption"
+							:field-id="fieldId"
+						>
+						<div
+							class="hint"
+							:id="fieldId + '-hint'"
+							v-html="getValueFromOption(field, 'hint', undefined)"
+							v-bind="isMinimalForField(field) ? { 'data-vfg-role': 'hint' } : {}"
+						></div>
 						</slot>
 					</template>
 
-					<template slot="errors" slot-scope="{ childErrors, field, getValueFromOption }">
+					<template slot="errors" slot-scope="{ childErrors, field, getValueFromOption, fieldId }">
 						<slot
 							name="errors"
 							:errors="childErrors"
 							:field="field"
 							:get-value-from-option="getValueFromOption"
+							:field-id="fieldId"
 						>
-							<div class="errors help-block">
+							<div
+								:class="errorsContainerClass(field)"
+								:id="fieldId + '-errors'"
+								aria-live="polite"
+								v-bind="isMinimalForField(field) ? { 'data-vfg-role': 'errors' } : {}"
+							>
 								<span v-for="(error, index) in childErrors" :key="index" v-html="error"></span>
 							</div>
 						</slot>
 					</template>
 				</form-element>
 			</template>
+
+
 		</form-group>
+
 	</div>
 </template>
 
@@ -86,6 +107,11 @@ export default {
 			default() {
 				return {};
 			}
+		},
+
+		legacy: {
+			type: Boolean,
+			default: true
 		},
 
 		model: {
@@ -132,11 +158,26 @@ export default {
 	},
 
 	computed: {
+		optionsWithLegacy() {
+			return Object.assign({}, this.options || {}, { legacy: this.legacy });
+		},
 		fields() {
 			if (this.schema && this.schema.fields) {
 				return this.schema.fields;
 			}
 			return [];
+		},
+		shouldShowSummary() {
+			return objGet(this.optionsWithLegacy, "a11y.errorSummary.enabled", false) && this.errors && this.errors.length > 0;
+		},
+		summaryPosition() {
+			return objGet(this.optionsWithLegacy, "a11y.errorSummary.position", "top");
+		},
+		summaryRole() {
+			return objGet(this.optionsWithLegacy, "a11y.errorSummary.role", "alert");
+		},
+		summaryLive() {
+			return objGet(this.optionsWithLegacy, "a11y.errorSummary.live", "polite");
 		}
 	},
 
@@ -170,6 +211,19 @@ export default {
 	},
 
 	methods: {
+		isMinimalForField(field) {
+			const fieldLegacy = objGet(field, "legacy");
+			const resolvedLegacy = typeof fieldLegacy !== "undefined" && fieldLegacy !== null ? fieldLegacy : objGet(this.optionsWithLegacy, "legacy", true);
+			return resolvedLegacy === false;
+		},
+		errorsContainerClass(field) {
+			// Always keep legacy 'help-block' unless explicitly disabled by compatibility option
+			const mirroring = objGet(this.optionsWithLegacy, "compatibility.classMirroring", true);
+			if (mirroring) {
+				return "errors help-block";
+			}
+			return "errors";
+		},
 		fillErrors(fieldErrors, errors, uid) {
 			if (isArray(fieldErrors) && fieldErrors.length > 0) {
 				fieldErrors.forEach((error) => {
@@ -226,6 +280,14 @@ export default {
 						this.$emit("validated", isValid, formErrors, this);
 						this.eventBus.$emit("fields-validation-terminated", formErrors);
 
+						// Focus first invalid field for a11y
+						if (!isValid && formErrors.length > 0) {
+							const first = formErrors[0];
+							if (first && first.uid) {
+								this.$nextTick(() => this.eventBus.$emit("focus-field", first.uid));
+							}
+						}
+
 						if (isValid) {
 							resolve();
 						} else {
@@ -239,6 +301,11 @@ export default {
 				this.eventBus.$on("field-validated", counter);
 				this.eventBus.$emit("validate-fields", this);
 			});
+		},
+
+		focusErrorField(uid) {
+			if (!uid) return;
+			this.$nextTick(() => this.eventBus.$emit("focus-field", uid));
 		},
 
 		// Clear validation errors

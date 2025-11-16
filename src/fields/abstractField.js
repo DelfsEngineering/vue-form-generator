@@ -123,6 +123,15 @@ export default {
 	},
 
 	methods: {
+		focusFirstFocusable() {
+			if (!this.$el) return;
+			const focusable = this.$el.querySelector(
+				'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+			);
+			if (focusable && typeof focusable.focus === "function") {
+				focusable.focus();
+			}
+		},
 		getValueFromOption(field, option, defaultValue) {
 			if (isFunction(this.$parent.getValueFromOption)) {
 				return this.$parent.getValueFromOption(field, option, defaultValue);
@@ -163,8 +172,15 @@ export default {
 						results.push(validator(this.value, this.schema, this.model));
 					} else {
 						let result = validator(this.value, this.schema, this.model);
-						if (result && isFunction(result.then)) {
-							result.then((err) => {
+					if (result && isFunction(result.then)) {
+						result
+							.then((err) => {
+								if (err) {
+									this.errors = this.errors.concat(err);
+								}
+							})
+							.catch((err) => {
+								// Treat rejected async validator as validation errors instead of unhandled promise
 								if (err) {
 									this.errors = this.errors.concat(err);
 								}
@@ -311,6 +327,11 @@ export default {
 		if (this.eventBus && typeof this.eventBus.$on === "function") {
 			this.eventBus.$on("clear-validation-errors", this.clearValidationErrors);
 			this.eventBus.$on("validate-fields", this.validate);
+			this.eventBus.$on("focus-field", (uid) => {
+				if (uid === this.fieldUID) {
+					this.$nextTick(() => this.focusFirstFocusable());
+				}
+			});
 		}
 
 		// Unused array, commenting out

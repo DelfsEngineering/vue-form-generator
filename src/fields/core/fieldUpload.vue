@@ -1,5 +1,10 @@
 <template>
-	<div class="wrapper" v-attributes="'wrapper'">
+	<div
+		class="wrapper"
+		v-attributes="'wrapper'"
+		:style="flattenControlWrapper ? 'display: contents' : null"
+		v-bind="controlWrapperAttrs"
+	>
 		<input
 			class="form-control"
 			:id="fieldID"
@@ -19,11 +24,26 @@
 
 <script>
 import abstractField from "../abstractField";
-import { isFunction } from "lodash";
+import { isFunction, get as objGet } from "lodash";
 
 export default {
 	name: "FieldUpload",
 	mixins: [abstractField],
+	computed: {
+		flattenControlWrapper() {
+			const keepWrapper =
+				objGet(this.schema || {}, "keepWrapper", false) ||
+				objGet(this.schema || {}, "wrapperMode", null) === "legacy";
+			const legacy = objGet(this.formOptions || {}, "legacy", true);
+			return legacy === false && !keepWrapper;
+		},
+		controlWrapperAttrs() {
+			if (this.flattenControlWrapper) {
+				return { "data-vfg-role": "control-wrapper" };
+			}
+			return {};
+		}
+	},
 	methods: {
 		onChange($event) {
 			if (isFunction(this.fieldOptions.onChanged)) {

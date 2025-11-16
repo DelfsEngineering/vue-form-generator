@@ -1,11 +1,19 @@
 <template>
-	<div class="form-element" :class="[fieldRowClasses]" v-bind="setFormElementAttributes">
+	<div
+		class="form-element"
+		:class="[fieldRowClasses]"
+		v-bind="setFormElementAttributes"
+		@focusin="onFocusIn"
+		@focusout="onFocusOut"
+		@focus.capture="onFocusIn"
+		@blur.capture="onFocusOut"
+	>
 		<label v-if="fieldTypeHasLabel" :for="fieldID" :class="field.labelClasses">
 			<slot name="label" :field="field" :get-value-from-option="getValueFromOption"></slot>
 			<slot name="help" :field="field" :get-value-from-option="getValueFromOption"></slot>
 		</label>
 
-		<div class="field-wrap">
+		<div class="field-wrap" :style="flattenFieldWrap ? 'display: contents' : null">
 			<component
 				ref="child"
 				:is="fieldType"
@@ -16,8 +24,11 @@
 				:field-id="fieldID"
 				@field-touched="onFieldTouched"
 				@errors-updated="onChildValidated"
+				@focus="onChildFocus"
+				@blur="onChildBlur"
+				@state-focused="onChildStateFocused"
 			></component>
-			<div v-if="buttonsAreVisible" class="buttons">
+			<div v-if="buttonsAreVisible" class="buttons" v-bind="isMinimalMode ? { 'data-vfg-role': 'buttons' } : {}">
 				<button
 					v-for="(btn, index) in field.buttons"
 					@click="buttonClickHandler(btn, field, $event)"
@@ -29,7 +40,7 @@
 		</div>
 
 		<template v-if="fieldHasHint">
-			<slot name="hint" :field="field" :get-value-from-option="getValueFromOption"></slot>
+			<slot name="hint" :field="field" :get-value-from-option="getValueFromOption" :field-id="fieldID"></slot>
 		</template>
 
 		<template v-if="fieldHasErrors">
@@ -38,6 +49,7 @@
 				:child-errors="childErrors"
 				:field="field"
 				:get-value-from-option="getValueFromOption"
+				:field-id="fieldID"
 			></slot>
 		</template>
 	</div>
@@ -83,13 +95,42 @@ export default {
 	data() {
 		return {
 			childErrors: [],
-			childTouched: false
+			childTouched: false,
+			isFocused: false
 		};
 	},
 
 	computed: {
 		setFormElementAttributes() {
-			return this.field?.attributes?.formElement || {};
+			let attrs = this.field?.attributes?.formElement || {};
+			// Add stable hook only in minimal mode (legacy === false)
+			if (this.isMinimalMode) {
+				attrs = Object.assign({}, attrs, { "data-vfg-role": "element" });
+			}
+			return attrs;
+		},
+			enableStateClasses() {
+			// Limit new state classes to minimal mode to avoid breaking legacy CSS/tests
+			return this.isMinimalMode;
+		},
+			flattenFieldWrap() {
+				// In minimal mode we flatten .field-wrap unless the field requests to keep wrappers
+				const keepWrapper = objGet(this.field, "keepWrapper", false) || objGet(this.field, "wrapperMode", null) === "legacy";
+				return this.isMinimalMode && !keepWrapper;
+			},
+		isMinimalMode() {
+			// Field-level override takes precedence over form/global
+			const fieldLegacy = objGet(this.field, "legacy");
+			const resolvedLegacy = !isNil(fieldLegacy) ? fieldLegacy : objGet(this.options, "legacy", true);
+			return resolvedLegacy === false;
+		},
+		isFilled() {
+			const path = objGet(this.field, "model");
+			const val = objGet(this.model || {}, path);
+			if (val === null || val === undefined) return false;
+			if (Array.isArray(val)) return val.length > 0;
+			if (typeof val === "string") return val.trim().length > 0;
+			return !!val;
 		},
 		fieldID() {
 			const idPrefix = objGet(this.options, "fieldIdPrefix", "");
@@ -128,6 +169,12 @@ export default {
 				required: this.getValueFromOption(this.field, "required")
 			};
 
+			if (this.enableStateClasses) {
+				baseClasses.focused = this.isFocused;
+				baseClasses.filled = this.isFilled;
+				baseClasses.empty = !this.isFilled;
+			}
+
 			baseClasses = this.getStyleClasses(this.field, baseClasses);
 
 			if (!isNil(this.field.type)) {
@@ -141,6 +188,15 @@ export default {
 		}
 	},
 	methods: {
+		onChildFocus() {
+			this.isFocused = true;
+		},
+		onChildBlur() {
+			this.isFocused = false;
+		},
+		onChildStateFocused(val) {
+			this.isFocused = !!val;
+		},
 		getValueFromOption(field, option, defaultValue = false) {
 			if (isFunction(field[option])) {
 				return field[option].call(this, this.model, field, this);
@@ -161,6 +217,12 @@ export default {
 		},
 		onChildValidated(errors) {
 			this.childErrors = errors;
+		},
+		onFocusIn() {
+			this.isFocused = true;
+		},
+		onFocusOut() {
+			this.isFocused = false;
 		}
 	}
 };
