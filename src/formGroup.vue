@@ -38,27 +38,32 @@
 							></slot>
 						</template>
 					</form-group>
-				</template>
-				<template v-else>
-					<slot
-						name="element"
-						:field="field"
-						:model="model"
-						:options="options"
-						:errors="errors"
-						:event-bus="eventBus"
-					></slot>
-				</template>
+			</template>
+			<template v-else-if="field.type === 'content'">
+				<field-content :schema="field" :key="index" />
+			</template>
+			<template v-else>
+				<slot
+					name="element"
+					:field="field"
+					:model="model"
+					:options="options"
+					:errors="errors"
+					:event-bus="eventBus"
+				></slot>
+			</template>
 			</template>
 		</template>
 	</fieldset>
 </template>
 <script>
 import formMixin from "./formMixin.js";
+import fieldContent from "./fields/core/fieldContent.vue";
 import { get as objGet, isFunction, isNil } from "lodash";
 
 export default {
 	name: "FormGroup",
+	components: { fieldContent },
 	mixins: [formMixin],
 	props: {
 		fields: {

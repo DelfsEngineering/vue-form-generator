@@ -1,11 +1,13 @@
 // core
 import fieldCheckbox from "../fields/core/fieldCheckbox.vue";
 import fieldChecklist from "../fields/core/fieldChecklist.vue";
+import fieldContent from "../fields/core/fieldContent.vue";
 import fieldInput from "../fields/core/fieldInput.vue";
 import fieldLabel from "../fields/core/fieldLabel.vue";
 import fieldRadios from "../fields/core/fieldRadios.vue";
 import fieldSelect from "../fields/core/fieldSelect.vue";
 import fieldSubmit from "../fields/core/fieldSubmit.vue";
+import fieldErrorSummary from "../fields/core/fieldErrorSummary.vue";
 import fieldTextArea from "../fields/core/fieldTextArea.vue";
 import fieldUpload from "../fields/core/fieldUpload.vue";
 // optional
@@ -26,11 +28,13 @@ import fieldVueMultiSelect from "../fields/optional/fieldVueMultiSelect.vue";
 export {
 	fieldCheckbox,
 	fieldChecklist,
+	fieldContent,
 	fieldInput,
 	fieldLabel,
 	fieldRadios,
 	fieldSelect,
 	fieldSubmit,
+	fieldErrorSummary,
 	fieldTextArea,
 	fieldUpload,
 	fieldCleave,

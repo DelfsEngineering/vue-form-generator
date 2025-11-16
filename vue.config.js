@@ -18,6 +18,11 @@ const generateDevProjects = () => {
 	// Reverted: console.log("Detected example projects:", projectNames);
 
 	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]"); // Reverted: Restore original env var usage
+	// Ensure new demos are available even if not listed in env
+	if (Array.isArray(devProjects)) {
+		if (!devProjects.includes("error-summary-demo")) devProjects.push("error-summary-demo");
+		if (!devProjects.includes("content-field")) devProjects.push("content-field");
+	}
 
 	let devConfig = {
 		index: {
