@@ -9,7 +9,14 @@ localVue.component("FieldInput", fieldInput);
 describe("Compatibility class mirroring", () => {
 	const schema = {
 		fields: [
-			{ type: "input", label: "Name", model: "name", required: true, validator: ["required"], fieldOptions: { inputType: "text" } }
+			{
+				type: "input",
+				label: "Name",
+				model: "name",
+				required: true,
+				validator: ["required"],
+				fieldOptions: { inputType: "text" }
+			}
 		]
 	};
 
@@ -32,7 +39,12 @@ describe("Compatibility class mirroring", () => {
 	it("omits mirrored legacy classes when disabled", async () => {
 		const wrapper = mount(FormGenerator, {
 			localVue,
-			propsData: { schema, model: { name: "" }, legacy: false, options: { validateAfterChanged: true, compatibility: { classMirroring: false } } }
+			propsData: {
+				schema,
+				model: { name: "" },
+				legacy: false,
+				options: { validateAfterChanged: true, compatibility: { classMirroring: false } }
+			}
 		});
 
 		await wrapper.vm.validate().catch(() => {});
@@ -45,5 +57,3 @@ describe("Compatibility class mirroring", () => {
 		}
 	});
 });
-
-

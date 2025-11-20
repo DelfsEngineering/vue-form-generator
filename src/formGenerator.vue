@@ -1,8 +1,6 @@
 <template>
-    <div class="vue-form-generator" v-if="schema != null">
-
-
-        <form-group
+	<div class="vue-form-generator" v-if="schema != null">
+		<form-group
 			:tag="tag"
 			:fields="fields"
 			:model="model"
@@ -56,12 +54,12 @@
 							:get-value-from-option="getValueFromOption"
 							:field-id="fieldId"
 						>
-						<div
-							class="hint"
-							:id="fieldId + '-hint'"
-							v-html="getValueFromOption(field, 'hint', undefined)"
-							v-bind="isMinimalForField(field) ? { 'data-vfg-role': 'hint' } : {}"
-						></div>
+							<div
+								class="hint"
+								:id="fieldId + '-hint'"
+								v-html="getValueFromOption(field, 'hint', undefined)"
+								v-bind="isMinimalForField(field) ? { 'data-vfg-role': 'hint' } : {}"
+							></div>
 						</slot>
 					</template>
 
@@ -85,10 +83,7 @@
 					</template>
 				</form-element>
 			</template>
-
-
 		</form-group>
-
 	</div>
 </template>
 
@@ -168,7 +163,11 @@ export default {
 			return [];
 		},
 		shouldShowSummary() {
-			return objGet(this.optionsWithLegacy, "a11y.errorSummary.enabled", false) && this.errors && this.errors.length > 0;
+			return (
+				objGet(this.optionsWithLegacy, "a11y.errorSummary.enabled", false) &&
+				this.errors &&
+				this.errors.length > 0
+			);
 		},
 		summaryPosition() {
 			return objGet(this.optionsWithLegacy, "a11y.errorSummary.position", "top");
@@ -213,7 +212,10 @@ export default {
 	methods: {
 		isMinimalForField(field) {
 			const fieldLegacy = objGet(field, "legacy");
-			const resolvedLegacy = typeof fieldLegacy !== "undefined" && fieldLegacy !== null ? fieldLegacy : objGet(this.optionsWithLegacy, "legacy", true);
+			const resolvedLegacy =
+				typeof fieldLegacy !== "undefined" && fieldLegacy !== null
+					? fieldLegacy
+					: objGet(this.optionsWithLegacy, "legacy", true);
 			return resolvedLegacy === false;
 		},
 		errorsContainerClass(field) {

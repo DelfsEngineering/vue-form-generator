@@ -24,7 +24,7 @@ describe("Field-level legacy precedence", () => {
 				type: "select",
 				label: "Type",
 				model: "type",
-				values: ["Admin", "User"],
+				values: ["Admin", "User"]
 				// no field override
 			},
 			{
@@ -92,5 +92,3 @@ describe("Field-level legacy precedence", () => {
 		expect(textarea.attributes("data-vfg-role"), "textarea control role present").to.equal("control");
 	});
 });
-
-

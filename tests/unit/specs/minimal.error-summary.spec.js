@@ -9,10 +9,17 @@ localVue.component("FieldInput", fieldInput);
 localVue.component("FieldErrorSummary", fieldErrorSummary);
 
 describe("Error summary (minimal mode)", () => {
-	const baseInput = { type: "input", label: "Name", model: "name", required: true, validator: ["required"], fieldOptions: { inputType: "text" } };
+	const baseInput = {
+		type: "input",
+		label: "Name",
+		model: "name",
+		required: true,
+		validator: ["required"],
+		fieldOptions: { inputType: "text" }
+	};
 
 	it("renders from schema element and links to field errors", async () => {
-		const schema = { fields: [ { type: "error-summary" }, baseInput ] };
+		const schema = { fields: [{ type: "error-summary" }, baseInput] };
 		const wrapper = mount(FormGenerator, {
 			localVue,
 			propsData: { schema, model: { name: "" }, legacy: false, options: { validateAfterChanged: true } }
@@ -28,7 +35,7 @@ describe("Error summary (minimal mode)", () => {
 	});
 
 	it("renders when placed after fields", async () => {
-		const schema = { fields: [ baseInput, { type: "error-summary" } ] };
+		const schema = { fields: [baseInput, { type: "error-summary" }] };
 		const wrapper = mount(FormGenerator, {
 			localVue,
 			propsData: { schema, model: { name: "" }, legacy: false, options: { validateAfterChanged: true } }
@@ -42,5 +49,3 @@ describe("Error summary (minimal mode)", () => {
 		expect(wrapper.findAll(".vfg-error-summary").length).to.equal(1);
 	});
 });
-
-

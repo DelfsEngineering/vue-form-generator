@@ -149,5 +149,3 @@ describe("formGroup - Content Field Wrapper Bypass", () => {
 		expect(p.attributes("data-idbf")).to.equal("idbf_c_subtitle");
 	});
 });
-
-

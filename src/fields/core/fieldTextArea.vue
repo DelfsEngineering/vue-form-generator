@@ -2,7 +2,7 @@
 	<textarea
 		class="form-control"
 		v-model="value"
-		:id="fieldID"
+		:id="fieldId"
 		:class="fieldClasses"
 		:disabled="disabled"
 		:maxlength="fieldOptions.max"
@@ -26,7 +26,7 @@ export default {
 	mixins: [abstractField],
 	computed: {
 		ariaDescribedBy() {
-			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+			return `${this.fieldId}-hint ${this.fieldId}-errors`;
 		},
 		controlAttrs() {
 			const attrs = { "aria-describedby": this.ariaDescribedBy };
@@ -39,7 +39,8 @@ export default {
 	methods: {
 		isMinimalMode() {
 			const fieldLegacy = objGet(this.schema || {}, "legacy");
-			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			const resolvedLegacy =
+				typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
 			return resolvedLegacy === false;
 		}
 	}

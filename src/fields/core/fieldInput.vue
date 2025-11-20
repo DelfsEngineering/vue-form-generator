@@ -8,7 +8,7 @@
 		<input
 			class="form-control"
 			v-bind="controlAttrs"
-			:id="fieldID"
+			:id="fieldId"
 			:type="inputType"
 			:value="value"
 			@input="onInput"
@@ -75,7 +75,7 @@ export default {
 			}
 		},
 		ariaDescribedBy() {
-			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+			return `${this.fieldId}-hint ${this.fieldId}-errors`;
 		},
 		controlAttrs() {
 			const attrs = { "aria-describedby": this.ariaDescribedBy };
@@ -112,7 +112,8 @@ export default {
 		},
 		isMinimalMode() {
 			const fieldLegacy = objGet(this.schema || {}, "legacy");
-			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			const resolvedLegacy =
+				typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
 			return resolvedLegacy === false;
 		},
 		formatValueToModel(value) {

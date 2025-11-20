@@ -7,7 +7,7 @@
 	>
 		<input
 			class="form-control"
-			:id="fieldID"
+			:id="fieldId"
 			type="file"
 			:name="inputName"
 			@change="onChange"

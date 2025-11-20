@@ -110,27 +110,21 @@ describe("formGroup.vue", () => {
 
 		it("should respect visible property when false", () => {
 			wrapper = createWrapper({
-				fields: [
-					{ type: "input", model: "name", visible: false }
-				]
+				fields: [{ type: "input", model: "name", visible: false }]
 			});
 			expect(wrapper.find(".form-group").exists()).to.be.false;
 		});
 
 		it("should respect visible property when true", () => {
 			wrapper = createWrapper({
-				fields: [
-					{ type: "input", model: "name", visible: true }
-				]
+				fields: [{ type: "input", model: "name", visible: true }]
 			});
 			expect(wrapper.find(".form-group").exists()).to.be.true;
 		});
 
 		it("should handle visible as a function", () => {
 			wrapper = createWrapper({
-				fields: [
-					{ type: "input", model: "name", visible: (model) => model.showField }
-				],
+				fields: [{ type: "input", model: "name", visible: (model) => model.showField }],
 				model: { showField: false }
 			});
 			expect(wrapper.find(".form-group").exists()).to.be.false;

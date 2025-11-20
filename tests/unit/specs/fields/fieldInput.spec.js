@@ -129,6 +129,34 @@ describe("fieldInput.vue", () => {
 		});
 	});
 
+	describe("check fieldId prop renders id attribute", () => {
+		let schema = {
+			type: "input",
+			label: "First Name",
+			model: "person.nameFirst",
+			id: "test-field-id",
+			fieldOptions: {
+				inputType: "text"
+			}
+		};
+		let model = { person: { nameFirst: "" } };
+		let input;
+
+		before(() => {
+			createField({ schema, model, fieldId: "test-field-id" });
+			input = wrapper.find("input");
+		});
+
+		it("should render id attribute on input element from fieldId prop", () => {
+			expect(input.attributes().id).to.equal("test-field-id");
+		});
+
+		it("should NOT render field-id attribute on wrapper", () => {
+			const wrap = wrapper.find(".wrapper");
+			expect(wrap.attributes()["field-id"]).to.be.undefined;
+		});
+	});
+
 	describe("check dynamic html attributes", () => {
 		describe("check input/wrapper attributes", () => {
 			let schema = {

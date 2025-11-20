@@ -12,7 +12,14 @@ describe("FieldErrorSummary element", () => {
 	const schema = {
 		fields: [
 			{ type: "errorSummary" },
-			{ type: "input", label: "Name", model: "name", required: true, validator: ["required"], fieldOptions: { inputType: "text" } }
+			{
+				type: "input",
+				label: "Name",
+				model: "name",
+				required: true,
+				validator: ["required"],
+				fieldOptions: { inputType: "text" }
+			}
 		]
 	};
 
@@ -32,5 +39,3 @@ describe("FieldErrorSummary element", () => {
 		expect(summary.findAll('a[href$="-errors"]').length).to.be.greaterThan(0);
 	});
 });
-
-

@@ -109,15 +109,16 @@ export default {
 			}
 			return attrs;
 		},
-			enableStateClasses() {
+		enableStateClasses() {
 			// Limit new state classes to minimal mode to avoid breaking legacy CSS/tests
 			return this.isMinimalMode;
 		},
-			flattenFieldWrap() {
-				// In minimal mode we flatten .field-wrap unless the field requests to keep wrappers
-				const keepWrapper = objGet(this.field, "keepWrapper", false) || objGet(this.field, "wrapperMode", null) === "legacy";
-				return this.isMinimalMode && !keepWrapper;
-			},
+		flattenFieldWrap() {
+			// In minimal mode we flatten .field-wrap unless the field requests to keep wrappers
+			const keepWrapper =
+				objGet(this.field, "keepWrapper", false) || objGet(this.field, "wrapperMode", null) === "legacy";
+			return this.isMinimalMode && !keepWrapper;
+		},
 		isMinimalMode() {
 			// Field-level override takes precedence over form/global
 			const fieldLegacy = objGet(this.field, "legacy");

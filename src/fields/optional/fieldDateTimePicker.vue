@@ -9,7 +9,7 @@
 			:placeholder="placeholder"
 			:readonly="readonly"
 			:name="inputName"
-			:id="fieldID"
+			:id="fieldId"
 		/>
 
 		<span class="input-group-addon">

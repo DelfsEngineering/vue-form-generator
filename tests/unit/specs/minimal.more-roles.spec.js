@@ -62,5 +62,3 @@ describe("Minimal mode additional roles", () => {
 		expect(buttons.attributes("data-vfg-role")).to.be.undefined;
 	});
 });
-
-

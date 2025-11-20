@@ -48,5 +48,3 @@ describe("Wrapper flattening in minimal mode", () => {
 		expect(controlWrapper.attributes("data-vfg-role")).to.be.undefined;
 	});
 });
-
-

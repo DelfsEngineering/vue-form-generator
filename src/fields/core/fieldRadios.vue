@@ -7,7 +7,7 @@
 			v-attributes="'label'"
 		>
 			<input
-				:id="fieldID"
+				:id="fieldId"
 				type="radio"
 				:disabled="disabled"
 				:name="id"

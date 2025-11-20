@@ -13,11 +13,14 @@ const convertValidator = (validator) => {
 };
 
 function attributesDirective(el, binding, vnode) {
-	let attrs = objGet(vnode.context, "schema.attributes", {});
-	let container = binding.value || "input";
-	if (isString(container)) {
-		attrs = objGet(attrs, container) || attrs;
-	}
+	const allAttrs = objGet(vnode.context, "schema.attributes", {});
+	const container = binding.value || "input";
+	// Only apply attributes for the requested container. Do NOT fall back to the whole
+	// attributes object, otherwise nested objects (e.g. { formElement: {...} }) will be
+	// stringified and applied as invalid attributes like `formelement="[object Object]"`.
+	const attrs = isString(container) ? objGet(allAttrs, container) : allAttrs;
+	if (!attrs) return;
+
 	forEach(attrs, (val, key) => {
 		el.setAttribute(key, val);
 	});
@@ -37,13 +40,13 @@ export default {
 		eventBus: {
 			type: Object
 		},
-		fieldID: {
+		fieldId: {
 			type: String
 		}
 	},
 
 	data() {
-		const fieldUID = uniqueId(this.fieldID + "_");
+		const fieldUID = uniqueId(this.fieldId + "_");
 		return {
 			fieldUID,
 			touched: false,
@@ -172,19 +175,19 @@ export default {
 						results.push(validator(this.value, this.schema, this.model));
 					} else {
 						let result = validator(this.value, this.schema, this.model);
-					if (result && isFunction(result.then)) {
-						result
-							.then((err) => {
-								if (err) {
-									this.errors = this.errors.concat(err);
-								}
-							})
-							.catch((err) => {
-								// Treat rejected async validator as validation errors instead of unhandled promise
-								if (err) {
-									this.errors = this.errors.concat(err);
-								}
-							});
+						if (result && isFunction(result.then)) {
+							result
+								.then((err) => {
+									if (err) {
+										this.errors = this.errors.concat(err);
+									}
+								})
+								.catch((err) => {
+									// Treat rejected async validator as validation errors instead of unhandled promise
+									if (err) {
+										this.errors = this.errors.concat(err);
+									}
+								});
 						} else if (result) {
 							results = results.concat(result);
 						}

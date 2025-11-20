@@ -31,7 +31,6 @@ describe("Select/Textarea control roles in minimal mode", () => {
 		const textarea = wrapper.find("textarea");
 		expect(textarea.exists()).to.equal(true);
 		expect(textarea.attributes("data-vfg-role")).to.equal("control");
-
 	});
 
 	it("omits role when legacy=true", async () => {
@@ -47,5 +46,3 @@ describe("Select/Textarea control roles in minimal mode", () => {
 		expect(textarea.attributes("data-vfg-role")).to.be.undefined;
 	});
 });
-
-

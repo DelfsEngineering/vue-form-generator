@@ -4,7 +4,7 @@
 		v-model="value"
 		:disabled="disabled"
 		:name="inputName"
-		:id="fieldID"
+		:id="fieldId"
 		:class="fieldClasses"
 		v-attributes="'input'"
 		v-bind="controlAttrs"
@@ -49,7 +49,7 @@ export default {
 
 	computed: {
 		ariaDescribedBy() {
-			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+			return `${this.fieldId}-hint ${this.fieldId}-errors`;
 		},
 		controlAttrs() {
 			const attrs = { "aria-describedby": this.ariaDescribedBy };
@@ -69,7 +69,8 @@ export default {
 	methods: {
 		isMinimalMode() {
 			const fieldLegacy = objGet(this.schema || {}, "legacy");
-			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			const resolvedLegacy =
+				typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
 			return resolvedLegacy === false;
 		},
 		formatValueToField(value) {

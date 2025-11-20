@@ -6,7 +6,7 @@
 			:autocomplete="fieldOptions.autocomplete"
 			:disabled="disabled"
 			:name="inputName"
-			:id="fieldID"
+			:id="fieldId"
 		/>
 		<span
 			class="label"

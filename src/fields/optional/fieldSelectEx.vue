@@ -7,7 +7,7 @@
 		:title="placeholder"
 		data-width="100%"
 		:name="inputName"
-		:id="fieldID"
+		:id="fieldId"
 		v-bind="controlAttrs"
 	>
 		<option
@@ -33,7 +33,7 @@ export default {
 
 	computed: {
 		ariaDescribedBy() {
-			return `${this.fieldID}-hint ${this.fieldID}-errors`;
+			return `${this.fieldId}-hint ${this.fieldId}-errors`;
 		},
 		controlAttrs() {
 			const attrs = { "aria-describedby": this.ariaDescribedBy };
@@ -53,7 +53,8 @@ export default {
 	methods: {
 		isMinimalMode() {
 			const fieldLegacy = objGet(this.schema || {}, "legacy");
-			const resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
+			const resolvedLegacy =
+				typeof fieldLegacy !== "undefined" ? fieldLegacy : objGet(this.formOptions || {}, "legacy", true);
 			return resolvedLegacy === false;
 		},
 

@@ -36,9 +36,7 @@ describe("Wrapper keeper flag in minimal mode", () => {
 
 	it("flattens wrappers by default in minimal mode", async () => {
 		const schema = {
-			fields: [
-				{ type: "input", label: "Name", model: "name", fieldOptions: { inputType: "text" } }
-			]
+			fields: [{ type: "input", label: "Name", model: "name", fieldOptions: { inputType: "text" } }]
 		};
 		const wrapper = mount(FormGenerator, {
 			localVue,
@@ -50,5 +48,3 @@ describe("Wrapper keeper flag in minimal mode", () => {
 		expect(controlWrapper.attributes("data-vfg-role")).to.equal("control-wrapper");
 	});
 });
-
-

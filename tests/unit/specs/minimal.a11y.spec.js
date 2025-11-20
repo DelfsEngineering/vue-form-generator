@@ -42,5 +42,3 @@ describe("Minimal mode a11y defaults", () => {
 		}
 	});
 });
-
-
