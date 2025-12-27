@@ -3,55 +3,63 @@
 		<slot name="group-legend" :group="group" :group-legend="groupLegend"></slot>
 		<slot name="group-help" :group="group"></slot>
 		<template v-for="(field, index) in fields">
-			<template v-if="fieldVisible(field)">
-				<template v-if="field.type === 'group'">
-					<form-group
-						:fields="field.fields"
-						:group="field"
-						:tag="getGroupTag(field)"
-						:model="model"
-						:options="options"
-						:errors="errors"
-						:event-bus="eventBus"
-						:key="index"
-						v-bind="setFormGroupAttributes(index)"
-					>
-						<template slot="group-legend" slot-scope="slotProps">
-							<slot
-								name="group-legend"
-								:group="slotProps.group"
-								:group-legend="slotProps.groupLegend"
-							></slot>
-						</template>
-						<template slot="group-help" slot-scope="slotProps">
-							<slot name="group-help" :group="slotProps.group"></slot>
-						</template>
+			<template v-if="isFieldRenderable(field)">
+				<template v-if="fieldVisible(field)">
+					<template v-if="field.type === 'group'">
+						<form-group
+							:fields="field.fields"
+							:group="field"
+							:tag="getGroupTag(field)"
+							:model="model"
+							:options="options"
+							:errors="errors"
+							:event-bus="eventBus"
+							:key="index"
+							v-bind="setFormGroupAttributes(index)"
+						>
+							<template slot="group-legend" slot-scope="slotProps">
+								<slot
+									name="group-legend"
+									:group="slotProps.group"
+									:group-legend="slotProps.groupLegend"
+								></slot>
+							</template>
+							<template slot="group-help" slot-scope="slotProps">
+								<slot name="group-help" :group="slotProps.group"></slot>
+							</template>
 
-						<template slot="element" slot-scope="slotProps">
-							<slot
-								name="element"
-								:field="slotProps.field"
-								:model="slotProps.model"
-								:options="slotProps.options"
-								:errors="slotProps.errors"
-								:event-bus="slotProps.eventBus"
-							></slot>
-						</template>
-					</form-group>
+							<template slot="element" slot-scope="slotProps">
+								<slot
+									name="element"
+									:field="slotProps.field"
+									:model="slotProps.model"
+									:options="slotProps.options"
+									:errors="slotProps.errors"
+									:event-bus="slotProps.eventBus"
+								></slot>
+							</template>
+						</form-group>
+					</template>
+					<template v-else-if="field.type === 'content'">
+						<field-content :schema="field" :key="index" />
+					</template>
+					<template v-else>
+						<slot
+							name="element"
+							:field="field"
+							:model="model"
+							:options="options"
+							:errors="errors"
+							:event-bus="eventBus"
+						></slot>
+					</template>
 				</template>
-				<template v-else-if="field.type === 'content'">
-					<field-content :schema="field" :key="index" />
-				</template>
-				<template v-else>
-					<slot
-						name="element"
-						:field="field"
-						:model="model"
-						:options="options"
-						:errors="errors"
-						:event-bus="eventBus"
-					></slot>
-				</template>
+			</template>
+			<template v-else>
+				<div :key="'invalid-' + index" class="vfg-field-warning" :style="invalidFieldStyle">
+					<strong>Invalid field</strong>
+					<div>{{ invalidFieldMessage(field, index) }}</div>
+				</div>
 			</template>
 		</template>
 	</fieldset>
@@ -113,7 +121,8 @@ export default {
 	},
 	data() {
 		return {
-			validationClass: {}
+			validationClass: {},
+			warnedInvalidFields: {}
 		};
 	},
 	computed: {
@@ -132,11 +141,24 @@ export default {
 				baseClasses = this.getStyleClasses(this.group, baseClasses);
 			}
 			return baseClasses;
+		},
+		invalidFieldStyle() {
+			return {
+				padding: "8px 12px",
+				margin: "8px 0",
+				border: "1px dashed #e0a800",
+				background: "#fff9e6",
+				color: "#6b4c00",
+				fontSize: "13px"
+			};
 		}
 	},
 	methods: {
 		setFormGroupAttributes(index) {
 			return this.fields[index]?.attributes?.formGroup || this.fields[index]?.attributes || {};
+		},
+		isFieldRenderable(field) {
+			return !isNil(field) && !isNil(field.type);
 		},
 		// Get visible prop of field
 		fieldVisible(field) {
@@ -157,6 +179,33 @@ export default {
 			} else {
 				return this.tag;
 			}
+		},
+		invalidFieldReason(field) {
+			if (isNil(field)) {
+				return "entry is null or undefined";
+			}
+			if (typeof field !== "object") {
+				return `entry is a ${typeof field}, expected an object`;
+			}
+			if (isNil(field.type)) {
+				return 'missing required "type" property';
+			}
+			return "unusable field configuration";
+		},
+		invalidFieldMessage(field, index) {
+			const reason = this.invalidFieldReason(field);
+			this.logInvalidField(reason, field, index);
+			return `Invalid field at index ${index}: ${reason}. Each field should be an object with a "type".`;
+		},
+		logInvalidField(reason, field, index) {
+			if (this.warnedInvalidFields[index]) {
+				return;
+			}
+			this.$set(this.warnedInvalidFields, index, true);
+			console.warn(
+				`[vue-form-generator] Invalid field at index ${index}: ${reason}. Ensure each entry is an object with a "type" property.`,
+				field
+			);
 		}
 	},
 	created() {

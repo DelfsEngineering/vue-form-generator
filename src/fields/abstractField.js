@@ -15,10 +15,23 @@ const convertValidator = (validator) => {
 function attributesDirective(el, binding, vnode) {
 	const allAttrs = objGet(vnode.context, "schema.attributes", {});
 	const container = binding.value || "input";
-	// Only apply attributes for the requested container. Do NOT fall back to the whole
-	// attributes object, otherwise nested objects (e.g. { formElement: {...} }) will be
-	// stringified and applied as invalid attributes like `formelement="[object Object]"`.
-	const attrs = isString(container) ? objGet(allAttrs, container) : allAttrs;
+	let attrs;
+
+	if (isString(container)) {
+		attrs = objGet(allAttrs, container);
+
+		// Support legacy schemas that put attributes at the root (e.g. attributes: { "data-input": "x" })
+		// but avoid stringifying nested objects like { formElement: {...} }.
+		if (!attrs && allAttrs && typeof allAttrs === "object") {
+			const hasNestedObject = Object.values(allAttrs).some((v) => v && typeof v === "object");
+			if (!hasNestedObject) {
+				attrs = allAttrs;
+			}
+		}
+	} else {
+		attrs = allAttrs;
+	}
+
 	if (!attrs) return;
 
 	forEach(attrs, (val, key) => {
@@ -195,36 +208,37 @@ export default {
 				});
 			}
 
-			let handleErrors = (errors) => {
-				let fieldErrors = [];
-				errors.forEach((err) => {
-					if (isArray(err) && err.length > 0) {
-						fieldErrors = fieldErrors.concat(err);
-					} else if (isString(err)) {
-						fieldErrors.push(err);
-					}
-				});
-				if (isFunction(this.schema.onValidated)) {
-					this.schema.onValidated.call(this, this.model, fieldErrors, this.schema);
+		/* eslint-disable prettier/prettier */
+		let handleErrors = (errors) => {
+			let fieldErrors = [];
+			errors.forEach((err) => {
+				if (isArray(err) && err.length > 0) {
+					fieldErrors = fieldErrors.concat(err);
+				} else if (isString(err)) {
+					fieldErrors.push(err);
 				}
-
-				let isValid = fieldErrors.length === 0;
-
-				this.errors = fieldErrors;
-
-				this.eventBus.$emit("field-validated", isValid, fieldErrors, this.fieldUID);
-				return fieldErrors;
-			};
-
-			if (!validateAsync) {
-				return handleErrors(results);
+			});
+			if (isFunction(this.schema.onValidated)) {
+				this.schema.onValidated.call(this, this.model, fieldErrors, this.schema);
 			}
 
-			return Promise.all(results)
-				.then(handleErrors)
-				.catch((error) => {
-					console.warn("Problem during field validation", error);
-				});
+			let isValid = fieldErrors.length === 0;
+
+			this.errors = fieldErrors;
+
+			this.eventBus.$emit("field-validated", isValid, fieldErrors, this.fieldUID);
+			return fieldErrors;
+		};
+		if (!validateAsync) {
+			return handleErrors(results);
+		}
+
+		return Promise.all(results)
+			.then(handleErrors)
+			.catch((error) => {
+				console.warn("Problem during field validation", error);
+			});
+		/* eslint-enable prettier/prettier */
 		},
 
 		debouncedValidate() {

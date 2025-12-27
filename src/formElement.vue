@@ -139,7 +139,13 @@ export default {
 		},
 		// Get type of field 'field-xxx'. It'll be the name of HTML element
 		fieldType() {
-			return "field-" + this.field.type;
+			const type = this.field.type || "";
+			// Normalize to kebab-case so both "errorSummary" and "error-summary" resolve
+			const normalized = String(type)
+				.replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+				.replace(/\s+/g, "-")
+				.toLowerCase();
+			return "field-" + normalized;
 		},
 		// Should field type have a label?
 		fieldTypeHasLabel() {

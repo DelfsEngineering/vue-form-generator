@@ -22,6 +22,7 @@ const generateDevProjects = () => {
 	if (Array.isArray(devProjects)) {
 		if (!devProjects.includes("error-summary-demo")) devProjects.push("error-summary-demo");
 		if (!devProjects.includes("content-field")) devProjects.push("content-field");
+		if (!devProjects.includes("invalid-schema")) devProjects.push("invalid-schema");
 	}
 
 	let devConfig = {

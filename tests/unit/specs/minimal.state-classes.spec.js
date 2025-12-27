@@ -42,7 +42,6 @@ describe("State classes on .form-element", () => {
 		});
 
 		const el = wrapper.find(".form-element");
-		const input = wrapper.find("input");
 
 		expect(el.classes()).to.not.include("focused");
 		// Trigger a bubbling focusin which our container listens to

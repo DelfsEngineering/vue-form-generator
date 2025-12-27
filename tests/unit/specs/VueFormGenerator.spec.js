@@ -121,6 +121,45 @@ describe("VueFormGenerator.vue", () => {
 		});
 	});
 
+	describe("with invalid schema entries", () => {
+		let schema;
+		let warnSpy;
+
+		beforeEach(async () => {
+			schema = {
+				fields: [null, { type: "input", model: "name", fieldOptions: { inputType: "text" } }]
+			};
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema });
+			await wrapper.vm.$nextTick();
+		});
+
+		afterEach(() => {
+			if (warnSpy && warnSpy.restore) {
+				warnSpy.restore();
+			}
+			if (wrapper) {
+				wrapper.destroy();
+			}
+		});
+
+		it("should render a warning placeholder instead of throwing", () => {
+			const warnings = wrapper.findAll(".vfg-field-warning");
+			expect(warnings.length).to.be.equal(1);
+			expect(warnings.at(0).text().toLowerCase()).to.contain("invalid field");
+
+			const fields = wrapper.findAll(".form-element");
+			expect(fields.length).to.be.equal(1);
+		});
+
+		it("should emit a console warning with a hint", () => {
+			expect(warnSpy.called).to.be.true;
+			const firstArg = warnSpy.firstCall.args[0];
+			expect(firstArg).to.contain("Invalid field at index 0");
+			expect(firstArg).to.contain("type");
+		});
+	});
+
 	describe("check form-element classes", () => {
 		let formGenerator;
 		let formElement;

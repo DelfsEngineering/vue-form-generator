@@ -34,6 +34,10 @@ describe("FieldErrorSummary element", () => {
 		await wrapper.vm.$nextTick();
 		await wrapper.vm.$nextTick();
 
+		// Debug
+		// eslint-disable-next-line no-console
+		console.log("errors in field-level summary", wrapper.vm.errors);
+
 		const summary = wrapper.find(".vfg-error-summary");
 		expect(summary.exists()).to.equal(true);
 		expect(summary.findAll('a[href$="-errors"]').length).to.be.greaterThan(0);

@@ -148,7 +148,8 @@ export default {
 		return {
 			eventBus,
 			totalNumberOfFields: 0,
-			errors: [] // Validation errors
+			errors: [], // Validation errors
+			watcherTickId: 0 // Counter to invalidate pending watcher $nextTick callbacks
 		};
 	},
 
@@ -190,7 +191,12 @@ export default {
 				}
 
 				if (newModel != null) {
+					const myTickId = ++this.watcherTickId;
 					this.$nextTick(() => {
+						// Skip if validate() or a newer watcher call happened since we scheduled this
+						if (this.watcherTickId !== myTickId) {
+							return;
+						}
 						// Model changed!
 						if (this.options.validateAfterLoad === true && this.isNewModel !== true) {
 							this.validate().then(
@@ -218,6 +224,7 @@ export default {
 					: objGet(this.optionsWithLegacy, "legacy", true);
 			return resolvedLegacy === false;
 		},
+		// eslint-disable-next-line no-unused-vars
 		errorsContainerClass(field) {
 			// Always keep legacy 'help-block' unless explicitly disabled by compatibility option
 			const mirroring = objGet(this.optionsWithLegacy, "compatibility.classMirroring", true);
@@ -278,6 +285,7 @@ export default {
 							this.eventBus.$on("field-validated", this.onFieldValidated);
 						}
 						this.errors = formErrors;
+						this.watcherTickId++; // Invalidate pending watcher callbacks
 						let isValid = formErrors.length === 0;
 						this.$emit("validated", isValid, formErrors, this);
 						this.eventBus.$emit("fields-validation-terminated", formErrors);
