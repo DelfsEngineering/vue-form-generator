@@ -12,7 +12,7 @@
 			class="label"
 			:data-on="fieldOptions.textOn || 'On'"
 			:data-off="fieldOptions.textOff || 'Off'"
-			:for="fieldID"
+			:for="fieldId"
 		></span>
 		<span class="handle"></span>
 	</label>

@@ -1,8 +1,7 @@
 <template>
 	<div class="wrapper" v-attributes="'wrapper'">
 		<div class="listbox form-control" v-if="useListBox" :disabled="disabled">
-			<template v-for="item in items">
-				<div :class="getItemCssClasses(item)" :key="getItemValue(item) + 'wrapper'">
+			<div v-for="item in items" :key="getItemValue(item) + 'wrapper'" :class="getItemCssClasses(item)">
 					<label>
 						<template v-if="isInputVisible(item)">
 							<input
@@ -21,8 +20,7 @@
 						</template>
 						{{ getItemName(item) }}
 					</label>
-				</div>
-			</template>
+			</div>
 		</div>
 		<div class="combobox form-control" v-if="!useListBox" :disabled="disabled">
 			<div class="mainRow" @click="onExpandCombo" :class="{ expanded: comboExpanded }">
@@ -32,28 +30,26 @@
 
 			<div class="dropList">
 				<template v-if="comboExpanded">
-					<template v-for="item in items">
-						<div :class="getItemCssClasses(item)" :key="getItemValue(item)">
-							<label>
-								<template v-if="isInputVisible(item)">
-									<input
-										:id="getFieldID(item)"
-										:class="schema.fieldClasses"
-										type="checkbox"
-										:name="getInputName(item)"
-										:value="getItemValue(item)"
-										:disabled="isItemDisabled(item)"
-										:required="schema.required"
-										:checked="isItemChecked(item)"
-										@change="onChanged($event, item)"
-										:true-value="schema.checklistTrueValue || true"
-										:false-value="schema.checklistFalseValue || false"
-									/>
-								</template>
-								<span :class="schema.labelClasses">{{ getItemName(item) }}</span>
-							</label>
-						</div>
-					</template>
+					<div v-for="item in items" :key="getItemValue(item)" :class="getItemCssClasses(item)">
+						<label>
+							<template v-if="isInputVisible(item)">
+								<input
+									:id="getFieldID(item)"
+									:class="schema.fieldClasses"
+									type="checkbox"
+									:name="getInputName(item)"
+									:value="getItemValue(item)"
+									:disabled="isItemDisabled(item)"
+									:required="schema.required"
+									:checked="isItemChecked(item)"
+									@change="onChanged($event, item)"
+									:true-value="schema.checklistTrueValue || true"
+									:false-value="schema.checklistFalseValue || false"
+								/>
+							</template>
+							<span :class="schema.labelClasses">{{ getItemName(item) }}</span>
+						</label>
+					</div>
 				</template>
 			</div>
 		</div>
@@ -61,7 +57,7 @@
 </template>
 
 <script>
-import { isObject, isNil, clone } from "lodash";
+import { isObject, isNil, clone, isFunction } from "lodash";
 import abstractField from "../abstractField";
 import { slugify } from "../../utils/schema";
 
@@ -93,6 +89,22 @@ export default {
 	},
 
 	methods: {
+		isInputVisible(item) {
+			// Allow per-item visible flag
+			if (isObject(item) && Object.prototype.hasOwnProperty.call(item, "visible")) {
+				return !!item.visible;
+			}
+			// Allow fieldOptions.inputVisible (bool or function)
+			const opt = this.fieldOptions && this.fieldOptions.inputVisible;
+			if (isFunction(opt)) return !!opt(item, this.model, this.schema);
+			if (typeof opt !== "undefined") return !!opt;
+			return true;
+		},
+
+		getFieldID(item) {
+			return slugify(`${this.fieldId}-${this.getItemValue(item)}`);
+		},
+
 		getInputName(item) {
 			if (this.inputName && this.inputName.length > 0) {
 				return slugify(this.inputName + "_" + this.getItemValue(item));
@@ -133,6 +145,32 @@ export default {
 
 		isItemChecked(item) {
 			return this.value && this.value.indexOf(this.getItemValue(item)) !== -1;
+		},
+
+		isItemDisabled(item) {
+			// Per-item flag takes priority if present
+			if (isObject(item) && Object.prototype.hasOwnProperty.call(item, "disabled")) {
+				return !!item.disabled;
+			}
+
+			// Allow disabling via fieldOptions.disabled (bool or function)
+			const optDisabled = this.fieldOptions && this.fieldOptions.disabled;
+			if (isFunction(optDisabled)) {
+				return !!optDisabled(item, this.model, this.schema);
+			}
+			if (typeof optDisabled !== "undefined") {
+				return !!optDisabled;
+			}
+
+			// Fallback to schema-level disabled
+			return !!this.schema.disabled;
+		},
+
+		getItemCssClasses(item) {
+			const classes = ["list-row"];
+			if (this.isItemChecked(item)) classes.push("checked");
+			if (this.isItemDisabled(item)) classes.push("disabled");
+			return classes;
 		},
 
 		onChanged(event, item) {
