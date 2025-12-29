@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.1.6
+ * vue-form-generator 3.1.9
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -19459,8 +19459,8 @@ var splice_default = /*#__PURE__*/__webpack_require__.n(splice);
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__(9274);
 var external_commonjs_vue_commonjs2_vue_root_Vue_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_vue_commonjs2_vue_root_Vue_);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=108cd691
-var formGroupvue_type_template_id_108cd691_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=16c5b4ca
+var formGroupvue_type_template_id_16c5b4ca_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19522,14 +19522,14 @@ var formGroupvue_type_template_id_108cd691_render = function render() {
       "options": _vm.options,
       "errors": _vm.errors,
       "eventBus": _vm.eventBus
-    })]] : _vm._e()] : [_c('div', {
+    })]] : _vm._e()] : _vm.showInvalidWarnings ? [_c('div', {
       key: 'invalid-' + index,
       staticClass: "vfg-field-warning",
       style: _vm.invalidFieldStyle
-    }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])]];
+    }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_108cd691_staticRenderFns = [];
+var formGroupvue_type_template_id_16c5b4ca_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -19935,6 +19935,9 @@ var component = normalizeComponent(
         color: "#6b4c00",
         fontSize: "13px"
       };
+    },
+    showInvalidWarnings: function showInvalidWarnings() {
+      return !!get_default()(this.options, "devMode", false);
     }
   },
   methods: {
@@ -19982,11 +19985,21 @@ var component = normalizeComponent(
     },
     logInvalidField: function logInvalidField(reason, field, index) {
       var _context2;
+      if (!this.showInvalidWarnings) {
+        return;
+      }
       if (this.warnedInvalidFields[index]) {
         return;
       }
       this.$set(this.warnedInvalidFields, index, true);
       console.warn(concat_default()(_context2 = "[vue-form-generator] Invalid field at index ".concat(index, ": ")).call(_context2, reason, ". Ensure each entry is an object with a \"type\" property."), field);
+    }
+  },
+  watch: {
+    fields: function fields(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.warnedInvalidFields = {};
+      }
     }
   },
   created: function created() {
@@ -20011,8 +20024,8 @@ var component = normalizeComponent(
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_108cd691_render,
-  formGroupvue_type_template_id_108cd691_staticRenderFns,
+  formGroupvue_type_template_id_16c5b4ca_render,
+  formGroupvue_type_template_id_16c5b4ca_staticRenderFns,
   false,
   null,
   null,
@@ -21540,8 +21553,8 @@ var fieldCheckbox_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldCheckbox = (fieldCheckbox_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=7b1f4d72
-var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=template&id=4357f765
+var fieldChecklistvue_type_template_id_4357f765_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('div', {
@@ -21557,8 +21570,8 @@ var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
     attrs: {
       "disabled": _vm.disabled
     }
-  }, [_vm._l(_vm.items, function (item) {
-    return [_c('div', {
+  }, _vm._l(_vm.items, function (item) {
+    return _c('div', {
       key: _vm.getItemValue(item) + 'wrapper',
       class: _vm.getItemCssClasses(item)
     }, [_c('label', [_vm.isInputVisible(item) ? [_c('input', {
@@ -21581,8 +21594,8 @@ var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
           return _vm.onChanged($event, item);
         }
       }
-    })] : _vm._e(), _vm._v(" " + _vm._s(_vm.getItemName(item)) + " ")], 2)])];
-  })], 2) : _vm._e(), !_vm.useListBox ? _c('div', {
+    })] : _vm._e(), _vm._v(" " + _vm._s(_vm.getItemName(item)) + " ")], 2)]);
+  }), 0) : _vm._e(), !_vm.useListBox ? _c('div', {
     staticClass: "combobox form-control",
     attrs: {
       "disabled": _vm.disabled
@@ -21601,8 +21614,8 @@ var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
     staticClass: "arrow"
   })]), _c('div', {
     staticClass: "dropList"
-  }, [_vm.comboExpanded ? [_vm._l(_vm.items, function (item) {
-    return [_c('div', {
+  }, [_vm.comboExpanded ? _vm._l(_vm.items, function (item) {
+    return _c('div', {
       key: _vm.getItemValue(item),
       class: _vm.getItemCssClasses(item)
     }, [_c('label', [_vm.isInputVisible(item) ? [_c('input', {
@@ -21627,10 +21640,10 @@ var fieldChecklistvue_type_template_id_7b1f4d72_render = function render() {
       }
     })] : _vm._e(), _c('span', {
       class: _vm.schema.labelClasses
-    }, [_vm._v(_vm._s(_vm.getItemName(item)))])], 2)])];
-  })] : _vm._e()], 2)]) : _vm._e()]);
+    }, [_vm._v(_vm._s(_vm.getItemName(item)))])], 2)]);
+  }) : _vm._e()], 2)]) : _vm._e()]);
 };
-var fieldChecklistvue_type_template_id_7b1f4d72_staticRenderFns = [];
+var fieldChecklistvue_type_template_id_4357f765_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/lodash/clone.js
 var clone = __webpack_require__(32629);
@@ -21639,6 +21652,8 @@ var clone_default = /*#__PURE__*/__webpack_require__.n(clone);
 var instance_values = __webpack_require__(6707);
 var instance_values_default = /*#__PURE__*/__webpack_require__.n(instance_values);
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=script&lang=js
+
+
 
 
 
@@ -21672,6 +21687,21 @@ var instance_values_default = /*#__PURE__*/__webpack_require__.n(instance_values
     }
   },
   methods: {
+    isInputVisible: function isInputVisible(item) {
+      // Allow per-item visible flag
+      if (isObject_default()(item) && Object.prototype.hasOwnProperty.call(item, "visible")) {
+        return !!item.visible;
+      }
+      // Allow fieldOptions.inputVisible (bool or function)
+      var opt = this.fieldOptions && this.fieldOptions.inputVisible;
+      if (isFunction_default()(opt)) return !!opt(item, this.model, this.schema);
+      if (typeof opt !== "undefined") return !!opt;
+      return true;
+    },
+    getFieldID: function getFieldID(item) {
+      var _context;
+      return slugify(concat_default()(_context = "".concat(this.fieldId, "-")).call(_context, this.getItemValue(item)));
+    },
     getInputName: function getInputName(item) {
       if (this.inputName && this.inputName.length > 0) {
         return slugify(this.inputName + "_" + this.getItemValue(item));
@@ -21711,6 +21741,30 @@ var instance_values_default = /*#__PURE__*/__webpack_require__.n(instance_values
     isItemChecked: function isItemChecked(item) {
       return this.value && this.value.indexOf(this.getItemValue(item)) !== -1;
     },
+    isItemDisabled: function isItemDisabled(item) {
+      // Per-item flag takes priority if present
+      if (isObject_default()(item) && Object.prototype.hasOwnProperty.call(item, "disabled")) {
+        return !!item.disabled;
+      }
+
+      // Allow disabling via fieldOptions.disabled (bool or function)
+      var optDisabled = this.fieldOptions && this.fieldOptions.disabled;
+      if (isFunction_default()(optDisabled)) {
+        return !!optDisabled(item, this.model, this.schema);
+      }
+      if (typeof optDisabled !== "undefined") {
+        return !!optDisabled;
+      }
+
+      // Fallback to schema-level disabled
+      return !!this.schema.disabled;
+    },
+    getItemCssClasses: function getItemCssClasses(item) {
+      var classes = ["list-row"];
+      if (this.isItemChecked(item)) classes.push("checked");
+      if (this.isItemDisabled(item)) classes.push("disabled");
+      return classes;
+    },
     onChanged: function onChanged(event, item) {
       var isChecked = event.target.checked;
       if (isNil_default()(this.value) || !Array.isArray(this.value)) {
@@ -21735,10 +21789,10 @@ var instance_values_default = /*#__PURE__*/__webpack_require__.n(instance_values
 });
 ;// ./src/fields/core/fieldChecklist.vue?vue&type=script&lang=js
  /* harmony default export */ var core_fieldChecklistvue_type_script_lang_js = (fieldChecklistvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=7b1f4d72&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=4357f765&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=7b1f4d72&prod&lang=scss
+;// ./src/fields/core/fieldChecklist.vue?vue&type=style&index=0&id=4357f765&prod&lang=scss
 
 ;// ./src/fields/core/fieldChecklist.vue
 
@@ -21751,8 +21805,8 @@ var instance_values_default = /*#__PURE__*/__webpack_require__.n(instance_values
 
 var fieldChecklist_component = normalizeComponent(
   core_fieldChecklistvue_type_script_lang_js,
-  fieldChecklistvue_type_template_id_7b1f4d72_render,
-  fieldChecklistvue_type_template_id_7b1f4d72_staticRenderFns,
+  fieldChecklistvue_type_template_id_4357f765_render,
+  fieldChecklistvue_type_template_id_4357f765_staticRenderFns,
   false,
   null,
   null,
@@ -24259,10 +24313,10 @@ var fieldStaticMap_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldStaticMap = (fieldStaticMap_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=template&id=cbf8f538
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=template&id=ec8704f8
 
 
-var fieldSwitchvue_type_template_id_cbf8f538_render = function render() {
+var fieldSwitchvue_type_template_id_ec8704f8_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('label', [_c('input', {
@@ -24306,15 +24360,15 @@ var fieldSwitchvue_type_template_id_cbf8f538_render = function render() {
     attrs: {
       "data-on": _vm.fieldOptions.textOn || 'On',
       "data-off": _vm.fieldOptions.textOff || 'Off',
-      "for": _vm.fieldID
+      "for": _vm.fieldId
     }
   }), _c('span', {
     staticClass: "handle"
   })]);
 };
-var fieldSwitchvue_type_template_id_cbf8f538_staticRenderFns = [];
+var fieldSwitchvue_type_template_id_ec8704f8_staticRenderFns = [];
 
-;// ./src/fields/optional/fieldSwitch.vue?vue&type=template&id=cbf8f538
+;// ./src/fields/optional/fieldSwitch.vue?vue&type=template&id=ec8704f8
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=script&lang=js
 
@@ -24336,10 +24390,10 @@ var fieldSwitchvue_type_template_id_cbf8f538_staticRenderFns = [];
 });
 ;// ./src/fields/optional/fieldSwitch.vue?vue&type=script&lang=js
  /* harmony default export */ var optional_fieldSwitchvue_type_script_lang_js = (fieldSwitchvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&id=cbf8f538&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&id=ec8704f8&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&id=cbf8f538&prod&lang=scss
+;// ./src/fields/optional/fieldSwitch.vue?vue&type=style&index=0&id=ec8704f8&prod&lang=scss
 
 ;// ./src/fields/optional/fieldSwitch.vue
 
@@ -24352,8 +24406,8 @@ var fieldSwitchvue_type_template_id_cbf8f538_staticRenderFns = [];
 
 var fieldSwitch_component = normalizeComponent(
   optional_fieldSwitchvue_type_script_lang_js,
-  fieldSwitchvue_type_template_id_cbf8f538_render,
-  fieldSwitchvue_type_template_id_cbf8f538_staticRenderFns,
+  fieldSwitchvue_type_template_id_ec8704f8_render,
+  fieldSwitchvue_type_template_id_ec8704f8_staticRenderFns,
   false,
   null,
   null,

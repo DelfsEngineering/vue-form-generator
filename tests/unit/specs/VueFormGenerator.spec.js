@@ -130,7 +130,7 @@ describe("VueFormGenerator.vue", () => {
 				fields: [null, { type: "input", model: "name", fieldOptions: { inputType: "text" } }]
 			};
 			warnSpy = sinon.spy(console, "warn");
-			wrapper = createFormGenerator({ schema });
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
 			await wrapper.vm.$nextTick();
 		});
 
@@ -157,6 +157,74 @@ describe("VueFormGenerator.vue", () => {
 			const firstArg = warnSpy.firstCall.args[0];
 			expect(firstArg).to.contain("Invalid field at index 0");
 			expect(firstArg).to.contain("type");
+		});
+	});
+
+	describe("invalid schema entries with devMode flag", () => {
+		let schema;
+		let warnSpy;
+
+		const validField = { type: "input", model: "name", fieldOptions: { inputType: "text" } };
+
+		afterEach(() => {
+			if (warnSpy && warnSpy.restore) {
+				warnSpy.restore();
+			}
+			if (wrapper) {
+				wrapper.destroy();
+			}
+		});
+
+		it("suppresses warning UI and console when devMode is falsy (default)", async () => {
+			schema = { fields: [null, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema });
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.called).to.be.false;
+			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(0);
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+		});
+
+		it("shows warning UI and logs once per schema change when devMode is true", async () => {
+			schema = { fields: [null, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.calledOnce).to.be.true;
+			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(1);
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+
+			// Fix schema -> warnings disappear, no new logs
+			warnSpy.resetHistory();
+			schema = { fields: [{ type: "input", model: "city", fieldOptions: { inputType: "text" } }] };
+			wrapper.vm.schema = { ...schema };
+			await wrapper.vm.$nextTick();
+
+			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(0);
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+			expect(warnSpy.called).to.be.false;
+
+			// Reintroduce invalid entry with a new schema array -> warning logs again
+			schema = { fields: [null, { type: "input", model: "zip", fieldOptions: { inputType: "text" } }] };
+			wrapper.vm.schema = { ...schema };
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.calledOnce).to.be.true;
+			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(1);
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+		});
+
+		it("suppresses warnings when devMode is explicitly false", async () => {
+			schema = { fields: [null, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: false } });
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.called).to.be.false;
+			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(0);
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
 		});
 	});
 

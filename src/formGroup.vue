@@ -55,7 +55,7 @@
 					</template>
 				</template>
 			</template>
-			<template v-else>
+			<template v-else-if="showInvalidWarnings">
 				<div :key="'invalid-' + index" class="vfg-field-warning" :style="invalidFieldStyle">
 					<strong>Invalid field</strong>
 					<div>{{ invalidFieldMessage(field, index) }}</div>
@@ -151,6 +151,9 @@ export default {
 				color: "#6b4c00",
 				fontSize: "13px"
 			};
+		},
+		showInvalidWarnings() {
+			return !!objGet(this.options, "devMode", false);
 		}
 	},
 	methods: {
@@ -198,6 +201,9 @@ export default {
 			return `Invalid field at index ${index}: ${reason}. Each field should be an object with a "type".`;
 		},
 		logInvalidField(reason, field, index) {
+			if (!this.showInvalidWarnings) {
+				return;
+			}
 			if (this.warnedInvalidFields[index]) {
 				return;
 			}
@@ -206,6 +212,13 @@ export default {
 				`[vue-form-generator] Invalid field at index ${index}: ${reason}. Ensure each entry is an object with a "type" property.`,
 				field
 			);
+		}
+	},
+	watch: {
+		fields(newVal, oldVal) {
+			if (newVal !== oldVal) {
+				this.warnedInvalidFields = {};
+			}
 		}
 	},
 	created() {

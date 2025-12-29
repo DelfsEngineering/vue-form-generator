@@ -2,24 +2,24 @@
 	<div class="wrapper" v-attributes="'wrapper'">
 		<div class="listbox form-control" v-if="useListBox" :disabled="disabled">
 			<div v-for="item in items" :key="getItemValue(item) + 'wrapper'" :class="getItemCssClasses(item)">
-					<label>
-						<template v-if="isInputVisible(item)">
-							<input
-								:id="getFieldID(item)"
-								:class="schema.fieldClasses"
-								type="checkbox"
-								:name="getInputName(item)"
-								:value="getItemValue(item)"
-								:disabled="isItemDisabled(item)"
-								:required="schema.required"
-								:checked="isItemChecked(item)"
-								@change="onChanged($event, item)"
-								:true-value="schema.checklistTrueValue || true"
-								:false-value="schema.checklistFalseValue || false"
-							/>
-						</template>
-						{{ getItemName(item) }}
-					</label>
+				<label>
+					<template v-if="isInputVisible(item)">
+						<input
+							:id="getFieldID(item)"
+							:class="schema.fieldClasses"
+							type="checkbox"
+							:name="getInputName(item)"
+							:value="getItemValue(item)"
+							:disabled="isItemDisabled(item)"
+							:required="schema.required"
+							:checked="isItemChecked(item)"
+							@change="onChanged($event, item)"
+							:true-value="schema.checklistTrueValue || true"
+							:false-value="schema.checklistFalseValue || false"
+						/>
+					</template>
+					{{ getItemName(item) }}
+				</label>
 			</div>
 		</div>
 		<div class="combobox form-control" v-if="!useListBox" :disabled="disabled">
