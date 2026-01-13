@@ -1,5 +1,5 @@
 const path = require("path");
-// const fs = require("fs"); // Reverted
+const fs = require("fs");
 const webpack = require("webpack");
 const version = require("./package.json").version;
 const banner = `
@@ -11,19 +11,21 @@ const banner = `
 `;
 
 const generateDevProjects = () => {
-	// Reverted: const projectRoot = path.resolve(__dirname, "dev/projects");
-	// Reverted: const projectNames = fs.readdirSync(projectRoot, { withFileTypes: true })
-	// Reverted:		.filter(dirent => dirent.isDirectory())
-	// Reverted:		.map(dirent => dirent.name);
-	// Reverted: console.log("Detected example projects:", projectNames);
+	const projectRoot = path.resolve(__dirname, "dev/projects");
+	const envProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]");
 
-	const devProjects = JSON.parse(process.env.VUE_APP_DEV_PROJECT || "[]"); // Reverted: Restore original env var usage
+	// Normalize to array
+	const devProjects = Array.isArray(envProjects) ? [...envProjects] : [];
+
 	// Ensure new demos are available even if not listed in env
-	if (Array.isArray(devProjects)) {
-		if (!devProjects.includes("error-summary-demo")) devProjects.push("error-summary-demo");
-		if (!devProjects.includes("content-field")) devProjects.push("content-field");
-		if (!devProjects.includes("invalid-schema")) devProjects.push("invalid-schema");
-	}
+	if (!devProjects.includes("error-summary-demo")) devProjects.push("error-summary-demo");
+	if (!devProjects.includes("content-field")) devProjects.push("content-field");
+	if (!devProjects.includes("invalid-schema")) devProjects.push("invalid-schema");
+
+	// Filter out projects that no longer exist (e.g., removed demos)
+	const existingProjects = devProjects.filter((projectName) =>
+		fs.existsSync(path.join(projectRoot, projectName, "main.js"))
+	);
 
 	let devConfig = {
 		index: {
@@ -31,9 +33,8 @@ const generateDevProjects = () => {
 			title: "vue-form-generator index"
 		}
 	};
-	// projectNames.forEach((projectName) => { // Reverted
-	devProjects.forEach((projectName) => {
-		// Reverted: Use original env var list
+
+	existingProjects.forEach((projectName) => {
 		devConfig[projectName] = {
 			entry: `./dev/projects/${projectName}/main.js`,
 			template: `./dev/projects/${projectName}/index.html`,
@@ -41,11 +42,8 @@ const generateDevProjects = () => {
 			title: `vue-form-generator ${projectName} demo`
 		};
 	});
-	// Reverted: return {
-	// Reverted:    pages: devConfig,
-	// Reverted:    projectNames: projectNames
-	// Reverted: };
-	return devConfig; // Reverted: Return only pages config
+
+	return devConfig;
 };
 
 // Reverted: const { pages, projectNames } = generateDevProjects();

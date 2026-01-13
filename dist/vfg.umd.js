@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.1.9
+ * vue-form-generator 3.1.10
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -24416,12 +24416,14 @@ var fieldSwitch_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldSwitch = (fieldSwitch_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=3782e805
-var fieldVueMultiSelectvue_type_template_id_3782e805_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=87d35336
+
+var fieldVueMultiSelectvue_type_template_id_87d35336_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('multiselect', {
     attrs: {
+      "name": _vm.fieldOptions.name,
       "id": _vm.fieldOptions.id,
       "options": _vm.options,
       "value": _vm.value,
@@ -24438,22 +24440,33 @@ var fieldVueMultiSelectvue_type_template_id_3782e805_render = function render() 
       "custom-label": _vm.customLabel,
       "taggable": _vm.fieldOptions.taggable,
       "tag-placeholder": _vm.fieldOptions.tagPlaceholder,
+      "tag-position": _vm.fieldOptions.tagPosition,
       "max": _vm.fieldOptions.max || null,
       "options-limit": _vm.fieldOptions.optionsLimit,
       "group-values": _vm.fieldOptions.groupValues,
       "group-label": _vm.fieldOptions.groupLabel,
+      "group-select": _vm.fieldOptions.groupSelect,
       "block-keys": _vm.fieldOptions.blockKeys,
       "internal-search": _vm.fieldOptions.internalSearch,
+      "preserve-search": _vm.fieldOptions.preserveSearch,
+      "preselect-first": _vm.fieldOptions.preselectFirst,
+      "prevent-autofocus": _vm.fieldOptions.preventAutofocus,
       "select-label": _vm.fieldOptions.selectLabel,
+      "select-group-label": _vm.fieldOptions.selectGroupLabel,
       "selected-label": _vm.fieldOptions.selectedLabel,
       "deselect-label": _vm.fieldOptions.deselectLabel,
+      "deselect-group-label": _vm.fieldOptions.deselectGroupLabel,
       "show-labels": _vm.fieldOptions.showLabels,
+      "show-no-options": _vm.fieldOptions.showNoOptions,
+      "show-no-results": _vm.fieldOptions.showNoResults,
       "limit": _vm.fieldOptions.limit,
       "limit-text": _vm.fieldOptions.limitText,
       "loading": _vm.fieldOptions.loading,
       "disabled": _vm.disabled,
       "max-height": _vm.fieldOptions.maxHeight,
       "show-pointer": _vm.fieldOptions.showPointer,
+      "tabindex": _vm.fieldOptions.tabindex,
+      "open-direction": _vm.fieldOptions.openDirection,
       "option-height": _vm.fieldOptions.optionHeight
     },
     on: {
@@ -24472,7 +24485,9 @@ var fieldVueMultiSelectvue_type_template_id_3782e805_render = function render() 
     slot: "noResult"
   }, [_vm._v(" " + _vm._s(_vm.fieldOptions.noResult) + " ")])]);
 };
-var fieldVueMultiSelectvue_type_template_id_3782e805_staticRenderFns = [];
+var fieldVueMultiSelectvue_type_template_id_87d35336_staticRenderFns = [];
+
+;// ./src/fields/optional/fieldVueMultiSelect.vue?vue&type=template&id=87d35336
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/optional/fieldVueMultiSelect.vue?vue&type=script&lang=js
 
@@ -24546,8 +24561,8 @@ var fieldVueMultiSelectvue_type_template_id_3782e805_staticRenderFns = [];
 ;
 var fieldVueMultiSelect_component = normalizeComponent(
   optional_fieldVueMultiSelectvue_type_script_lang_js,
-  fieldVueMultiSelectvue_type_template_id_3782e805_render,
-  fieldVueMultiSelectvue_type_template_id_3782e805_staticRenderFns,
+  fieldVueMultiSelectvue_type_template_id_87d35336_render,
+  fieldVueMultiSelectvue_type_template_id_87d35336_staticRenderFns,
   false,
   null,
   null,

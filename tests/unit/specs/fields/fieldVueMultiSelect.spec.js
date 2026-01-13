@@ -80,6 +80,28 @@ describe("fieldVueMultiSelect.vue", () => {
 		});
 	});
 
+	describe("openDirection prop", () => {
+		const schema = {
+			...baseSchema,
+			fieldOptions: { ...baseSchema.fieldOptions, openDirection: "top" }
+		};
+		const model = { city: "Paris" };
+
+		before(() => {
+			createField({ schema, model });
+		});
+
+		after(() => {
+			wrapper.destroy();
+		});
+
+		it("forwards openDirection to vue-multiselect", async () => {
+			await Vue.nextTick();
+			const multiselect = wrapper.findComponent(VueMultiSelect);
+			expect(multiselect.props().openDirection).to.equal("top");
+		});
+	});
+
 	describe("with objects", () => {
 		let schema = { ...baseSchema }; // Clone base schema
 		let model = {
@@ -113,6 +135,52 @@ describe("fieldVueMultiSelect.vue", () => {
 
 		it.skip("options should contain only text specified in label", async () => {
 			// Skip test that has @vue/test-utils compatibility issues
+		});
+	});
+
+	describe("additional vue-multiselect props passthrough", () => {
+		const schema = {
+			...baseSchema,
+			fieldOptions: {
+				...baseSchema.fieldOptions,
+				name: "cities",
+				selectGroupLabel: "Select group",
+				deselectGroupLabel: "Deselect group",
+				tagPosition: "bottom",
+				groupSelect: true,
+				preserveSearch: true,
+				preselectFirst: true,
+				preventAutofocus: true,
+				showNoOptions: false,
+				showNoResults: false,
+				tabindex: 3
+			}
+		};
+		const model = { city: "Paris" };
+
+		before(() => {
+			createField({ schema, model });
+		});
+
+		after(() => {
+			wrapper.destroy();
+		});
+
+		it("forwards non-default props to vue-multiselect", async () => {
+			await Vue.nextTick();
+			const multiselect = wrapper.findComponent(VueMultiSelect);
+			const props = multiselect.props();
+			expect(props.name).to.equal("cities");
+			expect(props.selectGroupLabel).to.equal("Select group");
+			expect(props.deselectGroupLabel).to.equal("Deselect group");
+			expect(props.tagPosition).to.equal("bottom");
+			expect(props.groupSelect).to.be.true;
+			expect(props.preserveSearch).to.be.true;
+			expect(props.preselectFirst).to.be.true;
+			expect(props.preventAutofocus).to.be.true;
+			expect(props.showNoOptions).to.be.false;
+			expect(props.showNoResults).to.be.false;
+			expect(props.tabindex).to.equal(3);
 		});
 	});
 });
