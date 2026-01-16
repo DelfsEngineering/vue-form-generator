@@ -126,7 +126,25 @@ export default {
 					case "range":
 						// debounce
 						return (newValue, oldValue) => {
-							this.debouncedFormatFunc(value, oldValue);
+							if (isFunction(this.debouncedFormatFunc)) {
+								this.debouncedFormatFunc(value, oldValue);
+								return;
+							}
+
+							// Fallback for cases where the debounced formatter isn't ready yet.
+							switch (this.inputType) {
+								case "number":
+								case "range":
+									this.formatNumberToModel(value, oldValue);
+									break;
+								case "date":
+								case "datetime":
+								case "datetime-local":
+									this.formatDatetimeToModel(value, oldValue);
+									break;
+								default:
+									this.updateModelValue(value, oldValue);
+							}
 						};
 				}
 			}

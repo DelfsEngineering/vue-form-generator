@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.1.10
+ * vue-form-generator 3.1.11
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -9453,6 +9453,33 @@ module.exports = parent;
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 module.exports = __webpack_require__(98894);
+
+/***/ }),
+
+/***/ 48598:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(46518);
+var uncurryThis = __webpack_require__(79504);
+var IndexedObject = __webpack_require__(47055);
+var toIndexedObject = __webpack_require__(25397);
+var arrayMethodIsStrict = __webpack_require__(34598);
+
+var nativeJoin = uncurryThis([].join);
+
+var ES3_STRINGS = IndexedObject !== Object;
+var FORCED = ES3_STRINGS || !arrayMethodIsStrict('join', ',');
+
+// `Array.prototype.join` method
+// https://tc39.es/ecma262/#sec-array.prototype.join
+$({ target: 'Array', proto: true, forced: FORCED }, {
+  join: function join(separator) {
+    return nativeJoin(toIndexedObject(this), separator === undefined ? ',' : separator);
+  }
+});
+
 
 /***/ }),
 
@@ -19275,7 +19302,7 @@ var es_iterator_for_each = __webpack_require__(7588);
 var es_object_to_string = __webpack_require__(26099);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-collections.for-each.js
 var web_dom_collections_for_each = __webpack_require__(23500);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=47da099e
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=1d55a9ce
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
@@ -19329,6 +19356,7 @@ var render = function render() {
       key: "element",
       fn: function fn(slotProps) {
         return [_c('form-element', {
+          key: _vm.fieldKey(slotProps.field),
           attrs: {
             "field": slotProps.field,
             "model": slotProps.model,
@@ -19442,6 +19470,8 @@ var isArray_default = /*#__PURE__*/__webpack_require__.n(isArray);
 // EXTERNAL MODULE: ./node_modules/lodash/get.js
 var lodash_get = __webpack_require__(58156);
 var get_default = /*#__PURE__*/__webpack_require__.n(lodash_get);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.join.js
+var es_array_join = __webpack_require__(48598);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
 var es_array_push = __webpack_require__(44114);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/assign.js
@@ -19459,6 +19489,136 @@ var splice_default = /*#__PURE__*/__webpack_require__.n(splice);
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__(9274);
 var external_commonjs_vue_commonjs2_vue_root_Vue_default = /*#__PURE__*/__webpack_require__.n(external_commonjs_vue_commonjs2_vue_root_Vue_);
+// EXTERNAL MODULE: ./node_modules/lodash/cloneDeep.js
+var cloneDeep = __webpack_require__(88055);
+var cloneDeep_default = /*#__PURE__*/__webpack_require__.n(cloneDeep);
+// EXTERNAL MODULE: ./node_modules/lodash/isNil.js
+var isNil = __webpack_require__(69843);
+var isNil_default = /*#__PURE__*/__webpack_require__.n(isNil);
+// EXTERNAL MODULE: ./node_modules/lodash/isFunction.js
+var isFunction = __webpack_require__(1882);
+var isFunction_default = /*#__PURE__*/__webpack_require__.n(isFunction);
+// EXTERNAL MODULE: ./node_modules/lodash/isObject.js
+var isObject = __webpack_require__(23805);
+var isObject_default = /*#__PURE__*/__webpack_require__.n(isObject);
+// EXTERNAL MODULE: ./node_modules/lodash/each.js
+var each = __webpack_require__(76135);
+var each_default = /*#__PURE__*/__webpack_require__.n(each);
+// EXTERNAL MODULE: ./node_modules/lodash/set.js
+var set = __webpack_require__(63560);
+var set_default = /*#__PURE__*/__webpack_require__.n(set);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/trim.js
+var trim = __webpack_require__(11265);
+var trim_default = /*#__PURE__*/__webpack_require__.n(trim);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.exec.js
+var es_regexp_exec = __webpack_require__(27495);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.to-string.js
+var es_regexp_to_string = __webpack_require__(38781);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.string.replace.js
+var es_string_replace = __webpack_require__(25440);
+;// ./src/utils/schema.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create a new model by schema default values
+var createDefaultObject = function createDefaultObject(schema) {
+  var obj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  each_default()(schema.fields, function (field) {
+    if (get_default()(obj, field.model) === undefined && field.default !== undefined) {
+      if (isFunction_default()(field.default)) {
+        set_default()(obj, field.model, field.default(field, schema, obj));
+      } else if (isObject_default()(field.default) || isArray_default()(field.default)) {
+        set_default()(obj, field.model, cloneDeep_default()(field.default));
+      } else set_default()(obj, field.model, field.default);
+    }
+  });
+  return obj;
+};
+
+// Get a new model which contains only properties of multi-edit fields
+var getMultipleFields = function getMultipleFields(schema) {
+  var res = [];
+  each_default()(schema.fields, function (field) {
+    if (field.multi === true) res.push(field);
+  });
+  return res;
+};
+
+// Merge many models to one 'work model' by schema
+var mergeMultiObjectFields = function mergeMultiObjectFields(schema, objs) {
+  var model = {};
+  var fields = getMultipleFields(schema);
+  each_default()(fields, function (field) {
+    var mergedValue;
+    var notSet = true;
+    var path = field.model;
+    each_default()(objs, function (obj) {
+      var v = get_default()(obj, path);
+      if (notSet) {
+        mergedValue = v;
+        notSet = false;
+      } else if (mergedValue !== v) {
+        mergedValue = undefined;
+      }
+    });
+    set_default()(model, path, mergedValue);
+  });
+  return model;
+};
+var slugifyFormID = function slugifyFormID(schema) {
+  var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+  // Try to get a reasonable default id from the schema,
+  // then slugify it.
+  if (!isNil_default()(schema.id)) {
+    // If an ID's been explicitly set, use it unchanged
+    return prefix + schema.id;
+  } else {
+    var _context;
+    // Return the slugified version of either:
+    return prefix + trim_default()(_context = (schema.inputName || schema.label || schema.model || ""
+    // NB: This is a very simple, conservative, slugify function,
+    // avoiding extra dependencies.
+    ).toString()).call(_context).toLowerCase()
+    // Spaces & underscores to dashes
+    .replace(/ |_/g, "-")
+    // Multiple dashes to one
+    .replace(/-{2,}/g, "-")
+    // Remove leading & trailing dashes
+    .replace(/^-+|-+$/g, "")
+    // Remove anything that isn't a (English/ASCII) letter, number or dash.
+    .replace(/([^a-zA-Z0-9-]+)/g, "");
+  }
+};
+var slugify = function slugify() {
+  var _context2;
+  var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+  // Return the slugified version of either:
+  return trim_default()(_context2 = name
+  // NB: This is a very simple, conservative, slugify function,
+  // avoiding extra dependencies.
+  .toString()).call(_context2)
+  // .toLowerCase()
+  // Spaces to dashes
+  .replace(/ /g, "-")
+  // Multiple dashes to one
+  .replace(/-{2,}/g, "-")
+  // Remove leading & trailing dashes
+  .replace(/^-+|-+$/g, "")
+  // Remove anything that isn't a (English/ASCII) letter, number or dash.
+  .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
+};
+
 ;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=16c5b4ca
 var formGroupvue_type_template_id_16c5b4ca_render = function render() {
   var _vm = this,
@@ -19586,12 +19746,6 @@ function _defineProperty(e, r, t) {
   }) : e[r] = t, e;
 }
 
-// EXTERNAL MODULE: ./node_modules/lodash/isNil.js
-var isNil = __webpack_require__(69843);
-var isNil_default = /*#__PURE__*/__webpack_require__.n(isNil);
-// EXTERNAL MODULE: ./node_modules/lodash/isFunction.js
-var isFunction = __webpack_require__(1882);
-var isFunction_default = /*#__PURE__*/__webpack_require__.n(isFunction);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js
 var concat = __webpack_require__(11393);
 var concat_default = /*#__PURE__*/__webpack_require__.n(concat);
@@ -20112,133 +20266,9 @@ var formElementvue_type_template_id_e5c73be6_render = function render() {
 };
 var formElementvue_type_template_id_e5c73be6_staticRenderFns = [];
 
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.exec.js
-var es_regexp_exec = __webpack_require__(27495);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.string.replace.js
-var es_string_replace = __webpack_require__(25440);
-// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/trim.js
-var trim = __webpack_require__(11265);
-var trim_default = /*#__PURE__*/__webpack_require__.n(trim);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/includes.js
 var includes = __webpack_require__(8628);
 var includes_default = /*#__PURE__*/__webpack_require__.n(includes);
-// EXTERNAL MODULE: ./node_modules/lodash/cloneDeep.js
-var cloneDeep = __webpack_require__(88055);
-var cloneDeep_default = /*#__PURE__*/__webpack_require__.n(cloneDeep);
-// EXTERNAL MODULE: ./node_modules/lodash/isObject.js
-var isObject = __webpack_require__(23805);
-var isObject_default = /*#__PURE__*/__webpack_require__.n(isObject);
-// EXTERNAL MODULE: ./node_modules/lodash/each.js
-var each = __webpack_require__(76135);
-var each_default = /*#__PURE__*/__webpack_require__.n(each);
-// EXTERNAL MODULE: ./node_modules/lodash/set.js
-var set = __webpack_require__(63560);
-var set_default = /*#__PURE__*/__webpack_require__.n(set);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.to-string.js
-var es_regexp_to_string = __webpack_require__(38781);
-;// ./src/utils/schema.js
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Create a new model by schema default values
-var createDefaultObject = function createDefaultObject(schema) {
-  var obj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  each_default()(schema.fields, function (field) {
-    if (get_default()(obj, field.model) === undefined && field.default !== undefined) {
-      if (isFunction_default()(field.default)) {
-        set_default()(obj, field.model, field.default(field, schema, obj));
-      } else if (isObject_default()(field.default) || isArray_default()(field.default)) {
-        set_default()(obj, field.model, cloneDeep_default()(field.default));
-      } else set_default()(obj, field.model, field.default);
-    }
-  });
-  return obj;
-};
-
-// Get a new model which contains only properties of multi-edit fields
-var getMultipleFields = function getMultipleFields(schema) {
-  var res = [];
-  each_default()(schema.fields, function (field) {
-    if (field.multi === true) res.push(field);
-  });
-  return res;
-};
-
-// Merge many models to one 'work model' by schema
-var mergeMultiObjectFields = function mergeMultiObjectFields(schema, objs) {
-  var model = {};
-  var fields = getMultipleFields(schema);
-  each_default()(fields, function (field) {
-    var mergedValue;
-    var notSet = true;
-    var path = field.model;
-    each_default()(objs, function (obj) {
-      var v = get_default()(obj, path);
-      if (notSet) {
-        mergedValue = v;
-        notSet = false;
-      } else if (mergedValue !== v) {
-        mergedValue = undefined;
-      }
-    });
-    set_default()(model, path, mergedValue);
-  });
-  return model;
-};
-var slugifyFormID = function slugifyFormID(schema) {
-  var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
-  // Try to get a reasonable default id from the schema,
-  // then slugify it.
-  if (!isNil_default()(schema.id)) {
-    // If an ID's been explicitly set, use it unchanged
-    return prefix + schema.id;
-  } else {
-    var _context;
-    // Return the slugified version of either:
-    return prefix + trim_default()(_context = (schema.inputName || schema.label || schema.model || ""
-    // NB: This is a very simple, conservative, slugify function,
-    // avoiding extra dependencies.
-    ).toString()).call(_context).toLowerCase()
-    // Spaces & underscores to dashes
-    .replace(/ |_/g, "-")
-    // Multiple dashes to one
-    .replace(/-{2,}/g, "-")
-    // Remove leading & trailing dashes
-    .replace(/^-+|-+$/g, "")
-    // Remove anything that isn't a (English/ASCII) letter, number or dash.
-    .replace(/([^a-zA-Z0-9-]+)/g, "");
-  }
-};
-var slugify = function slugify() {
-  var _context2;
-  var name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-  // Return the slugified version of either:
-  return trim_default()(_context2 = name
-  // NB: This is a very simple, conservative, slugify function,
-  // avoiding extra dependencies.
-  .toString()).call(_context2)
-  // .toLowerCase()
-  // Spaces to dashes
-  .replace(/ /g, "-")
-  // Multiple dashes to one
-  .replace(/-{2,}/g, "-")
-  // Remove leading & trailing dashes
-  .replace(/^-+|-+$/g, "")
-  // Remove anything that isn't a (English/ASCII) letter, number or dash.
-  .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
-};
-
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formElement.vue?vue&type=script&lang=js
 
 
@@ -20452,6 +20482,8 @@ var formElement_component = normalizeComponent(
 
 
 
+
+
 /* harmony default export */ var formGeneratorvue_type_script_lang_js = ({
   name: "FormGenerator",
   components: {
@@ -20565,6 +20597,11 @@ var formElement_component = normalizeComponent(
     }
   },
   methods: {
+    fieldKey: function fieldKey(field) {
+      var prefix = get_default()(this.optionsWithLegacy, "fieldIdPrefix", "");
+      var inputType = get_default()(field, "inputType", get_default()(field, "fieldOptions.inputType", ""));
+      return [slugifyFormID(field, prefix), field.type || "", inputType || ""].join("|");
+    },
     isMinimalForField: function isMinimalForField(field) {
       var fieldLegacy = get_default()(field, "legacy");
       var resolvedLegacy = typeof fieldLegacy !== "undefined" && fieldLegacy !== null ? fieldLegacy : get_default()(this.optionsWithLegacy, "legacy", true);
@@ -20690,10 +20727,10 @@ var formElement_component = normalizeComponent(
 });
 ;// ./src/formGenerator.vue?vue&type=script&lang=js
  /* harmony default export */ var src_formGeneratorvue_type_script_lang_js = (formGeneratorvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=47da099e&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=1d55a9ce&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/formGenerator.vue?vue&type=style&index=0&id=47da099e&prod&lang=scss
+;// ./src/formGenerator.vue?vue&type=style&index=0&id=1d55a9ce&prod&lang=scss
 
 ;// ./src/formGenerator.vue
 
@@ -21815,8 +21852,8 @@ var fieldChecklist_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldChecklist = (fieldChecklist_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=template&id=64aa86aa
-var fieldInputvue_type_template_id_64aa86aa_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=template&id=05f45536
+var fieldInputvue_type_template_id_05f45536_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('div', _vm._b({
@@ -21887,7 +21924,7 @@ var fieldInputvue_type_template_id_64aa86aa_render = function render() {
     }
   }) : _vm._e()]);
 };
-var fieldInputvue_type_template_id_64aa86aa_staticRenderFns = [];
+var fieldInputvue_type_template_id_05f45536_staticRenderFns = [];
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=script&lang=js
 
@@ -21971,7 +22008,25 @@ var DATETIME_FORMATS = {
           case "range":
             // debounce
             return function (newValue, oldValue) {
-              _this.debouncedFormatFunc(value, oldValue);
+              if (isFunction_default()(_this.debouncedFormatFunc)) {
+                _this.debouncedFormatFunc(value, oldValue);
+                return;
+              }
+
+              // Fallback for cases where the debounced formatter isn't ready yet.
+              switch (_this.inputType) {
+                case "number":
+                case "range":
+                  _this.formatNumberToModel(value, oldValue);
+                  break;
+                case "date":
+                case "datetime":
+                case "datetime-local":
+                  _this.formatDatetimeToModel(value, oldValue);
+                  break;
+                default:
+                  _this.updateModelValue(value, oldValue);
+              }
             };
         }
       }
@@ -22057,10 +22112,10 @@ var DATETIME_FORMATS = {
 });
 ;// ./src/fields/core/fieldInput.vue?vue&type=script&lang=js
  /* harmony default export */ var core_fieldInputvue_type_script_lang_js = (fieldInputvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=style&index=0&id=64aa86aa&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldInput.vue?vue&type=style&index=0&id=05f45536&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/core/fieldInput.vue?vue&type=style&index=0&id=64aa86aa&prod&lang=scss
+;// ./src/fields/core/fieldInput.vue?vue&type=style&index=0&id=05f45536&prod&lang=scss
 
 ;// ./src/fields/core/fieldInput.vue
 
@@ -22073,8 +22128,8 @@ var DATETIME_FORMATS = {
 
 var fieldInput_component = normalizeComponent(
   core_fieldInputvue_type_script_lang_js,
-  fieldInputvue_type_template_id_64aa86aa_render,
-  fieldInputvue_type_template_id_64aa86aa_staticRenderFns,
+  fieldInputvue_type_template_id_05f45536_render,
+  fieldInputvue_type_template_id_05f45536_staticRenderFns,
   false,
   null,
   null,

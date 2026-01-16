@@ -1359,4 +1359,93 @@ describe("VueFormGenerator.vue", () => {
 			);
 		});
 	});
+
+	describe("dynamic schema updates", () => {
+		it("does not reuse field instance when inserting with stable keys", async () => {
+			const schema = {
+				fields: [
+					{
+						type: "input",
+						model: "name",
+						fieldOptions: { inputType: "text" }
+					}
+				]
+			};
+			const model = { name: "" };
+
+			createFormGenerator({ schema, model });
+			await wrapper.vm.$nextTick();
+
+			const originalField = wrapper.findComponent({ name: "FieldInput" });
+			expect(originalField.exists()).to.be.true;
+			const originalUid = originalField.vm._uid;
+			expect(originalField.vm.inputType).to.equal("text");
+
+			wrapper.vm.schema = {
+				fields: [
+					{
+						type: "input",
+						model: "count",
+						fieldOptions: { inputType: "number" }
+					},
+					schema.fields[0]
+				]
+			};
+			await wrapper.vm.$nextTick();
+
+			const newFirstField = wrapper.findAllComponents({ name: "FieldInput" }).at(0);
+			expect(newFirstField.exists()).to.be.true;
+			expect(newFirstField.vm._uid).to.not.equal(originalUid);
+			expect(newFirstField.vm.inputType).to.equal("number");
+			expect(newFirstField.vm.debouncedFormatFunc).to.be.a("function");
+		});
+
+		it("should update model for inserted number field without errors", async () => {
+			const schema = {
+				fields: [
+					{
+						type: "input",
+						model: "name",
+						fieldOptions: { inputType: "text" }
+					}
+				]
+			};
+			const model = { name: "" };
+
+			createFormGenerator({ schema, model });
+			await wrapper.vm.$nextTick();
+
+			const originalErrorHandler = Vue.config.errorHandler;
+			let capturedError = null;
+			Vue.config.errorHandler = (err) => {
+				capturedError = err;
+			};
+
+			try {
+				wrapper.vm.schema = {
+					fields: [
+						{
+							type: "input",
+							model: "count",
+							fieldOptions: { inputType: "number" }
+						},
+						schema.fields[0]
+					]
+				};
+				await wrapper.vm.$nextTick();
+
+				const numberInput = wrapper.find('input[type="number"]');
+				expect(numberInput.exists()).to.be.true;
+
+				await numberInput.setValue("5");
+				await numberInput.trigger("blur");
+				await wrapper.vm.$nextTick();
+
+				expect(capturedError).to.be.null;
+				expect(wrapper.vm.model.count).to.equal(5);
+			} finally {
+				Vue.config.errorHandler = originalErrorHandler;
+			}
+		});
+	});
 });

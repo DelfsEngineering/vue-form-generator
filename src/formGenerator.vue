@@ -26,6 +26,7 @@
 
 			<template slot="element" slot-scope="slotProps">
 				<form-element
+					:key="fieldKey(slotProps.field)"
 					:field="slotProps.field"
 					:model="slotProps.model"
 					:options="slotProps.options"
@@ -90,6 +91,7 @@
 <script>
 import Vue from "vue";
 import { get as objGet, isArray } from "lodash";
+import { slugifyFormID } from "./utils/schema";
 import formGroup from "./formGroup.vue";
 import formElement from "./formElement.vue";
 
@@ -216,6 +218,11 @@ export default {
 	},
 
 	methods: {
+		fieldKey(field) {
+			const prefix = objGet(this.optionsWithLegacy, "fieldIdPrefix", "");
+			const inputType = objGet(field, "inputType", objGet(field, "fieldOptions.inputType", ""));
+			return [slugifyFormID(field, prefix), field.type || "", inputType || ""].join("|");
+		},
 		isMinimalForField(field) {
 			const fieldLegacy = objGet(field, "legacy");
 			const resolvedLegacy =
