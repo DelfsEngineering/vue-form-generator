@@ -22,6 +22,7 @@ const generateDevProjects = () => {
 	if (!devProjects.includes("content-field")) devProjects.push("content-field");
 	if (!devProjects.includes("invalid-schema")) devProjects.push("invalid-schema");
 	if (!devProjects.includes("group-iterate-photos")) devProjects.push("group-iterate-photos");
+	if (!devProjects.includes("group-iterate-nested")) devProjects.push("group-iterate-nested");
 
 	// Filter out projects that no longer exist (e.g., removed demos)
 	const existingProjects = devProjects.filter((projectName) =>

@@ -24,8 +24,10 @@ import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
 
 export default {
 	name: "FormGroupIterate",
-	// Note: FormGroup component is not imported to avoid circular dependency.
-	// It will be resolved at runtime since formGroup registers formGroupIterate.
+	// Note: FormGroup component uses a lazy function to avoid circular dependency
+	components: {
+		FormGroup: () => import("./formGroup.vue")
+	},
 	props: {
 		iterate: {
 			type: Object,
@@ -94,6 +96,30 @@ export default {
 <style lang="scss">
 .form-group-iterate {
 	// Wrapper container for iterated groups
-	// Individual groups styled by their own classes
+	> fieldset {
+		background-color: #e3f2fd;
+		padding: 20px;
+		margin-bottom: 15px;
+		border-radius: 8px;
+		border: 1px solid #bbdefb;
+
+		// Nested group-iterate styling
+		.form-group-iterate {
+			> fieldset {
+				background-color: #fff3e0;
+				border: 1px solid #ffcc80;
+				padding: 15px;
+				margin-top: 10px;
+
+				// Third level nesting (if needed)
+				.form-group-iterate {
+					> fieldset {
+						background-color: #f1f8e9;
+						border: 1px solid #c5e1a5;
+					}
+				}
+			}
+		}
+	}
 }
 </style>
