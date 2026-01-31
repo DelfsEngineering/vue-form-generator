@@ -40,6 +40,41 @@
 							</template>
 						</form-group>
 					</template>
+					<template v-else-if="field.type === 'group-iterate'">
+						<form-group-iterate
+							:iterate="field.iterate"
+							:fields="field.fields"
+							:group="field"
+							:tag="getGroupTag(field)"
+							:model="model"
+							:options="options"
+							:errors="errors"
+							:event-bus="eventBus"
+							:key="index"
+						>
+							<template slot="group-legend" slot-scope="slotProps">
+								<slot
+									name="group-legend"
+									:group="slotProps.group"
+									:group-legend="slotProps.groupLegend"
+								></slot>
+							</template>
+							<template slot="group-help" slot-scope="slotProps">
+								<slot name="group-help" :group="slotProps.group"></slot>
+							</template>
+
+							<template slot="element" slot-scope="slotProps">
+								<slot
+									name="element"
+									:field="slotProps.field"
+									:model="slotProps.model"
+									:options="slotProps.options"
+									:errors="slotProps.errors"
+									:event-bus="slotProps.eventBus"
+								></slot>
+							</template>
+						</form-group-iterate>
+					</template>
 					<template v-else-if="field.type === 'content'">
 						<field-content :schema="field" :key="index" />
 					</template>
@@ -67,11 +102,12 @@
 <script>
 import formMixin from "./formMixin.js";
 import fieldContent from "./fields/core/fieldContent.vue";
+import formGroupIterate from "./formGroupIterate.vue";
 import { get as objGet, isFunction, isNil } from "lodash";
 
 export default {
 	name: "FormGroup",
-	components: { fieldContent },
+	components: { fieldContent, formGroupIterate },
 	mixins: [formMixin],
 	props: {
 		fields: {

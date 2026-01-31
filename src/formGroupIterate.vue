@@ -20,12 +20,12 @@
 </template>
 
 <script>
-import formGroup from "./formGroup.vue";
 import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
 
 export default {
 	name: "FormGroupIterate",
-	components: { formGroup },
+	// Note: FormGroup component is not imported to avoid circular dependency.
+	// It will be resolved at runtime since formGroup registers formGroupIterate.
 	props: {
 		iterate: {
 			type: Object,
