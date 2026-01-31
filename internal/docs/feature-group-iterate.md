@@ -7,7 +7,7 @@ Provide a schema-level way to render a `group` once per item in an array, withou
 **Architecture Defined** - Ready for implementation planning.
 
 ## Summary
-Introduce a new schema element that behaves like `group` but adds iteration semantics (Vue `v-for`-like).
+Introduce a new schema element that behaves like `group` but adds iteration semantics (Vue `v-for`-like) for rendering arrays of data.
 
 Type name: `type: "group-iterate"`
 
@@ -29,53 +29,46 @@ Type name: `type: "group-iterate"`
   type: "group-iterate",
   iterate: {
     items: "cards",      // array path or function returning an array
-    as: "card",          // item alias (default: "item")
-    index: "i",          // index alias (default: "index")
-    key: "id",           // key path or function (optional)
-    scope: "item"        // "item" | "parent" (default: "item")
+    key: "id"           // key path or function (optional)
   },
   fields: [
-    // With scope: "item" (default), use relative paths
-    { type: "input", model: "title" }
-    
-    // With scope: "parent", use alias paths for item access
-    // { type: "input", model: "card.title" }
+    { type: "input", model: "title" },    // relative paths to item properties
+    { type: "input", model: "caption" }
   ]
 }
 ```
  
- ### Required vs Optional
- - `type`: required (new element)
- - `iterate.items`: required
- - `iterate.as`: optional (default "item")
- - `iterate.index`: optional (default "index")
- - `iterate.key`: optional (see Key Behavior)
- - `iterate.scope`: optional (see Model Scope)
- - `fields`: required (same as group)
+### Required vs Optional
+- `type`: required (new element)
+- `iterate.items`: required
+- `iterate.key`: optional (see Key Behavior)
+- `fields`: required (same as group)
  
 ## Model Scope
 
-### Implementation: Path Rewriting via Provide/Inject
-Field paths are rewritten at resolution time using Vue's provide/inject pattern. Each `group-iterate` provides an iteration context (alias, array path, index), and fields inject these contexts to rewrite paths on the fly.
+Each iteration item becomes the model object passed to child fields. Fields use **relative paths** to access item properties:
 
-### Scope Behaviors
+```javascript
+// Model structure
+{
+  photos: [
+    { id: 1, title: "Beach", url: "beach.jpg" },
+    { id: 2, title: "Mountain", url: "mountain.jpg" }
+  ]
+}
 
-#### `scope: "item"` (default)
-- The current item object is passed as the model to child fields.
-- Fields use **relative paths** to access item properties: `model: "title"`, `model: "metadata.status"`
-- Alias paths (e.g., `model: "card.title"`) will fail and produce a dev-mode warning.
-- **Use case:** Simple iteration where only item data is needed.
+// Schema - fields access item properties directly
+{
+  type: "group-iterate",
+  iterate: { items: "photos" },
+  fields: [
+    { type: "input", model: "title" },    // item.title
+    { type: "input", model: "url" }      // item.url
+  ]
+}
+```
 
-#### `scope: "parent"`
-- The parent model object remains the model passed to child fields.
-- **Alias paths** (e.g., `model: "city.name"`) are rewritten to access the current iteration item: `cities[0].name`
-- **Direct paths** (e.g., `model: "stateName"`) access parent model properties as-is.
-- **Use case:** Display parent data alongside item data (e.g., showing state name in each city card).
-
-### Path Resolution
-- Only **dotted paths** are supported: `card.metadata.status` ✅
-- **Bracket notation** in user paths is NOT parsed: `card.items[0]` ❌ (use `get`/`set` functions if needed)
-- Paths are resolved using lodash `objGet` for nested property access.
+**Path Resolution:** Uses standard lodash `objGet` for nested property access with dotted notation.
  
  ## Items Source
  `iterate.items` can be:
@@ -104,36 +97,46 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 - Applies to `fieldId` and all derived `aria-*` IDs automatically.
  
 ## Nested Iteration
-`group-iterate` can be nested to handle multi-level data structures (e.g., orders with line items).
+`group-iterate` can be nested to handle multi-level data structures. Each level receives its iteration item as the model, so paths are always relative to the current item.
 
-### Path Resolution Order: Innermost-First
-When resolving alias paths in nested contexts, check from most specific to least specific (like JavaScript scope):
-
-1. Does path match innermost alias? Use that context.
-2. Does path match outer alias? Use that context.
-3. Otherwise, use path as-is on root model.
+**Important:** In nested iterations:
+- The `items` path in inner iterations is resolved against the current iteration item (not the root model)
+- All field paths are relative to the current iteration level
+- Each nesting level operates independently with its own item context
 
 **Example:**
 ```javascript
+// Model
+{
+  orders: [
+    {
+      id: "ord1",
+      customer: "Alice",
+      lineItems: [
+        { sku: "A100", quantity: 5, price: 10 },
+        { sku: "B200", quantity: 2, price: 25 }
+      ]
+    }
+  ]
+}
+
+// Schema - nested iteration
 {
   type: "group-iterate",
-  iterate: { items: "orders", as: "order", scope: "parent" },
+  iterate: { items: "orders", key: "id" },  // Root level: iterates model.orders
   fields: [
+    { type: "input", model: "customer" },  // Reads from current order
     {
       type: "group-iterate",
-      iterate: { items: "order.lineItems", as: "line", scope: "parent" },
+      iterate: { items: "lineItems", key: "sku" },  // Nested: iterates currentOrder.lineItems
       fields: [
-        { model: "line.quantity" },    // Innermost: orders[0].lineItems[1].quantity
-        { model: "order.discount" },   // Outer: orders[0].discount
-        { model: "companyName" }       // Root: companyName
+        { type: "input", model: "quantity" },  // Reads from current lineItem
+        { type: "input", model: "price" }      // Reads from current lineItem
       ]
     }
   ]
 }
 ```
-
-### Alias Collision Warning
-In dev mode, warn if nested contexts use the same alias name (e.g., both use `as: "item"`). While supported via innermost-first resolution, this is confusing and should be avoided.
 
 ## Slots and Events (Existing Behavior)
 - All existing slots on `group` and fields should remain usable.
@@ -165,9 +168,7 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
       type: "group-iterate",
       iterate: { 
         items: "photos", 
-        key: "id", 
-        as: "photo",
-        scope: "item"  // Simple - just edit photo data
+        key: "id"
       },
       styleClasses: "photo-card",
       fields: [
@@ -195,50 +196,39 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
 }
 ```
 
-### Example 2: Todo List with Categories
+### Example 2: Simple Todo List
 ```javascript
 // Model
 {
-  userName: "John Doe",
   todos: [
     { id: 1, task: "Buy groceries", done: false, priority: "high" },
-    { id: 2, task: "Call dentist", done: true, priority: "medium" },
-    { id: 3, task: "Finish report", done: false, priority: "high" }
+    { id: 2, task: "Call dentist", done: true, priority: "medium" }
   ]
 }
 
-// Schema - Show user name in each todo card
+// Schema - Edit todos
 {
   fields: [
     {
       type: "group-iterate",
-      iterate: { 
-        items: "todos", 
-        key: "id", 
-        as: "todo",
-        scope: "parent"  // Need parent for userName
-      },
+      iterate: { items: "todos", key: "id" },
       styleClasses: "todo-item",
       fields: [
-        { 
-          type: "checkbox", 
-          model: "todo.done", 
+        {
+          type: "checkbox",
+          model: "done",
           label: "Complete"
         },
-        { 
-          type: "input", 
-          model: "todo.task", 
+        {
+          type: "input",
+          model: "task",
           label: "Task"
         },
-        { 
-          type: "select", 
-          model: "todo.priority", 
+        {
+          type: "select",
+          model: "priority",
           label: "Priority",
           values: ["low", "medium", "high"]
-        },
-        { 
-          type: "content",
-          content: `<small>Assigned to: ${model.userName}</small>`
         }
       ]
     }
@@ -265,7 +255,6 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
       iterate: { 
         items: "products", 
         key: "id"
-        // Default: as: "item", scope: "item"
       },
       fields: [
         { 
@@ -304,96 +293,60 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
 ```javascript
 // Model
 {
-  companyName: "Acme Corp",
   orders: [
     {
       id: "ord1",
       customerName: "Alice Smith",
-      discount: 0.1,
       lineItems: [
         { sku: "A100", productName: "Widget", quantity: 5, price: 10 },
         { sku: "B200", productName: "Gadget", quantity: 2, price: 25 }
-      ]
-    },
-    {
-      id: "ord2",
-      customerName: "Bob Jones",
-      discount: 0.05,
-      lineItems: [
-        { sku: "C300", productName: "Doohickey", quantity: 1, price: 100 }
       ]
     }
   ]
 }
 
-// Schema - Nested iteration with parent context access
+// Schema - Nested iteration
 {
   fields: [
     {
       type: "group-iterate",
-      iterate: { 
-        items: "orders", 
-        key: "id", 
-        as: "order",
-        scope: "parent"
-      },
+      iterate: { items: "orders", key: "id" },
       styleClasses: "order-card",
       legend: "Orders",
       fields: [
-        { 
-          type: "content",
-          content: `<h3>Order for ${model.companyName}</h3>`
-        },
-        { 
-          type: "input", 
-          model: "order.customerName", 
-          label: "Customer"
-        },
-        { 
+        {
           type: "input",
-          inputType: "number",
-          model: "order.discount", 
-          label: "Discount (%)",
-          min: 0,
-          max: 1,
-          step: 0.01
+          model: "customerName",
+          label: "Customer"
         },
         {
           type: "group-iterate",
-          iterate: { 
-            items: "order.lineItems",  // Nested path
-            key: "sku", 
-            as: "line",
-            scope: "parent"
-          },
+          iterate: { items: "lineItems", key: "sku" },
           styleClasses: "line-item",
           legend: "Line Items",
           fields: [
-            { 
-              type: "input", 
-              model: "line.productName", 
+            {
+              type: "input",
+              model: "productName",
               label: "Product"
             },
-            { 
+            {
               type: "input",
               inputType: "number",
-              model: "line.quantity", 
+              model: "quantity",
               label: "Qty"
             },
-            { 
+            {
               type: "input",
               inputType: "number",
-              model: "line.price", 
+              model: "price",
               label: "Price"
             },
             {
               type: "content",
-              get: (model, schema, ctx) => {
-                // Access line item via alias
-                const lineTotal = ctx.line.quantity * ctx.line.price;
-                // Access order discount from outer context
-                const afterDiscount = lineTotal * (1 - ctx.order.discount);
-                return `<small>Subtotal: $${lineTotal} | After discount: $${afterDiscount.toFixed(2)}</small>`;
+              get: (model) => {
+                const total = model.quantity * model.price;
+                return `<small>Subtotal: $${total}</small>`;
               }
             }
           ]
@@ -444,64 +397,57 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
 }
 ```
 
-### Example 6: State Selector with Cities
+### Example 6: Accessing Parent Data (Workaround)
 ```javascript
 // Model
 {
-  selectedState: {
-    name: "California",
-    code: "CA",
-    taxRate: 0.0725
-  },
-  cities: [
-    { id: 1, name: "Los Angeles", population: 4000000 },
-    { id: 2, name: "San Diego", population: 1400000 },
-    { id: 3, name: "San Francisco", population: 870000 }
+  projectName: "Website Redesign",
+  assignedTo: "John Doe",
+  tasks: [
+    { id: 1, title: "Design mockups", completed: false },
+    { id: 2, title: "Write copy", completed: false }
   ]
 }
 
-// Schema - Show state info in each city
+// Schema - Show parent data using custom getter
 {
   fields: [
     {
       type: "group-iterate",
-      iterate: { 
-        items: "cities", 
-        key: "id", 
-        as: "city",
-        scope: "parent"  // Keep parent model for selectedState
-      },
-      styleClasses: "city-card",
+      iterate: { items: "tasks", key: "id" },
       fields: [
         {
-          type: "content",
-          content: `<div class="state-badge">
-            ${model.selectedState.name} (${model.selectedState.code})
-          </div>`
+          type: "checkbox",
+          model: "completed",
+          label: "Done"
         },
-        { 
-          type: "input", 
-          model: "city.name", 
-          label: "City Name"
-        },
-        { 
+        {
           type: "input",
-          inputType: "number",
-          model: "city.population", 
-          label: "Population"
+          model: "title",
+          label: "Task"
         },
         {
           type: "content",
-          get: (model) => {
-            // Access both parent (selectedState) and item (city via alias rewriting)
-            return `<small>Tax Rate: ${(model.selectedState.taxRate * 100).toFixed(2)}%</small>`;
+          // Workaround: Access parent model via component hierarchy
+          get: function(itemModel, schema, context) {
+            // The parent formGenerator still has access to root model
+            // Access via this.$parent or passed context
+            const rootModel = this.model || context?.model;
+            if (rootModel && rootModel.projectName) {
+              return `<small>Project: ${rootModel.projectName} | Assigned to: ${rootModel.assignedTo}</small>`;
+            }
+            return '';
           }
         }
       ]
     }
   ]
 }
+
+// Note: This workaround has limitations and may not work in all contexts.
+// For robust parent+item access, use the Parent Scope Access enhancement when available.
 ```
+
  
 ## Implementation Challenges
 
@@ -522,36 +468,26 @@ In dev mode, warn if nested contexts use the same alias name (e.g., both use `as
 ## Known Limitations
 - ❌ **Async items resolution:** Not supported. Populate model before rendering.
 - ❌ **Validation persistence:** Validation state resets if items array changes.
-- ❌ **Parent access in scope: "item":** Fields can only access item data (use `scope: "parent"` for mixed access).
+- ❌ **Parent data access:** Cannot directly access parent model data from within iterated fields. Use custom `get`/`set` functions as a workaround, or wait for the Parent Scope Access enhancement (see Future Enhancements).
 - ❌ **Bracket notation in paths:** User paths with `[index]` are not parsed (use dotted paths only).
 - ⚠️ **Deep nesting:** While supported, deeply nested iterations (3+ levels) may be difficult to debug.
 
 ## Resolved Decisions
 - ✅ **Name:** `type: "group-iterate"`
+- ✅ **Scope:** `scope: "item"` only (item becomes model, relative paths)
 - ✅ **Async items:** Not supported initially
-- ✅ **Parent + item access:** Via `scope: "parent"` with alias paths
 - ✅ **Key paths:** Support nested paths via `objGet`
 - ✅ **ID suffix:** Always auto-generated from key or index
-- ✅ **Implementation:** Provide/inject for path rewriting (not schema cloning)
-- ✅ **Nested resolution:** Innermost-first (like JavaScript scope)
+- ✅ **Implementation:** Simple v-for rendering (no path rewriting)
 
 ## Implementation Overview
 
 ### New Component: `formGroupIterate.vue`
 - Handles v-for iteration over items array
 - Resolves `iterate.items` (string path or function)
-- Provides `iterationContext` via Vue provide/inject
-- Passes appropriate model based on `scope` setting
+- Passes each iteration item as the model to child fields
 - Extends `fieldIdPrefix` for child fields
 - Handles key generation from `iterate.key`
-
-### Modified Component: `abstractField.js`
-- Injects `iterationContexts` array (supports nesting)
-- Updates `value` getter/setter to rewrite paths:
-  - Check injected contexts from innermost to outermost
-  - If path matches alias, rewrite to array access path
-  - Otherwise, use path as-is
-- Dev mode: Warn if alias path used with `scope: "item"`
 
 ### Modified Component: `formGroup.vue`
 - Add template case for `field.type === 'group-iterate'`
@@ -640,65 +576,34 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 
 ---
 
-### Increment 5: Path Rewriting (Single Level)
-**Goal:** Rewrite alias paths for `scope: "parent"`
+### Increment 5: Nested Iteration
+**Goal:** Support nested group-iterate with simple model passing
 
 **Tests:**
-- No rewriting when no iteration context
-- Rewrite alias path with single context (`"card.title"` → `"cards[0].title"`)
-- Don't rewrite non-alias paths
-- Warn in dev mode if alias used with `scope: "item"`
-- Handle fields with no model property
-- Custom `get` functions bypass rewriting
-
-**Implementation:** 
-- Add inject to `abstractField.js`
-- Update `value` getter/setter with path rewriting logic
-
-**Shippable:** ✅ Yes! Now `scope: "parent"` works with alias paths
-
-**Usage at this stage:**
-```javascript
-{
-  type: "group-iterate",
-  iterate: { items: "cities", as: "city", scope: "parent" },
-  fields: [
-    { type: "input", model: "stateName" },   // Parent data
-    { type: "input", model: "city.name" }    // Item data via alias
-  ]
-}
-```
-
----
-
-### Increment 6: Nested Iteration
-**Goal:** Support nested group-iterate with innermost-first resolution
-
-**Tests:**
-- Resolve innermost alias first in nested contexts
-- Resolve outer alias when inner doesn't match
-- Use root model when no alias matches
-- Warn about duplicate aliases in dev mode
+- Each iteration level receives its item as the model
+- Paths are relative to current iteration level
 - Test 3-level nesting
+- Verify models are passed correctly through nesting
 
 **Implementation:**
-- Array-based context injection in `formGroupIterate.vue`
-- Multi-context loop in `abstractField.js` path rewriting
+- Pass iteration item as model to child fields
+- No complex context resolution needed
 
-**Shippable:** ✅ Yes! Nested iteration fully functional
+**Shippable:** ✅ Yes! Nested iteration works
 
 **Usage at this stage:**
 ```javascript
 {
   type: "group-iterate",
-  iterate: { items: "orders", as: "order", scope: "parent" },
+  iterate: { items: "orders" },
   fields: [
+    { type: "input", model: "customerName" },
     {
       type: "group-iterate",
-      iterate: { items: "order.lineItems", as: "line", scope: "parent" },
+      iterate: { items: "lineItems" },
       fields: [
-        { model: "line.quantity" },
-        { model: "order.discount" }
+        { model: "quantity" },
+        { model: "price" }
       ]
     }
   ]
@@ -707,7 +612,7 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 
 ---
 
-### Increment 7: FormGroup Integration
+### Increment 6: FormGroup Integration
 **Goal:** Connect group-iterate to existing form generator
 
 **Tests:**
@@ -725,7 +630,7 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 
 ---
 
-### Increment 8: Validation Support
+### Increment 7: Validation Support
 **Goal:** Handle validation with dynamic field counts
 
 **Tests:**
@@ -745,7 +650,7 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 
 ---
 
-### Increment 9: Error Display Enhancement (Optional)
+### Increment 8: Error Display Enhancement (Optional)
 **Goal:** Make errors easier to understand
 
 **Tests:**
@@ -769,17 +674,16 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 | 2 | Key generation | ~30 | Low | #1 |
 | 3 | Basic iteration | ~150 | Medium | #1, #2 |
 | 4 | Unique IDs | ~40 | Low | #3 |
-| 5 | Path rewriting | ~80 | Medium | None |
-| 6 | Nested iteration | ~50 | Medium | #5 |
-| 7 | FormGroup integration | ~30 | Low | #3-6 |
-| 8 | Validation | ~100 | High | #7 |
-| 9 | Error display | ~80 | Low | #8 |
+| 5 | Nested iteration | ~30 | Low | #3 |
+| 6 | FormGroup integration | ~30 | Low | #3-5 |
+| 7 | Validation | ~100 | High | #6 |
+| 8 | Error display | ~80 | Low | #7 |
 
-**Total estimated: ~610 lines across 9 increments**
+**Total estimated: ~510 lines across 8 increments**
 
 ### Development Timeline
 - Each increment: 2-4 hours (includes tests + implementation)
-- Total: 18-36 hours of focused development
+- Total: 16-32 hours of focused development
 - Can be split across multiple sessions
 - Each increment can be committed and reviewed independently
 
@@ -790,12 +694,65 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 - **Regression tests:** Run all existing tests (must pass)
 - **Manual tests:** Example forms in dev environment
 
+## Future Enhancements
+
+The following advanced features were considered but deferred to keep the initial implementation focused and reduce risk:
+
+### Parent Scope Access
+**Goal:** Allow fields to access both parent model data and iterated item data simultaneously.
+
+**Proposed API:**
+```javascript
+{
+  type: "group-iterate",
+  iterate: {
+    items: "cities",
+    as: "city",        // alias for item
+    scope: "parent"    // access parent + item data
+  },
+  fields: [
+    { model: "stateName" },     // parent data
+    { model: "city.name" }      // item data via alias
+  ]
+}
+```
+
+**Implementation:** Would require path rewriting via Vue provide/inject pattern in `abstractField.js`.
+
+**Use Cases:**
+- Showing parent context alongside item data (e.g., state name in each city card)
+- Calculations combining parent and item values
+
+### Alias Path Rewriting
+**Goal:** Support complex path resolution with innermost-first alias matching in nested iterations.
+
+**Implementation:** Multi-level context injection with priority-based path resolution.
+
 ## Next Steps
 1. Set up test environment for new component
 2. Begin Increment 1 (write tests first)
 3. Implement until tests pass
 4. Ship increment and move to next
 5. After Increment 3: demo basic feature to stakeholders
-6. After Increment 7: ready for beta testing
-7. After Increment 8: ready for production
+6. After Increment 6: ready for beta testing
+7. After Increment 7: ready for production
+
+## Development Examples
+Create working examples in `dev/projects/` folder to manually test during development:
+
+**Suggested examples:**
+- `dev/projects/group-iterate-photos/` - Photo gallery editor (Example 1)
+- `dev/projects/group-iterate-todos/` - Todo list (Example 2)
+- `dev/projects/group-iterate-nested/` - Nested orders/line items (Example 4)
+
+Each example should include:
+- `index.html` - Entry point
+- `main.js` - Vue app initialization
+- `app.vue` - Component with schema and model
+
+These examples serve as:
+- Manual testing during development
+- Visual verification of each increment
+- Documentation for future developers
+- Demo material for stakeholders
  
