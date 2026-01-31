@@ -21,6 +21,7 @@ const generateDevProjects = () => {
 	if (!devProjects.includes("error-summary-demo")) devProjects.push("error-summary-demo");
 	if (!devProjects.includes("content-field")) devProjects.push("content-field");
 	if (!devProjects.includes("invalid-schema")) devProjects.push("invalid-schema");
+	if (!devProjects.includes("group-iterate-photos")) devProjects.push("group-iterate-photos");
 
 	// Filter out projects that no longer exist (e.g., removed demos)
 	const existingProjects = devProjects.filter((projectName) =>
