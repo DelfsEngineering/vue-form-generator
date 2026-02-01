@@ -29,8 +29,11 @@ Type name: `type: "group-iterate"`
   type: "group-iterate",
   iterate: {
     items: "cards",      // array path or function returning an array
-    key: "id"           // key path or function (optional)
+    key: "id",          // key path or function (optional)
+    wrapperTag: "div",  // HTML tag for wrapper (optional, default: no wrapper)
+    wrapperClass: ""    // CSS classes for wrapper (optional)
   },
+  styleClasses: "card-styling",  // Applied to EACH iterated item (like regular group)
   fields: [
     { type: "input", model: "title" },    // relative paths to item properties
     { type: "input", model: "caption" }
@@ -42,7 +45,17 @@ Type name: `type: "group-iterate"`
 - `type`: required (new element)
 - `iterate.items`: required
 - `iterate.key`: optional (see Key Behavior)
+- `iterate.wrapperTag`: optional (creates wrapper element if provided)
+- `iterate.wrapperClass`: optional (styles wrapper if wrapperTag provided)
+- `styleClasses`: optional (applied to EACH item, consistent with `type: "group"`)
 - `fields`: required (same as group)
+
+### API Consistency with `type: "group"`
+**Important:** `group-iterate` behaves like `type: "group"` but repeated. To maintain API consistency:
+- `styleClasses` on the field applies to **each iterated item** (not a wrapper)
+- By default, **no wrapper element** is added (minimizes DOM)
+- To add a wrapper container, use `iterate.wrapperTag` and `iterate.wrapperClass`
+- Each iteration renders like a standalone `group` with its styling
  
 ## Model Scope
 
@@ -69,6 +82,57 @@ Each iteration item becomes the model object passed to child fields. Fields use 
 ```
 
 **Path Resolution:** Uses standard lodash `objGet` for nested property access with dotted notation.
+
+## DOM Structure and Styling
+
+### No Extra Wrapper by Default
+Like `type: "group"`, `group-iterate` does NOT add unnecessary DOM elements. By default:
+- Each iteration renders a `form-group` component with its fields
+- `styleClasses` on the field applies to each iterated `form-group`
+- No container/wrapper element is created
+
+```javascript
+// This schema:
+{
+  type: "group-iterate",
+  iterate: { items: "todos", key: "id" },
+  styleClasses: "todo-card",
+  fields: [{ type: "input", model: "title" }]
+}
+
+// Renders as (simplified):
+<form-group class="todo-card">...</form-group>  <!-- Item 1 -->
+<form-group class="todo-card">...</form-group>  <!-- Item 2 -->
+<form-group class="todo-card">...</form-group>  <!-- Item 3 -->
+```
+
+### Optional Wrapper Container
+If you need a container element (e.g., for flexbox/grid layout), use `iterate.wrapperTag` and `iterate.wrapperClass`:
+
+```javascript
+{
+  type: "group-iterate",
+  iterate: { 
+    items: "todos", 
+    wrapperTag: "div",           // Creates wrapper element
+    wrapperClass: "flex gap-4"   // Styles the wrapper
+  },
+  styleClasses: "todo-card",     // Still applies to EACH item
+  fields: [...]
+}
+
+// Renders as:
+<div class="flex gap-4">                      <!-- Wrapper -->
+  <form-group class="todo-card">...</form-group>
+  <form-group class="todo-card">...</form-group>
+</div>
+```
+
+### Styling Best Practices
+- **Item styling:** Use `styleClasses` (consistent with `type: "group"`)
+- **Wrapper styling:** Only use `iterate.wrapperClass` if you need a container
+- **Tailwind/utility CSS:** Works perfectly with this approach
+- **Conditional item styling:** Use functions for `styleClasses` (see examples below)
  
  ## Items Source
  `iterate.items` can be:
@@ -168,9 +232,10 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       type: "group-iterate",
       iterate: { 
         items: "photos", 
-        key: "id"
+        key: "id",
+        wrapperClass: "space-y-4"  // Optional: space between items
       },
-      styleClasses: "photo-card",
+      styleClasses: "photo-card",  // Applied to EACH item
       fields: [
         { 
           type: "image", 
@@ -212,7 +277,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
     {
       type: "group-iterate",
       iterate: { items: "todos", key: "id" },
-      styleClasses: "todo-item",
+      styleClasses: "todo-item",  // Applied to EACH todo
       fields: [
         {
           type: "checkbox",
@@ -311,7 +376,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
     {
       type: "group-iterate",
       iterate: { items: "orders", key: "id" },
-      styleClasses: "order-card",
+      styleClasses: "order-card",  // Applied to EACH order
       legend: "Orders",
       fields: [
         {
@@ -322,7 +387,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         {
           type: "group-iterate",
           iterate: { items: "lineItems", key: "sku" },
-          styleClasses: "line-item",
+          styleClasses: "line-item",  // Applied to EACH line item
           legend: "Line Items",
           fields: [
             {
@@ -397,7 +462,53 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 }
 ```
 
-### Example 6: Accessing Parent Data (Workaround)
+### Example 6: Conditional Item Styling
+```javascript
+// Model
+{
+  tasks: [
+    { id: 1, title: "Buy groceries", priority: "high", completed: false },
+    { id: 2, title: "Call dentist", priority: "medium", completed: true },
+    { id: 3, title: "Read book", priority: "low", completed: false }
+  ]
+}
+
+// Schema - Dynamic styling per item
+{
+  fields: [
+    {
+      type: "group-iterate",
+      iterate: { items: "tasks", key: "id" },
+      // styleClasses can be a function for conditional styling
+      styleClasses: (item) => {
+        let classes = "p-4 border rounded";
+        if (item.completed) {
+          classes += " bg-green-50 border-green-200";
+        } else if (item.priority === "high") {
+          classes += " bg-red-50 border-red-200";
+        } else if (item.priority === "medium") {
+          classes += " bg-yellow-50 border-yellow-200";
+        } else {
+          classes += " bg-gray-50 border-gray-200";
+        }
+        return classes;
+      },
+      fields: [
+        { type: "checkbox", model: "completed", label: "Done" },
+        { type: "input", model: "title", label: "Task" },
+        { 
+          type: "select", 
+          model: "priority", 
+          label: "Priority",
+          values: ["low", "medium", "high"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Example 7: Accessing Parent Data (Workaround)
 ```javascript
 // Model
 {
@@ -488,6 +599,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 - Passes each iteration item as the model to child fields
 - Extends `fieldIdPrefix` for child fields
 - Handles key generation from `iterate.key`
+- Renders `form-group` for each item with `styleClasses` applied
+- Optionally creates wrapper element via `iterate.wrapperTag`
+- Evaluates `styleClasses` function per-item for conditional styling
 
 ### Modified Component: `formGroup.vue`
 - Add template case for `field.type === 'group-iterate'`
