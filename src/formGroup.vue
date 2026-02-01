@@ -201,9 +201,7 @@ export default {
 		getFieldIterationKey(field, item, itemIdx, fieldIdx) {
 			// If field has iterate, generate key for this item
 			if (field.iterate) {
-				const key = field.iterate.key
-					? generateIterationKey(item, itemIdx, field.iterate.key)
-					: itemIdx;
+				const key = field.iterate.key ? generateIterationKey(item, itemIdx, field.iterate.key) : itemIdx;
 				return `${fieldIdx}-${key}`;
 			}
 			// No iteration, use field index
