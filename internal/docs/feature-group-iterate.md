@@ -56,6 +56,34 @@ Type name: `type: "group-iterate"`
 - By default, **no wrapper element** is added (minimizes DOM)
 - To add a wrapper container, use `iterate.wrapperTag` and `iterate.wrapperClass`
 - Each iteration renders like a standalone `group` with its styling
+
+### Recommended Pattern: Wrap in a Regular Group
+**Best Practice:** Wrap `group-iterate` inside a regular `type: "group"` for proper container control:
+
+```javascript
+{
+  type: "group",
+  styleClasses: "col-md-12",  // Outer container styling
+  fields: [
+    {
+      type: "group-iterate",
+      styleClasses: "card card-body mb-3",  // Applied to EACH item
+      iterate: {
+        items: "photos",
+        key: "id"
+      },
+      fields: [
+        { type: "input", model: "title" }
+      ]
+    }
+  ]
+}
+```
+
+This pattern provides:
+- Clear separation between container (outer group) and items (group-iterate)
+- Better control over layout and spacing
+- Consistent with how regular groups are used in forms
  
 ## Model Scope
 
@@ -229,14 +257,17 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       label: "Gallery Title" 
     },
     {
-      type: "group-iterate",
-      iterate: { 
-        items: "photos", 
-        key: "id",
-        wrapperClass: "space-y-4"  // Optional: space between items
-      },
-      styleClasses: "photo-card",  // Applied to EACH item
+      type: "group",  // Wrapper group for container
+      styleClasses: "photo-gallery-container",
       fields: [
+        {
+          type: "group-iterate",
+          iterate: { 
+            items: "photos", 
+            key: "id"
+          },
+          styleClasses: "photo-card",  // Applied to EACH item
+          fields: [
         { 
           type: "image", 
           model: "url", 
@@ -257,6 +288,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
@@ -275,10 +309,14 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 {
   fields: [
     {
-      type: "group-iterate",
-      iterate: { items: "todos", key: "id" },
-      styleClasses: "todo-item",  // Applied to EACH todo
+      type: "group",
+      styleClasses: "todo-list-container",
       fields: [
+        {
+          type: "group-iterate",
+          iterate: { items: "todos", key: "id" },
+          styleClasses: "todo-item",  // Applied to EACH todo
+          fields: [
         {
           type: "checkbox",
           model: "done",
@@ -297,6 +335,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
@@ -316,12 +357,17 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 {
   fields: [
     {
-      type: "group-iterate",
-      iterate: { 
-        items: "products", 
-        key: "id"
-      },
+      type: "group",
+      styleClasses: "product-list-container",
       fields: [
+        {
+          type: "group-iterate",
+          iterate: { 
+            items: "products", 
+            key: "id"
+          },
+          styleClasses: "product-item",
+          fields: [
         { 
           type: "input", 
           model: "name", 
@@ -350,6 +396,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
@@ -374,11 +423,15 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 {
   fields: [
     {
-      type: "group-iterate",
-      iterate: { items: "orders", key: "id" },
-      styleClasses: "order-card",  // Applied to EACH order
-      legend: "Orders",
+      type: "group",
+      styleClasses: "orders-container",
       fields: [
+        {
+          type: "group-iterate",
+          iterate: { items: "orders", key: "id" },
+          styleClasses: "order-card",  // Applied to EACH order
+          legend: "Orders",
+          fields: [
         {
           type: "input",
           model: "customerName",
@@ -418,6 +471,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
@@ -443,21 +499,29 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       label: "Show Completed Tasks" 
     },
     {
-      type: "group-iterate",
-      iterate: { 
-        items: (model) => {
-          // Function is called with model
-          return model.showCompleted 
-            ? model.allTasks 
-            : model.allTasks.filter(t => !t.completed);
-        },
-        key: "id"
-      },
+      type: "group",
+      styleClasses: "tasks-container",
       fields: [
+        {
+          type: "group-iterate",
+          iterate: { 
+            items: (model) => {
+              // Function is called with model
+              return model.showCompleted 
+                ? model.allTasks 
+                : model.allTasks.filter(t => !t.completed);
+            },
+            key: "id"
+          },
+          styleClasses: "task-item",
+          fields: [
         { type: "input", model: "title", label: "Task" },
         { type: "checkbox", model: "completed", label: "Done" }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
@@ -477,10 +541,14 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 {
   fields: [
     {
-      type: "group-iterate",
-      iterate: { items: "tasks", key: "id" },
-      // styleClasses can be a function for conditional styling
-      styleClasses: (item) => {
+      type: "group",
+      styleClasses: "tasks-container",
+      fields: [
+        {
+          type: "group-iterate",
+          iterate: { items: "tasks", key: "id" },
+          // styleClasses can be a function for conditional styling
+          styleClasses: (item) => {
         let classes = "p-4 border rounded";
         if (item.completed) {
           classes += " bg-green-50 border-green-200";
@@ -504,6 +572,9 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
         }
       ]
     }
+        ]
+      }
+    ]
   ]
 }
 ```
