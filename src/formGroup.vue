@@ -4,57 +4,107 @@
 		<slot name="group-help" :group="group"></slot>
 		<template v-for="(field, index) in fields">
 			<template v-if="isFieldRenderable(field)">
-				<template v-if="fieldVisible(field)">
-					<!-- Universal iteration: iterate over items if field.iterate exists, else treat as single item -->
-					<template v-for="(item, itemIdx) in getFieldItems(field)">
-						<form-group
-							v-if="field.type === 'group'"
-							:key="getFieldIterationKey(field, item, itemIdx, index)"
-							:fields="field.fields"
-							:group="getIteratedField(field, item)"
-							:tag="getGroupTag(field)"
-							:model="item"
-							:options="options"
-							:errors="errors"
-							:event-bus="eventBus"
-							v-bind="setFormGroupAttributes(index)"
-						>
-							<template slot="group-legend" slot-scope="slotProps">
-								<slot
-									name="group-legend"
-									:group="slotProps.group"
-									:group-legend="slotProps.groupLegend"
-								></slot>
-							</template>
-							<template slot="group-help" slot-scope="slotProps">
-								<slot name="group-help" :group="slotProps.group"></slot>
-							</template>
+				<!-- Non-iterated fields: check visible once, render once -->
+				<template v-if="!field.iterate && fieldVisible(field)">
+					<form-group
+						v-if="field.type === 'group'"
+						:key="index"
+						:fields="field.fields"
+						:group="field"
+						:tag="getGroupTag(field)"
+						:model="model"
+						:options="options"
+						:errors="errors"
+						:event-bus="eventBus"
+						v-bind="setFormGroupAttributes(index)"
+					>
+						<template slot="group-legend" slot-scope="slotProps">
+							<slot
+								name="group-legend"
+								:group="slotProps.group"
+								:group-legend="slotProps.groupLegend"
+							></slot>
+						</template>
+						<template slot="group-help" slot-scope="slotProps">
+							<slot name="group-help" :group="slotProps.group"></slot>
+						</template>
 
-							<template slot="element" slot-scope="slotProps">
-								<slot
-									name="element"
-									:field="slotProps.field"
-									:model="slotProps.model"
-									:options="slotProps.options"
-									:errors="slotProps.errors"
-									:event-bus="slotProps.eventBus"
-								></slot>
-							</template>
-						</form-group>
-						<field-content
-							v-else-if="field.type === 'content'"
-							:key="getFieldIterationKey(field, item, itemIdx, index)"
-							:schema="field"
-						/>
-						<slot
-							v-else
-							name="element"
-							:field="field"
-							:model="item"
-							:options="options"
-							:errors="errors"
-							:event-bus="eventBus"
-						></slot>
+						<template slot="element" slot-scope="slotProps">
+							<slot
+								name="element"
+								:field="slotProps.field"
+								:model="slotProps.model"
+								:options="slotProps.options"
+								:errors="slotProps.errors"
+								:event-bus="slotProps.eventBus"
+							></slot>
+						</template>
+					</form-group>
+					<field-content v-else-if="field.type === 'content'" :key="index" :schema="field" />
+					<slot
+						v-else
+						name="element"
+						:field="field"
+						:model="model"
+						:options="options"
+						:errors="errors"
+						:event-bus="eventBus"
+					></slot>
+				</template>
+
+				<!-- Iterated fields: check visible per-item, render multiple -->
+				<template v-else-if="field.iterate">
+					<template v-for="(item, itemIdx) in getFieldItems(field)">
+						<template v-if="itemVisible(field, item)">
+							<form-group
+								v-if="field.type === 'group'"
+								:key="getFieldIterationKey(field, item, itemIdx, index)"
+								:fields="field.fields"
+								:group="getIteratedField(field, item)"
+								:tag="getGroupTag(field)"
+								:model="item"
+								:options="options"
+								:errors="errors"
+								:event-bus="eventBus"
+								v-bind="setFormGroupAttributes(index)"
+							>
+								<template slot="group-legend" slot-scope="slotProps">
+									<slot
+										name="group-legend"
+										:group="slotProps.group"
+										:group-legend="slotProps.groupLegend"
+									></slot>
+								</template>
+								<template slot="group-help" slot-scope="slotProps">
+									<slot name="group-help" :group="slotProps.group"></slot>
+								</template>
+
+								<template slot="element" slot-scope="slotProps">
+									<slot
+										name="element"
+										:field="slotProps.field"
+										:model="slotProps.model"
+										:options="slotProps.options"
+										:errors="slotProps.errors"
+										:event-bus="slotProps.eventBus"
+									></slot>
+								</template>
+							</form-group>
+							<field-content
+								v-else-if="field.type === 'content'"
+								:key="getFieldIterationKey(field, item, itemIdx, index)"
+								:schema="field"
+							/>
+							<slot
+								v-else
+								name="element"
+								:field="field"
+								:model="item"
+								:options="options"
+								:errors="errors"
+								:event-bus="eventBus"
+							></slot>
+						</template>
 					</template>
 				</template>
 			</template>
@@ -167,7 +217,7 @@ export default {
 		isFieldRenderable(field) {
 			return !isNil(field) && !isNil(field.type);
 		},
-		// Get visible prop of field
+		// Get visible prop of field (for non-iterated fields)
 		fieldVisible(field) {
 			if (isFunction(field.visible)) {
 				return field.visible.call(this, this.model, field, this);
@@ -175,6 +225,20 @@ export default {
 
 			if (isNil(field.visible)) {
 				return true;
+			}
+
+			return field.visible;
+		},
+
+		// Check visible per-item (for iterated fields)
+		itemVisible(field, item) {
+			if (!field.visible) {
+				return true; // No visible property = show all items
+			}
+
+			if (isFunction(field.visible)) {
+				// Call visible function with ITEM model (not root model)
+				return field.visible.call(this, item, field, this);
 			}
 
 			return field.visible;

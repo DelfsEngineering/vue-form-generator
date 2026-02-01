@@ -19601,8 +19601,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=006cf920
-var formGroupvue_type_template_id_006cf920_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=a45973da
+var formGroupvue_type_template_id_a45973da_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19615,8 +19615,57 @@ var formGroupvue_type_template_id_006cf920_render = function render() {
   }), _vm._t("group-help", null, {
     "group": _vm.group
   }), _vm._l(_vm.fields, function (field, index) {
-    return [_vm.isFieldRenderable(field) ? [_vm.fieldVisible(field) ? [_vm._l(_vm.getFieldItems(field), function (item, itemIdx) {
-      return [field.type === 'group' ? _c('form-group', _vm._b({
+    return [_vm.isFieldRenderable(field) ? [!field.iterate && _vm.fieldVisible(field) ? [field.type === 'group' ? _c('form-group', _vm._b({
+      key: index,
+      attrs: {
+        "fields": field.fields,
+        "group": field,
+        "tag": _vm.getGroupTag(field),
+        "model": _vm.model,
+        "options": _vm.options,
+        "errors": _vm.errors,
+        "event-bus": _vm.eventBus
+      },
+      scopedSlots: _vm._u([{
+        key: "group-legend",
+        fn: function fn(slotProps) {
+          return [_vm._t("group-legend", null, {
+            "group": slotProps.group,
+            "groupLegend": slotProps.groupLegend
+          })];
+        }
+      }, {
+        key: "group-help",
+        fn: function fn(slotProps) {
+          return [_vm._t("group-help", null, {
+            "group": slotProps.group
+          })];
+        }
+      }, {
+        key: "element",
+        fn: function fn(slotProps) {
+          return [_vm._t("element", null, {
+            "field": slotProps.field,
+            "model": slotProps.model,
+            "options": slotProps.options,
+            "errors": slotProps.errors,
+            "eventBus": slotProps.eventBus
+          })];
+        }
+      }], null, true)
+    }, 'form-group', _vm.setFormGroupAttributes(index), false)) : field.type === 'content' ? _c('field-content', {
+      key: index,
+      attrs: {
+        "schema": field
+      }
+    }) : _vm._t("element", null, {
+      "field": field,
+      "model": _vm.model,
+      "options": _vm.options,
+      "errors": _vm.errors,
+      "eventBus": _vm.eventBus
+    })] : field.iterate ? [_vm._l(_vm.getFieldItems(field), function (item, itemIdx) {
+      return [_vm.itemVisible(field, item) ? [field.type === 'group' ? _c('form-group', _vm._b({
         key: _vm.getFieldIterationKey(field, item, itemIdx, index),
         attrs: {
           "fields": field.fields,
@@ -19665,7 +19714,7 @@ var formGroupvue_type_template_id_006cf920_render = function render() {
         "options": _vm.options,
         "errors": _vm.errors,
         "eventBus": _vm.eventBus
-      })];
+      })] : _vm._e()];
     })] : _vm._e()] : _vm.showInvalidWarnings ? [_c('div', {
       key: 'invalid-' + index,
       staticClass: "vfg-field-warning",
@@ -19673,7 +19722,7 @@ var formGroupvue_type_template_id_006cf920_render = function render() {
     }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_006cf920_staticRenderFns = [];
+var formGroupvue_type_template_id_a45973da_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -20166,13 +20215,24 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
     isFieldRenderable: function isFieldRenderable(field) {
       return !isNil_default()(field) && !isNil_default()(field.type);
     },
-    // Get visible prop of field
+    // Get visible prop of field (for non-iterated fields)
     fieldVisible: function fieldVisible(field) {
       if (isFunction_default()(field.visible)) {
         return field.visible.call(this, this.model, field, this);
       }
       if (isNil_default()(field.visible)) {
         return true;
+      }
+      return field.visible;
+    },
+    // Check visible per-item (for iterated fields)
+    itemVisible: function itemVisible(field, item) {
+      if (!field.visible) {
+        return true; // No visible property = show all items
+      }
+      if (isFunction_default()(field.visible)) {
+        // Call visible function with ITEM model (not root model)
+        return field.visible.call(this, item, field, this);
       }
       return field.visible;
     },
@@ -20270,8 +20330,8 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_006cf920_render,
-  formGroupvue_type_template_id_006cf920_staticRenderFns,
+  formGroupvue_type_template_id_a45973da_render,
+  formGroupvue_type_template_id_a45973da_staticRenderFns,
   false,
   null,
   null,

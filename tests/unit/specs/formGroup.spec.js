@@ -309,6 +309,75 @@ describe("formGroup.vue", () => {
 			});
 		});
 
+		describe("per-item visibility", () => {
+			it("should evaluate visible per-item for iterated fields", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							visible: (item) => item.isActive, // Per-item
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ title: "Active", isActive: true },
+							{ title: "Inactive", isActive: false },
+							{ title: "Also Active", isActive: true }
+						]
+					}
+				});
+
+				// Should only render 2 items (the active ones)
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(2);
+			});
+
+			it("should show all items when visible is not specified", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							// No visible property
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "A" }, { title: "B" }, { title: "C" }]
+					}
+				});
+
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(3);
+			});
+
+			it("should work with complex visible logic", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							visible: (item) => item.priority === "high" || item.completed,
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ title: "High priority", priority: "high", completed: false },
+							{ title: "Low priority", priority: "low", completed: false },
+							{ title: "Completed", priority: "low", completed: true }
+						]
+					}
+				});
+
+				// Should render 2 items (high priority + completed)
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(2);
+			});
+		});
+
 		describe("nested iteration", () => {
 			it("should support nested iterate fields", () => {
 				wrapper = createWrapper({
@@ -343,141 +412,6 @@ describe("formGroup.vue", () => {
 				// Should have multiple levels of nesting
 				const allFieldsets = wrapper.findAll("fieldset");
 				expect(allFieldsets.length).to.be.gt(3);
-			});
-		});
-
-		describe("per-item visibility (itemVisible)", () => {
-			it("should render all items when no itemVisible specified", () => {
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						items: [{ title: "A" }, { title: "B" }, { title: "C" }]
-					}
-				});
-
-				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				expect(groups.length).to.equal(3);
-			});
-
-			it("should filter items based on itemVisible function", () => {
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							itemVisible: (item) => item.isActive,
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						items: [
-							{ title: "A", isActive: true },
-							{ title: "B", isActive: false },
-							{ title: "C", isActive: true }
-						]
-					}
-				});
-
-				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				// Only 2 active items should render
-				expect(groups.length).to.equal(2);
-			});
-
-			it("should work with static itemVisible boolean", () => {
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							itemVisible: false, // Hide all items
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						items: [{ title: "A" }, { title: "B" }]
-					}
-				});
-
-				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				expect(groups.length).to.equal(0);
-			});
-
-			it("should combine visible and itemVisible", () => {
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							visible: (model) => model.showSection,
-							itemVisible: (item) => item.priority === "high",
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						showSection: true,
-						items: [
-							{ title: "A", priority: "high" },
-							{ title: "B", priority: "low" },
-							{ title: "C", priority: "high" }
-						]
-					}
-				});
-
-				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				// Only high priority items
-				expect(groups.length).to.equal(2);
-			});
-
-			it("should not render any items when visible is false", () => {
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							visible: false,
-							itemVisible: (item) => true, // Would show all, but visible=false overrides
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						items: [{ title: "A" }, { title: "B" }]
-					}
-				});
-
-				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				expect(groups.length).to.equal(0);
-			});
-
-			it("should pass field and form context to itemVisible function", () => {
-				let capturedArgs = null;
-
-				wrapper = createWrapper({
-					fields: [
-						{
-							type: "group",
-							iterate: { items: "items" },
-							itemVisible: function (item, field, formContext) {
-								capturedArgs = { item, field, formContext };
-								return true;
-							},
-							fields: [{ type: "input", model: "title" }]
-						}
-					],
-					model: {
-						items: [{ title: "A" }]
-					}
-				});
-
-				expect(capturedArgs).to.not.be.null;
-				expect(capturedArgs.item).to.deep.include({ title: "A" });
-				expect(capturedArgs.field).to.have.property("type", "group");
-				expect(capturedArgs.formContext).to.be.an("object");
 			});
 		});
 	});
