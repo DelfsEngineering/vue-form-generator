@@ -1,4 +1,5 @@
 <template>
+	<!-- Minimal wrapper required by Vue 2 (like formGroup uses fieldset) -->
 	<component :is="wrapperTag" :class="wrapperClasses">
 		<form-group
 			v-for="(item, index) in resolvedItems"
@@ -74,15 +75,12 @@ export default {
 	},
 	computed: {
 		wrapperTag() {
-			// Allow customization via iterate.wrapperTag, default to div
+			// Default to div (minimal wrapper, like formGroup uses fieldset)
+			// Can be customized via iterate.wrapperTag
 			return (this.iterate && this.iterate.wrapperTag) || "div";
 		},
 		wrapperClasses() {
-			// Priority 1: group.styleClasses (field-level, passed via :group="field")
-			// Priority 2: iterate.wrapperClass (config-level, for backward compat)
-			if (this.group && this.group.styleClasses) {
-				return this.group.styleClasses;
-			}
+			// Only apply classes if wrapperClass is explicitly provided
 			if (this.iterate && this.iterate.wrapperClass) {
 				return this.iterate.wrapperClass;
 			}
@@ -103,16 +101,15 @@ export default {
 			return generateIterationKey(item, index, this.iterate.key);
 		},
 		getItemGroup(item) {
-			// Merge group with itemClass from iterate config
+			// Clone group object to avoid mutation
 			const merged = { ...this.group };
-			if (this.iterate && this.iterate.itemClass) {
-				// If itemClass is a function, call it with the item model
-				if (typeof this.iterate.itemClass === "function") {
-					merged.styleClasses = this.iterate.itemClass(item);
-				} else {
-					merged.styleClasses = this.iterate.itemClass;
-				}
+
+			// If styleClasses is a function, evaluate it per-item for conditional styling
+			// This allows: styleClasses: (item) => item.active ? "active" : "inactive"
+			if (merged.styleClasses && typeof merged.styleClasses === "function") {
+				merged.styleClasses = merged.styleClasses(item);
 			}
+
 			return merged;
 		}
 	}
@@ -120,7 +117,4 @@ export default {
 </script>
 
 <style lang="scss">
-// Styling for iterated groups
-// Target by field type in parent, e.g.:
-// .field-group-iterate > fieldset { ... }
 </style>

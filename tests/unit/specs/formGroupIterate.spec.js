@@ -328,8 +328,8 @@ describe("formGroupIterate.vue", () => {
 		});
 	});
 
-	describe("wrapper element (optional)", () => {
-		it("should not create wrapper by default (no wrapperTag)", () => {
+	describe("wrapper element (minimal by default)", () => {
+		it("should use minimal div wrapper by default (no wrapperTag)", () => {
 			wrapper = createWrapper({
 				iterate: { items: "cards" },
 				fields: [{ type: "input", model: "title" }],
@@ -338,9 +338,9 @@ describe("formGroupIterate.vue", () => {
 				}
 			});
 
-			// Should render only the form-group elements, no extra wrapper
-			const groups = wrapper.findAll(formGroup);
-			expect(groups.length).to.equal(1);
+			// Vue 2 requires wrapper, default is simple div with no classes
+			expect(wrapper.element.tagName.toLowerCase()).to.equal("div");
+			expect(wrapper.classes().length).to.equal(0); // No classes by default
 		});
 
 		it("should create wrapper when wrapperTag is provided", () => {
@@ -373,11 +373,11 @@ describe("formGroupIterate.vue", () => {
 			expect(wrapper.classes()).to.include("p-6");
 		});
 
-		it("should not apply wrapperClass without wrapperTag", () => {
+		it("should apply wrapperClass to default wrapper", () => {
 			wrapper = createWrapper({
 				iterate: {
 					items: "cards",
-					wrapperClass: "should-not-appear" // No wrapperTag, so no wrapper
+					wrapperClass: "custom-wrapper-styling"
 				},
 				fields: [{ type: "input", model: "title" }],
 				model: {
@@ -385,8 +385,9 @@ describe("formGroupIterate.vue", () => {
 				}
 			});
 
-			// wrapperClass should be ignored when no wrapperTag
-			expect(wrapper.classes()).to.not.include("should-not-appear");
+			// wrapperClass applies to the default div wrapper
+			expect(wrapper.element.tagName.toLowerCase()).to.equal("div");
+			expect(wrapper.classes()).to.include("custom-wrapper-styling");
 		});
 	});
 
