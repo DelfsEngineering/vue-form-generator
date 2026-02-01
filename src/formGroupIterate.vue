@@ -25,8 +25,14 @@ import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
 
 export default {
 	name: "FormGroupIterate",
-	// Note: FormGroup component is not imported to avoid circular dependency.
-	// It will be resolved at runtime since formGroup registers formGroupIterate.
+	components: {
+		// Use beforeCreate hook to register formGroup after both modules are loaded
+		// This breaks the circular dependency
+	},
+	beforeCreate() {
+		// Register formGroup component dynamically to avoid circular dependency
+		this.$options.components.formGroup = require("./formGroup.vue").default;
+	},
 	props: {
 		iterate: {
 			type: Object,
