@@ -327,4 +327,165 @@ describe("formGroupIterate.vue", () => {
 			expect(formGroupWrapper.props("tag")).to.equal("div");
 		});
 	});
+
+	describe("wrapper customization", () => {
+		it("should use default div wrapper", () => {
+			wrapper = createWrapper({
+				iterate: { items: "cards" },
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				}
+			});
+
+			expect(wrapper.element.tagName.toLowerCase()).to.equal("div");
+		});
+
+		it("should support custom wrapperTag", () => {
+			wrapper = createWrapper({
+				iterate: { items: "cards", wrapperTag: "section" },
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				}
+			});
+
+			expect(wrapper.element.tagName.toLowerCase()).to.equal("section");
+		});
+
+		it("should apply styleClasses from group to wrapper", () => {
+			wrapper = createWrapper({
+				iterate: { items: "cards" },
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				},
+				group: { styleClasses: "flex flex-col gap-4" }
+			});
+
+			expect(wrapper.classes()).to.include("flex");
+			expect(wrapper.classes()).to.include("flex-col");
+			expect(wrapper.classes()).to.include("gap-4");
+		});
+
+		it("should apply iterate.wrapperClass to wrapper", () => {
+			wrapper = createWrapper({
+				iterate: { items: "cards", wrapperClass: "custom-wrapper-class" },
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				}
+			});
+
+			expect(wrapper.classes()).to.include("custom-wrapper-class");
+		});
+
+		it("should prioritize group.styleClasses over iterate.wrapperClass", () => {
+			wrapper = createWrapper({
+				iterate: { items: "cards", wrapperClass: "fallback-class" },
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				},
+				group: { styleClasses: "priority-class" }
+			});
+
+			expect(wrapper.classes()).to.include("priority-class");
+			expect(wrapper.classes()).to.not.include("fallback-class");
+		});
+	});
+
+	describe("conditional itemClass", () => {
+		it("should apply static itemClass to all items", () => {
+			wrapper = createWrapper({
+				iterate: {
+					items: "cards",
+					itemClass: "static-item-class"
+				},
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }, { title: "Card B" }]
+				}
+			});
+
+			const groups = wrapper.findAll(formGroup);
+			groups.wrappers.forEach((groupWrapper) => {
+				expect(groupWrapper.props("group").styleClasses).to.equal("static-item-class");
+			});
+		});
+
+		it("should evaluate itemClass function per item", () => {
+			wrapper = createWrapper({
+				iterate: {
+					items: "cards",
+					itemClass: (item) => (item.active ? "active-class" : "inactive-class")
+				},
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [
+						{ title: "Card A", active: true },
+						{ title: "Card B", active: false }
+					]
+				}
+			});
+
+			const groups = wrapper.findAll(formGroup);
+			expect(groups.at(0).props("group").styleClasses).to.equal("active-class");
+			expect(groups.at(1).props("group").styleClasses).to.equal("inactive-class");
+		});
+
+		it("should support complex conditional itemClass logic", () => {
+			wrapper = createWrapper({
+				iterate: {
+					items: "cards",
+					itemClass: (item) => {
+						let classes = "base-class";
+						if (item.priority === "high") {
+							classes += " bg-red-100";
+						} else if (item.priority === "medium") {
+							classes += " bg-yellow-100";
+						} else {
+							classes += " bg-gray-100";
+						}
+						return classes;
+					}
+				},
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [
+						{ title: "Card A", priority: "high" },
+						{ title: "Card B", priority: "medium" },
+						{ title: "Card C", priority: "low" }
+					]
+				}
+			});
+
+			const groups = wrapper.findAll(formGroup);
+			expect(groups.at(0).props("group").styleClasses).to.include("bg-red-100");
+			expect(groups.at(1).props("group").styleClasses).to.include("bg-yellow-100");
+			expect(groups.at(2).props("group").styleClasses).to.include("bg-gray-100");
+		});
+
+		it("should preserve other group properties when applying itemClass", () => {
+			const groupConfig = { legend: "Test Legend", helpText: "Help" };
+
+			wrapper = createWrapper({
+				iterate: {
+					items: "cards",
+					itemClass: "item-class"
+				},
+				fields: [{ type: "input", model: "title" }],
+				model: {
+					cards: [{ title: "Card A" }]
+				},
+				group: groupConfig
+			});
+
+			const formGroupWrapper = wrapper.find(formGroup);
+			const passedGroup = formGroupWrapper.props("group");
+			expect(passedGroup.legend).to.equal("Test Legend");
+			expect(passedGroup.helpText).to.equal("Help");
+			expect(passedGroup.styleClasses).to.equal("item-class");
+		});
+	});
 });
