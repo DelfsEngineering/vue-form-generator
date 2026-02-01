@@ -212,9 +212,9 @@ describe("formGroup.vue", () => {
 					}
 				});
 				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				// Keys should be 0 and 1
-				expect(groups.at(0).vm.$vnode.key).to.equal(0);
-				expect(groups.at(1).vm.$vnode.key).to.equal(1);
+				// Keys are prefixed with field index to avoid collisions: "0-0", "0-1"
+				expect(groups.at(0).vm.$vnode.key).to.equal("0-0");
+				expect(groups.at(1).vm.$vnode.key).to.equal("0-1");
 			});
 
 			it("should use specified key property", () => {
@@ -234,8 +234,9 @@ describe("formGroup.vue", () => {
 					}
 				});
 				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
-				expect(groups.at(0).vm.$vnode.key).to.equal("a1");
-				expect(groups.at(1).vm.$vnode.key).to.equal("b2");
+				// Keys are prefixed with field index: "0-a1", "0-b2"
+				expect(groups.at(0).vm.$vnode.key).to.equal("0-a1");
+				expect(groups.at(1).vm.$vnode.key).to.equal("0-b2");
 			});
 		});
 

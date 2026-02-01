@@ -5,16 +5,18 @@
 		<template v-for="(field, index) in fields">
 			<template v-if="isFieldRenderable(field)">
 				<template v-if="fieldVisible(field)">
-					<template v-if="field.type === 'group'">
+					<!-- Universal iteration: iterate over items if field.iterate exists, else treat as single item -->
+					<template v-for="(item, itemIdx) in getFieldItems(field)">
 						<form-group
+							v-if="field.type === 'group'"
+							:key="getFieldIterationKey(field, item, itemIdx, index)"
 							:fields="field.fields"
-							:group="field"
+							:group="getIteratedField(field, item)"
 							:tag="getGroupTag(field)"
-							:model="model"
+							:model="item"
 							:options="options"
 							:errors="errors"
 							:event-bus="eventBus"
-							:key="index"
 							v-bind="setFormGroupAttributes(index)"
 						>
 							<template slot="group-legend" slot-scope="slotProps">
@@ -39,50 +41,16 @@
 								></slot>
 							</template>
 						</form-group>
-					</template>
-					<template v-else-if="field.type === 'group-iterate'">
-						<form-group-iterate
-							:iterate="field.iterate"
-							:fields="field.fields"
-							:group="field"
-							:tag="getGroupTag(field)"
-							:model="model"
-							:options="options"
-							:errors="errors"
-							:event-bus="eventBus"
-							:key="index"
-						>
-							<template slot="group-legend" slot-scope="slotProps">
-								<slot
-									name="group-legend"
-									:group="slotProps.group"
-									:group-legend="slotProps.groupLegend"
-								></slot>
-							</template>
-							<template slot="group-help" slot-scope="slotProps">
-								<slot name="group-help" :group="slotProps.group"></slot>
-							</template>
-
-							<template slot="element" slot-scope="slotProps">
-								<slot
-									name="element"
-									:field="slotProps.field"
-									:model="slotProps.model"
-									:options="slotProps.options"
-									:errors="slotProps.errors"
-									:event-bus="slotProps.eventBus"
-								></slot>
-							</template>
-						</form-group-iterate>
-					</template>
-					<template v-else-if="field.type === 'content'">
-						<field-content :schema="field" :key="index" />
-					</template>
-					<template v-else>
+						<field-content
+							v-else-if="field.type === 'content'"
+							:key="getFieldIterationKey(field, item, itemIdx, index)"
+							:schema="field"
+						/>
 						<slot
+							v-else
 							name="element"
 							:field="field"
-							:model="model"
+							:model="item"
 							:options="options"
 							:errors="errors"
 							:event-bus="eventBus"
@@ -102,12 +70,12 @@
 <script>
 import formMixin from "./formMixin.js";
 import fieldContent from "./fields/core/fieldContent.vue";
-import formGroupIterate from "./formGroupIterate.vue";
+import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
 import { get as objGet, isFunction, isNil } from "lodash";
 
 export default {
 	name: "FormGroup",
-	components: { fieldContent, formGroupIterate },
+	components: { fieldContent },
 	mixins: [formMixin],
 	props: {
 		fields: {
@@ -219,6 +187,40 @@ export default {
 				return this.tag;
 			}
 		},
+
+		// Iteration support methods
+		getFieldItems(field) {
+			// If field has iterate property, resolve items array
+			if (field.iterate && field.iterate.items) {
+				return resolveIterationItems(field.iterate.items, this.model, this.options);
+			}
+			// Otherwise, treat as single item (no iteration)
+			return [this.model];
+		},
+
+		getFieldIterationKey(field, item, itemIdx, fieldIdx) {
+			// If field has iterate, generate key for this item
+			if (field.iterate) {
+				const key = field.iterate.key
+					? generateIterationKey(item, itemIdx, field.iterate.key)
+					: itemIdx;
+				return `${fieldIdx}-${key}`;
+			}
+			// No iteration, use field index
+			return fieldIdx;
+		},
+
+		getIteratedField(field, item) {
+			// If field has iterate and styleClasses is a function, evaluate it per item
+			if (field.iterate && field.styleClasses && typeof field.styleClasses === "function") {
+				return {
+					...field,
+					styleClasses: field.styleClasses(item)
+				};
+			}
+			return field;
+		},
+
 		invalidFieldReason(field) {
 			if (isNil(field)) {
 				return "entry is null or undefined";
