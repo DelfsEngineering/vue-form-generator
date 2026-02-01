@@ -1,93 +1,100 @@
-# Feature: Group Iteration (Spec)
+# Feature: Field Iteration (Spec)
 
 ## Goal
-Provide a schema-level way to render a `group` once per item in an array, without requiring custom HTML elements in consuming apps.
+Provide a schema-level way to render **any field type** multiple times (once per item in an array), without requiring custom HTML elements in consuming apps.
 
 ## Status
-**Architecture Defined** - Ready for implementation planning.
+**Implemented in v3.2.x** - Universal iteration property for all field types.
 
 ## Summary
-Introduce a new schema element that behaves like `group` but adds iteration semantics (Vue `v-for`-like) for rendering arrays of data.
+Introduce an `iterate` property that can be added to **any field type** to render it once per item in an array. This provides Vue `v-for`-like semantics at the schema level.
 
-Type name: `type: "group-iterate"`
+Property name: `iterate` (universal modifier, not a new type)
 
 ## Motivation
-- Current `group` is a structural container (like a div).
-- Teams currently wrap groups with custom HTML in target apps to iterate.
-- We want a Vue-first, schema-native way to render repeated group layouts.
+- Current approach requires custom HTML wrappers in consuming apps to iterate over fields.
+- We want a Vue-first, schema-native way to render repeated field layouts.
+- Iteration should be a **universal capability**, not tied to a specific field type.
+- Simpler mental model: "Any field can iterate" vs "Use this special field type for iteration".
 
 ## Non-Goals
 - No framework-agnostic API.
-- No automatic nested iteration in a single group (separate groups should handle nested iteration).
 - No async items resolution initially (populate model first).
+- No automatic flattening of nested iterations (use nested schemas).
  
- ## Proposed Element (Schema)
+## Design Philosophy
+
+### Universal Iteration
+The `iterate` property is a **field modifier**, not a field type. It works with:
+- ✅ `type: "group"` - Render multiple groups (most common use case)
+- ✅ `type: "input"` - Render multiple inputs (e.g., phone numbers)
+- ✅ `type: "select"` - Render multiple selects
+- ✅ `type: "textarea"` - Render multiple textareas
+- ✅ **Any custom field type** - Iteration works universally
+
+### Unified Code Path
+Internally, ALL fields use the same iteration logic:
+- **With `iterate`**: Render once per item in the array
+- **Without `iterate`**: Render once (treated as array of 1)
+
+This simplifies implementation and ensures consistency.
+
+## API Design
  
-### Baseline Shape
+### Baseline Shape (Group Iteration - Most Common)
 ```javascript
 {
-  type: "group-iterate",
-  iterate: {
-    items: "cards",      // array path or function returning an array
-    key: "id",          // key path or function (optional)
-    wrapperTag: "div",  // HTML tag for wrapper (optional, default: no wrapper)
-    wrapperClass: ""    // CSS classes for wrapper (optional)
+  type: "group",  // Regular group type
+  iterate: {      // Iteration modifier
+    items: "cards",  // array path or function returning an array
+    key: "id"        // key path for unique keys (optional)
   },
-  styleClasses: "card-styling",  // Applied to EACH iterated item (like regular group)
+  styleClasses: "card-styling",  // Applied to EACH iterated group
   fields: [
-    { type: "input", model: "title" },    // relative paths to item properties
+    { type: "input", model: "title" },
     { type: "input", model: "caption" }
   ]
 }
 ```
- 
-### Required vs Optional
-- `type`: required (new element)
-- `iterate.items`: required
-- `iterate.key`: optional (see Key Behavior)
-- `iterate.wrapperTag`: optional (creates wrapper element if provided)
-- `iterate.wrapperClass`: optional (styles wrapper if wrapperTag provided)
-- `styleClasses`: optional (applied to EACH item, consistent with `type: "group"`)
-- `fields`: required (same as group)
 
-### API Consistency with `type: "group"`
-**Important:** `group-iterate` behaves like `type: "group"` but repeated. To maintain API consistency:
-- `styleClasses` on the field applies to **each iterated item** (not a wrapper)
-- By default, **no wrapper element** is added (minimizes DOM)
-- To add a wrapper container, use `iterate.wrapperTag` and `iterate.wrapperClass`
-- Each iteration renders like a standalone `group` with its styling
-
-### Recommended Pattern: Wrap in a Regular Group
-**Best Practice:** Wrap `group-iterate` inside a regular `type: "group"` for proper container control:
-
+### Simple Field Iteration (Input Example)
 ```javascript
 {
-  type: "group",
-  styleClasses: "col-md-12",  // Outer container styling
-  fields: [
-    {
-      type: "group-iterate",
-      styleClasses: "card card-body mb-3",  // Applied to EACH item
-      iterate: {
-        items: "photos",
-        key: "id"
-      },
-      fields: [
-        { type: "input", model: "title" }
-      ]
-    }
-  ]
+  type: "input",
+  inputType: "tel",
+  label: "Phone Number",
+  iterate: {
+    items: "phoneNumbers",  // Array of strings or objects
+    key: "id"
+  }
 }
 ```
 
-This pattern provides:
-- Clear separation between container (outer group) and items (group-iterate)
-- Better control over layout and spacing
-- Consistent with how regular groups are used in forms
+### Required vs Optional
+- `iterate.items`: **required** - Path to array or function returning array
+- `iterate.key`: **optional** - Property name for unique keys (defaults to index)
+- All other field properties work normally (`styleClasses`, `visible`, `validator`, etc.)
+
+### Clean DOM Output
+Because `iterate` is implemented inline (not as a separate component), there are **no extra wrapper elements**:
+
+```html
+<!-- Clean output with iterate -->
+<fieldset class="field-group">
+  <fieldset class="card">...</fieldset>  ← Item 1
+  <fieldset class="card">...</fieldset>  ← Item 2
+  <fieldset class="card">...</fieldset>  ← Item 3
+</fieldset>
+```
+
+No wrapper `<div>` or other cruft!
  
 ## Model Scope
 
-Each iteration item becomes the model object passed to child fields. Fields use **relative paths** to access item properties:
+When a field has `iterate`, each iteration item becomes the model object passed to that field instance.
+
+### For Groups (Most Common)
+Child fields use **relative paths** to access item properties:
 
 ```javascript
 // Model structure
@@ -98,14 +105,35 @@ Each iteration item becomes the model object passed to child fields. Fields use 
   ]
 }
 
-// Schema - fields access item properties directly
+// Schema - child fields get each photo as their model
 {
-  type: "group-iterate",
-  iterate: { items: "photos" },
+  type: "group",
+  iterate: { items: "photos", key: "id" },
   fields: [
-    { type: "input", model: "title" },    // item.title
-    { type: "input", model: "url" }      // item.url
+    { type: "input", model: "title" },  // ← Accesses photo.title
+    { type: "input", model: "url" }      // ← Accesses photo.url
   ]
+}
+```
+
+### For Simple Fields
+The field's `model` path applies to each item:
+
+```javascript
+// Model structure
+{
+  contacts: [
+    { id: 1, phone: "555-1234" },
+    { id: 2, phone: "555-5678" }
+  ]
+}
+
+// Schema - input renders once per contact
+{
+  type: "input",
+  inputType: "tel",
+  model: "phone",  // ← Accesses contact.phone for each iteration
+  iterate: { items: "contacts", key: "id" }
 }
 ```
 
@@ -113,52 +141,54 @@ Each iteration item becomes the model object passed to child fields. Fields use 
 
 ## DOM Structure and Styling
 
-### No Extra Wrapper by Default
-Like `type: "group"`, `group-iterate` does NOT add unnecessary DOM elements. By default:
-- Each iteration renders a `form-group` component with its fields
-- `styleClasses` on the field applies to each iterated `form-group`
+### Clean DOM Output
+Because `iterate` is implemented inline (not as a separate component), there are **no extra wrapper elements**:
+- Each iteration renders the field directly (input, select, fieldset, etc.)
+- `styleClasses` on the field applies to each iterated instance
 - No container/wrapper element is created
 
 ```javascript
 // This schema:
 {
-  type: "group-iterate",
+  type: "group",
   iterate: { items: "todos", key: "id" },
   styleClasses: "todo-card",
   fields: [{ type: "input", model: "title" }]
 }
 
 // Renders as (simplified):
-<form-group class="todo-card">...</form-group>  <!-- Item 1 -->
-<form-group class="todo-card">...</form-group>  <!-- Item 2 -->
-<form-group class="todo-card">...</form-group>  <!-- Item 3 -->
+<fieldset class="field-group todo-card">...</fieldset>  <!-- Item 1 -->
+<fieldset class="field-group todo-card">...</fieldset>  <!-- Item 2 -->
+<fieldset class="field-group todo-card">...</fieldset>  <!-- Item 3 -->
 ```
 
-### Optional Wrapper Container
-If you need a container element (e.g., for flexbox/grid layout), use `iterate.wrapperTag` and `iterate.wrapperClass`:
+### Container Pattern
+If you need a wrapper container (e.g., for flexbox/grid layout), wrap the iterated field in a regular group:
 
 ```javascript
 {
-  type: "group-iterate",
-  iterate: { 
-    items: "todos", 
-    wrapperTag: "div",           // Creates wrapper element
-    wrapperClass: "flex gap-4"   // Styles the wrapper
-  },
-  styleClasses: "todo-card",     // Still applies to EACH item
-  fields: [...]
+  type: "group",
+  styleClasses: "flex gap-4",  // Container styling
+  fields: [
+    {
+      type: "group",
+      iterate: { items: "todos" },
+      styleClasses: "todo-card",  // Item styling
+      fields: [...]
+    }
+  ]
 }
 
 // Renders as:
-<div class="flex gap-4">                      <!-- Wrapper -->
-  <form-group class="todo-card">...</form-group>
-  <form-group class="todo-card">...</form-group>
-</div>
+<fieldset class="field-group flex gap-4">              <!-- Container -->
+  <fieldset class="field-group todo-card">...</fieldset>  <!-- Item 1 -->
+  <fieldset class="field-group todo-card">...</fieldset>  <!-- Item 2 -->
+</fieldset>
 ```
 
 ### Styling Best Practices
-- **Item styling:** Use `styleClasses` (consistent with `type: "group"`)
-- **Wrapper styling:** Only use `iterate.wrapperClass` if you need a container
+- **Item styling:** Use `styleClasses` on the iterated field
+- **Container styling:** Use an outer `type: "group"` with `styleClasses`
 - **Tailwind/utility CSS:** Works perfectly with this approach
 - **Conditional item styling:** Use functions for `styleClasses` (see examples below)
  
@@ -180,16 +210,16 @@ Vue list rendering requires stable keys:
   - Default to `index` (documented as unstable for reorderable lists)
  
 ## ID Collisions
-Repeating a group with identical field schemas can produce duplicate DOM IDs.
+Repeating a field with identical configurations can produce duplicate DOM IDs.
 
 ### Solution: Automatic ID Prefix per Iteration
-- Each `group-iterate` extends the `fieldIdPrefix` option for its children.
+- Each iterated field extends the `fieldIdPrefix` option for its children.
 - Format: `{parentPrefix}-{iterationKey}-` where `iterationKey` is the resolved key or index.
 - Example: A field with model `"title"` in iteration 0 becomes `"frm1-0-title"` (if parent prefix is `"frm1-"`).
 - Applies to `fieldId` and all derived `aria-*` IDs automatically.
  
 ## Nested Iteration
-`group-iterate` can be nested to handle multi-level data structures. Each level receives its iteration item as the model, so paths are always relative to the current item.
+Fields with `iterate` can be nested to handle multi-level data structures. Each level receives its iteration item as the model, so paths are always relative to the current item.
 
 **Important:** In nested iterations:
 - The `items` path in inner iterations is resolved against the current iteration item (not the root model)
@@ -214,12 +244,12 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 
 // Schema - nested iteration
 {
-  type: "group-iterate",
+  type: "group",
   iterate: { items: "orders", key: "id" },  // Root level: iterates model.orders
   fields: [
     { type: "input", model: "customer" },  // Reads from current order
     {
-      type: "group-iterate",
+      type: "group",
       iterate: { items: "lineItems", key: "sku" },  // Nested: iterates currentOrder.lineItems
       fields: [
         { type: "input", model: "quantity" },  // Reads from current lineItem
@@ -261,7 +291,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "photo-gallery-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { 
             items: "photos", 
             key: "id"
@@ -313,7 +343,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "todo-list-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { items: "todos", key: "id" },
           styleClasses: "todo-item",  // Applied to EACH todo
           fields: [
@@ -361,7 +391,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "product-list-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { 
             items: "products", 
             key: "id"
@@ -427,7 +457,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "orders-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { items: "orders", key: "id" },
           styleClasses: "order-card",  // Applied to EACH order
           legend: "Orders",
@@ -438,7 +468,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
           label: "Customer"
         },
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { items: "lineItems", key: "sku" },
           styleClasses: "line-item",  // Applied to EACH line item
           legend: "Line Items",
@@ -503,7 +533,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "tasks-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { 
             items: (model) => {
               // Function is called with model
@@ -545,7 +575,7 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
       styleClasses: "tasks-container",
       fields: [
         {
-          type: "group-iterate",
+          type: "group",
           iterate: { items: "tasks", key: "id" },
           // styleClasses can be a function for conditional styling
           styleClasses: (item) => {
@@ -655,33 +685,105 @@ Repeating a group with identical field schemas can produce duplicate DOM IDs.
 - ⚠️ **Deep nesting:** While supported, deeply nested iterations (3+ levels) may be difficult to debug.
 
 ## Resolved Decisions
-- ✅ **Name:** `type: "group-iterate"`
-- ✅ **Scope:** `scope: "item"` only (item becomes model, relative paths)
+- ✅ **Design:** `iterate` property (universal modifier), not a new field type
+- ✅ **Scope:** Item becomes model, child paths are relative
 - ✅ **Async items:** Not supported initially
 - ✅ **Key paths:** Support nested paths via `objGet`
 - ✅ **ID suffix:** Always auto-generated from key or index
-- ✅ **Implementation:** Simple v-for rendering (no path rewriting)
+- ✅ **Implementation:** Inline iteration in `formGroup.vue` (no separate component, no extra wrapper)
 
 ## Implementation Overview
 
-### New Component: `formGroupIterate.vue`
-- Handles v-for iteration over items array
+### Modified Component: `formGroup.vue`
+- Add iteration logic inline (no separate component)
+- Check for `field.iterate` property on any field type
+- Use `<template v-for>` to iterate without wrapper element
 - Resolves `iterate.items` (string path or function)
-- Passes each iteration item as the model to child fields
+- Passes each iteration item as the model to the field
 - Extends `fieldIdPrefix` for child fields
 - Handles key generation from `iterate.key`
-- Renders `form-group` for each item with `styleClasses` applied
-- Optionally creates wrapper element via `iterate.wrapperTag`
 - Evaluates `styleClasses` function per-item for conditional styling
+- **Universal:** Works with groups, inputs, selects, any field type
 
-### Modified Component: `formGroup.vue`
-- Add template case for `field.type === 'group-iterate'`
-- Render `formGroupIterate` component
+### Utility Functions: `utils/iteration.js`
+- `resolveIterationItems(items, model, options)` - Resolve items path/function
+- `generateIterationKey(item, index, key)` - Generate Vue keys for v-for
 
 ### Estimated Complexity
-- **Lines of code:** ~500-800 new/modified lines
-- **Risk level:** Medium-High (touches core field resolution)
-- **Testing needs:** Comprehensive (nested scenarios, edge cases, validation)
+- **Lines of code:** ~200-300 new/modified lines
+- **Risk level:** Medium (touches core rendering, but simpler than separate component)
+- **Testing needs:** Comprehensive (nested scenarios, multiple field types, edge cases, validation)
+
+## Universal Iteration Examples
+
+Since `iterate` works with **any field type**, not just groups, here are examples showing different use cases:
+
+### Iterate Simple Input Fields
+```javascript
+// Multiple phone numbers
+{
+  type: "input",
+  inputType: "tel",
+  label: "Phone Number",
+  model: "phone",
+  iterate: {
+    items: "phoneNumbers",  // Array of objects: [{ id: 1, phone: "555-1234" }]
+    key: "id"
+  }
+}
+```
+
+### Iterate Select Fields
+```javascript
+// Multiple address types
+{
+  type: "select",
+  label: "Address Type",
+  model: "type",
+  values: ["home", "work", "other"],
+  iterate: {
+    items: "addresses",
+    key: "id"
+  }
+}
+```
+
+### Iterate Complex Groups
+```javascript
+// Multiple complete address forms
+{
+  type: "group",
+  styleClasses: "address-card",
+  iterate: {
+    items: "addresses",
+    key: "id"
+  },
+  fields: [
+    { type: "input", model: "street", label: "Street" },
+    { type: "input", model: "city", label: "City" },
+    { type: "input", model: "zip", label: "ZIP Code" }
+  ]
+}
+```
+
+### Iterate with Conditional Styling
+```javascript
+// Priority-based styling
+{
+  type: "group",
+  styleClasses: (item) => {
+    return item.priority === "high" ? "bg-red-50 border-red-300" : "bg-white";
+  },
+  iterate: {
+    items: "tasks",
+    key: "id"
+  },
+  fields: [
+    { type: "input", model: "title" },
+    { type: "select", model: "priority", values: ["low", "high"] }
+  ]
+}
+```
 
 ## TDD Implementation Plan
 
@@ -719,28 +821,35 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 ---
 
 ### Increment 3: Basic Iteration Rendering
-**Goal:** Render formGroup for each item with `scope: "item"`
+**Goal:** Inline iteration in `formGroup.vue` for any field type
 
 **Tests:**
 - Render nothing for empty items array
-- Render one group per item
-- Pass item as model when `scope: "item"`
-- Pass parent as model when `scope: "parent"`
+- Render one instance per item (groups, inputs, any field type)
+- Pass item as model to each instance
 - Use generated keys for v-for
+- No extra wrapper elements in DOM
 - Handle items array reactivity
 
-**Implementation:** Basic `formGroupIterate.vue` component
+**Implementation:** Inline iteration in `formGroup.vue`
 
-**Shippable:** ✅ Yes! Basic iteration works for `scope: "item"` with relative paths
+**Shippable:** ✅ Yes! Basic iteration works with relative paths
 
 **Usage at this stage:**
 ```javascript
 {
-  type: "group-iterate",
+  type: "group",
   iterate: { items: "todos", key: "id" },
   fields: [
     { type: "input", model: "title" }  // Relative path only
   ]
+}
+
+// Also works with simple fields:
+{
+  type: "input",
+  iterate: { items: "phoneNumbers", key: "id" },
+  model: "phone"
 }
 ```
 
@@ -755,19 +864,20 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 - Integration test: verify unique DOM IDs in rendered form
 - Verify aria-* IDs are also unique
 
-**Implementation:** ID prefix logic in `formGroupIterate.vue`
+**Implementation:** ID prefix logic in inline iteration
 
 **Shippable:** ✅ Yes! Prevents DOM ID collisions
 
 ---
 
 ### Increment 5: Nested Iteration
-**Goal:** Support nested group-iterate with simple model passing
+**Goal:** Support nested iterations with simple model passing
 
 **Tests:**
 - Each iteration level receives its item as the model
 - Paths are relative to current iteration level
 - Test 3-level nesting
+- Verify works with any field type at any level
 - Verify models are passed correctly through nesting
 
 **Implementation:**
@@ -779,16 +889,16 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 **Usage at this stage:**
 ```javascript
 {
-  type: "group-iterate",
+  type: "group",
   iterate: { items: "orders" },
   fields: [
     { type: "input", model: "customerName" },
     {
-      type: "group-iterate",
+      type: "group",
       iterate: { items: "lineItems" },
       fields: [
-        { model: "quantity" },
-        { model: "price" }
+        { type: "input", model: "quantity" },
+        { type: "input", model: "price" }
       ]
     }
   ]
@@ -797,21 +907,21 @@ This feature can be built incrementally using Test-Driven Development. Each incr
 
 ---
 
-### Increment 6: FormGroup Integration
-**Goal:** Connect group-iterate to existing form generator
+### Increment 6: Universal Field Type Support
+**Goal:** Ensure iteration works with all field types
 
 **Tests:**
-- Render `group-iterate` when `type === 'group-iterate'`
-- Pass all props (model, options, errors, eventBus) correctly
-- Integration test: full form with group-iterate renders
-- Slots work correctly
-- Mix group-iterate with regular fields
+- Iterate input fields
+- Iterate select fields
+- Iterate textarea fields
+- Iterate custom field types
+- Mix iterated and non-iterated fields
 
 **Implementation:**
-- Add template case in `formGroup.vue`
-- Register `formGroupIterate` component
+- Ensure iteration logic wraps ALL field type rendering paths
+- Test with various field types
 
-**Shippable:** ✅ Yes! Feature is now usable in production forms
+**Shippable:** ✅ Yes! Feature is now universally applicable
 
 ---
 
