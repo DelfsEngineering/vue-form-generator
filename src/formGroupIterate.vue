@@ -1,6 +1,6 @@
 <template>
-	<!-- Minimal wrapper required by Vue 2 (like formGroup uses fieldset) -->
-	<component :is="wrapperTag" :class="wrapperClasses">
+	<!-- Minimal div wrapper required by Vue 2 single-root-element constraint -->
+	<div>
 		<form-group
 			v-for="(item, index) in resolvedItems"
 			:key="getIterationKey(item, index)"
@@ -17,7 +17,7 @@
 				<slot :name="slot" v-bind="slotProps" />
 			</template>
 		</form-group>
-	</component>
+	</div>
 </template>
 
 <script>
@@ -80,18 +80,6 @@ export default {
 		}
 	},
 	computed: {
-		wrapperTag() {
-			// Default to div (minimal wrapper, like formGroup uses fieldset)
-			// Can be customized via iterate.wrapperTag
-			return (this.iterate && this.iterate.wrapperTag) || "div";
-		},
-		wrapperClasses() {
-			// Only apply classes if wrapperClass is explicitly provided
-			if (this.iterate && this.iterate.wrapperClass) {
-				return this.iterate.wrapperClass;
-			}
-			return "";
-		},
 		resolvedItems() {
 			if (!this.iterate || !this.iterate.items) {
 				return [];

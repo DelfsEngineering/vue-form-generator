@@ -161,4 +161,188 @@ describe("formGroup.vue", () => {
 			expect(wrapper.findAll("fieldset").length).to.be.gt(1);
 		});
 	});
+
+	describe("field iteration (iterate property)", () => {
+		describe("basic iteration", () => {
+			it("should render nothing for empty array", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: { items: [] }
+				});
+				// Should render outer fieldset but no nested groups
+				expect(wrapper.findAll("fieldset").length).to.equal(1);
+			});
+
+			it("should render one group per item", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "Item 1" }, { title: "Item 2" }]
+					}
+				});
+				// Outer fieldset + 2 iterated groups
+				expect(wrapper.findAll("fieldset").length).to.equal(3);
+			});
+		});
+
+		describe("key generation", () => {
+			it("should use index as key when no key specified", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "A" }, { title: "B" }]
+					}
+				});
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				// Keys should be 0 and 1
+				expect(groups.at(0).vm.$vnode.key).to.equal(0);
+				expect(groups.at(1).vm.$vnode.key).to.equal(1);
+			});
+
+			it("should use specified key property", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items", key: "id" },
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ id: "a1", title: "A" },
+							{ id: "b2", title: "B" }
+						]
+					}
+				});
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.at(0).vm.$vnode.key).to.equal("a1");
+				expect(groups.at(1).vm.$vnode.key).to.equal("b2");
+			});
+		});
+
+		describe("model passing", () => {
+			it("should pass each item as model to iterated field", () => {
+				const testModel = {
+					items: [{ value: "first" }, { value: "second" }]
+				};
+
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							fields: [{ type: "input", model: "value" }]
+						}
+					],
+					model: testModel
+				});
+
+				// Each nested group should receive its item as model
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(2);
+			});
+		});
+
+		describe("conditional styling", () => {
+			it("should apply static styleClasses to all items", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							styleClasses: "item-card",
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "A" }, { title: "B" }]
+					}
+				});
+
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				groups.wrappers.forEach((group) => {
+					expect(group.classes()).to.include("item-card");
+				});
+			});
+
+			it("should evaluate styleClasses function per item", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							styleClasses: (item) => (item.priority === "high" ? "high-priority" : "normal"),
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ title: "A", priority: "high" },
+							{ title: "B", priority: "low" }
+						]
+					}
+				});
+
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.at(0).classes()).to.include("high-priority");
+				expect(groups.at(1).classes()).to.include("normal");
+			});
+		});
+
+		describe("nested iteration", () => {
+			it("should support nested iterate fields", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "orders" },
+							fields: [
+								{ type: "input", model: "customer" },
+								{
+									type: "group",
+									iterate: { items: "lineItems" },
+									fields: [{ type: "input", model: "product" }]
+								}
+							]
+						}
+					],
+					model: {
+						orders: [
+							{
+								customer: "Alice",
+								lineItems: [{ product: "Widget" }, { product: "Gadget" }]
+							},
+							{
+								customer: "Bob",
+								lineItems: [{ product: "Thing" }]
+							}
+						]
+					}
+				});
+
+				// Should have multiple levels of nesting
+				const allFieldsets = wrapper.findAll("fieldset");
+				expect(allFieldsets.length).to.be.gt(3);
+			});
+		});
+	});
 });
