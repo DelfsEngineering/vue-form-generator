@@ -20036,8 +20036,8 @@ var component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldContent = (component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=template&id=55a2af4e
-var formGroupIteratevue_type_template_id_55a2af4e_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=template&id=4d4737b8
+var formGroupIteratevue_type_template_id_4d4737b8_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c(_vm.wrapperTag, {
@@ -20066,7 +20066,7 @@ var formGroupIteratevue_type_template_id_55a2af4e_render = function render() {
     });
   }), 1);
 };
-var formGroupIteratevue_type_template_id_55a2af4e_staticRenderFns = [];
+var formGroupIteratevue_type_template_id_4d4737b8_staticRenderFns = [];
 
 ;// ./src/utils/iteration.js
 
@@ -20201,15 +20201,12 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
   },
   computed: {
     wrapperTag: function wrapperTag() {
-      // Allow customization via iterate.wrapperTag, default to div
+      // Default to div (minimal wrapper, like formGroup uses fieldset)
+      // Can be customized via iterate.wrapperTag
       return this.iterate && this.iterate.wrapperTag || "div";
     },
     wrapperClasses: function wrapperClasses() {
-      // Priority 1: group.styleClasses (field-level, passed via :group="field")
-      // Priority 2: iterate.wrapperClass (config-level, for backward compat)
-      if (this.group && this.group.styleClasses) {
-        return this.group.styleClasses;
-      }
+      // Only apply classes if wrapperClass is explicitly provided
       if (this.iterate && this.iterate.wrapperClass) {
         return this.iterate.wrapperClass;
       }
@@ -20230,15 +20227,13 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       return generateIterationKey(item, index, this.iterate.key);
     },
     getItemGroup: function getItemGroup(item) {
-      // Merge group with itemClass from iterate config
+      // Clone group object to avoid mutation
       var merged = _objectSpread2({}, this.group);
-      if (this.iterate && this.iterate.itemClass) {
-        // If itemClass is a function, call it with the item model
-        if (typeof this.iterate.itemClass === "function") {
-          merged.styleClasses = this.iterate.itemClass(item);
-        } else {
-          merged.styleClasses = this.iterate.itemClass;
-        }
+
+      // If styleClasses is a function, evaluate it per-item for conditional styling
+      // This allows: styleClasses: (item) => item.active ? "active" : "inactive"
+      if (merged.styleClasses && typeof merged.styleClasses === "function") {
+        merged.styleClasses = merged.styleClasses(item);
       }
       return merged;
     }
@@ -20246,24 +20241,18 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
 });
 ;// ./src/formGroupIterate.vue?vue&type=script&lang=js
  /* harmony default export */ var src_formGroupIteratevue_type_script_lang_js = (formGroupIteratevue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=style&index=0&id=55a2af4e&prod&lang=scss
-// extracted by mini-css-extract-plugin
-
-;// ./src/formGroupIterate.vue?vue&type=style&index=0&id=55a2af4e&prod&lang=scss
-
 ;// ./src/formGroupIterate.vue
 
 
 
-;
 
 
 /* normalize component */
-
+;
 var formGroupIterate_component = normalizeComponent(
   src_formGroupIteratevue_type_script_lang_js,
-  formGroupIteratevue_type_template_id_55a2af4e_render,
-  formGroupIteratevue_type_template_id_55a2af4e_staticRenderFns,
+  formGroupIteratevue_type_template_id_4d4737b8_render,
+  formGroupIteratevue_type_template_id_4d4737b8_staticRenderFns,
   false,
   null,
   null,
