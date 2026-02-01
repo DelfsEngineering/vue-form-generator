@@ -201,6 +201,67 @@ If you need a wrapper container (e.g., for flexbox/grid layout), wrap the iterat
  - `null`/`undefined`: render nothing
  - non-array: treat as empty and optionally warn
  
+## Conditional Visibility
+
+### Per-Item Visibility
+Use `itemVisible` property to control visibility of individual items:
+
+```javascript
+{
+  type: "group",
+  iterate: { items: "tasks" },
+  itemVisible: (item) => !item.isArchived,  // Filter per-item
+  fields: [...]
+}
+```
+
+The `itemVisible` function:
+- Receives each **item** as the model
+- Evaluated once per item during rendering
+- Items returning `false` are not rendered
+
+### Whole-Field Visibility
+Use `visible` property to show/hide the entire iterated field:
+
+```javascript
+{
+  type: "group",
+  iterate: { items: "tasks" },
+  visible: (model) => model.showTasks,  // Show/hide all
+  fields: [...]
+}
+```
+
+The `visible` function (on iterated fields):
+- Receives the **root model**
+- Evaluated once before iteration
+- Controls all items as a group
+
+### Combining Both
+You can use both for complex logic:
+
+```javascript
+{
+  type: "group",
+  iterate: { items: "tasks" },
+  visible: (model) => model.showTasks,         // All-or-nothing
+  itemVisible: (item) => item.priority === "high",  // Filter which items
+  fields: [...]
+}
+```
+
+**Note:** For simple filtering, consider using `iterate.items` as a function instead:
+
+```javascript
+{
+  type: "group",
+  iterate: {
+    items: (model) => model.tasks.filter(t => !t.isArchived)
+  },
+  fields: [...]
+}
+```
+
 ## Key Behavior
 Vue list rendering requires stable keys:
 - If `iterate.key` is provided:
@@ -609,7 +670,59 @@ Fields with `iterate` can be nested to handle multi-level data structures. Each 
 }
 ```
 
-### Example 7: Accessing Parent Data (Workaround)
+### Example 7: Per-Item Visibility (itemVisible)
+```javascript
+// Model
+{
+  showArchived: false,
+  tasks: [
+    { id: 1, title: "Active task", isArchived: false },
+    { id: 2, title: "Old task", isArchived: true },
+    { id: 3, title: "Another active", isArchived: false }
+  ]
+}
+
+// Schema - Filter items with itemVisible
+{
+  fields: [
+    {
+      type: "checkbox",
+      model: "showArchived",
+      label: "Show Archived Tasks"
+    },
+    {
+      type: "group",
+      styleClasses: "tasks-container",
+      fields: [
+        {
+          type: "group",
+          iterate: { items: "tasks", key: "id" },
+          // Show/hide all tasks based on root model
+          visible: (model) => model.tasks.length > 0,
+          // Filter individual items
+          itemVisible: (item, field, formContext) => {
+            // Access root model via formContext if needed
+            const showArchived = formContext.model.showArchived;
+            return showArchived || !item.isArchived;
+          },
+          styleClasses: "task-item",
+          fields: [
+            { type: "input", model: "title", label: "Task" },
+            { type: "checkbox", model: "isArchived", label: "Archived" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Note:** The `itemVisible` function receives:
+- `item` - The current iteration item
+- `field` - The field configuration
+- `formContext` - Access to root model via `formContext.model`
+
+### Example 8: Accessing Parent Data (Workaround)
 ```javascript
 // Model
 {
@@ -625,7 +738,7 @@ Fields with `iterate` can be nested to handle multi-level data structures. Each 
 {
   fields: [
     {
-      type: "group-iterate",
+      type: "group",
       iterate: { items: "tasks", key: "id" },
       fields: [
         {
