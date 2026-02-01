@@ -19601,8 +19601,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=16c5b4ca
-var formGroupvue_type_template_id_16c5b4ca_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=11e3bc1e
+var formGroupvue_type_template_id_11e3bc1e_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19653,7 +19653,46 @@ var formGroupvue_type_template_id_16c5b4ca_render = function render() {
           })];
         }
       }], null, true)
-    }, 'form-group', _vm.setFormGroupAttributes(index), false))] : field.type === 'content' ? [_c('field-content', {
+    }, 'form-group', _vm.setFormGroupAttributes(index), false))] : field.type === 'group-iterate' ? [_c('form-group-iterate', {
+      key: index,
+      attrs: {
+        "iterate": field.iterate,
+        "fields": field.fields,
+        "group": field,
+        "tag": _vm.getGroupTag(field),
+        "model": _vm.model,
+        "options": _vm.options,
+        "errors": _vm.errors,
+        "event-bus": _vm.eventBus
+      },
+      scopedSlots: _vm._u([{
+        key: "group-legend",
+        fn: function fn(slotProps) {
+          return [_vm._t("group-legend", null, {
+            "group": slotProps.group,
+            "groupLegend": slotProps.groupLegend
+          })];
+        }
+      }, {
+        key: "group-help",
+        fn: function fn(slotProps) {
+          return [_vm._t("group-help", null, {
+            "group": slotProps.group
+          })];
+        }
+      }, {
+        key: "element",
+        fn: function fn(slotProps) {
+          return [_vm._t("element", null, {
+            "field": slotProps.field,
+            "model": slotProps.model,
+            "options": slotProps.options,
+            "errors": slotProps.errors,
+            "eventBus": slotProps.eventBus
+          })];
+        }
+      }], null, true)
+    })] : field.type === 'content' ? [_c('field-content', {
       key: index,
       attrs: {
         "schema": field
@@ -19671,7 +19710,7 @@ var formGroupvue_type_template_id_16c5b4ca_render = function render() {
     }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_16c5b4ca_staticRenderFns = [];
+var formGroupvue_type_template_id_11e3bc1e_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -19979,7 +20018,244 @@ var component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldContent = (component.exports);
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=template&id=55a2af4e
+var formGroupIteratevue_type_template_id_55a2af4e_render = function render() {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c(_vm.wrapperTag, {
+    tag: "component",
+    class: _vm.wrapperClasses
+  }, _vm._l(_vm.resolvedItems, function (item, index) {
+    return _c('form-group', {
+      key: _vm.getIterationKey(item, index),
+      attrs: {
+        "fields": _vm.fields,
+        "group": _vm.getItemGroup(item),
+        "tag": _vm.tag,
+        "model": item,
+        "options": _vm.options,
+        "errors": _vm.errors,
+        "event-bus": _vm.eventBus
+      },
+      scopedSlots: _vm._u([_vm._l(_vm.$scopedSlots, function (_, slot) {
+        return {
+          key: slot,
+          fn: function fn(slotProps) {
+            return [_vm._t(slot, null, null, slotProps)];
+          }
+        };
+      })], null, true)
+    });
+  }), 1);
+};
+var formGroupIteratevue_type_template_id_55a2af4e_staticRenderFns = [];
+
+;// ./src/utils/iteration.js
+
+
+
+
+
+
+/**
+ * Resolves the items array for iteration from either a string path or function
+ * @param {string|Function} items - String path to array or function returning array
+ * @param {Object} model - The root model object
+ * @param {Object} options - Form options (for devMode)
+ * @returns {Array} The resolved items array, or empty array if invalid
+ */
+var resolveIterationItems = function resolveIterationItems(items, model) {
+  var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var result;
+
+  // Handle null/undefined
+  if (isNil_default()(items)) {
+    return [];
+  }
+
+  // Handle function
+  if (isFunction_default()(items)) {
+    result = items(model);
+  }
+  // Handle string path
+  else if (typeof items === "string") {
+    result = get_default()(model, items);
+  }
+  // Unknown type
+  else {
+    if (options.devMode) {
+      console.warn("[vue-form-generator] iterate.items should be a string path or function, got ".concat(_typeof(items)));
+    }
+    return [];
+  }
+
+  // Validate result is an array
+  if (isNil_default()(result)) {
+    return [];
+  }
+  if (!isArray_default()(result)) {
+    if (options.devMode) {
+      var _context;
+      console.warn(concat_default()(_context = "[vue-form-generator] iterate.items resolved to non-array value (".concat(_typeof(result), "), expected array. Path: ")).call(_context, items));
+    }
+    return [];
+  }
+  return result;
+};
+
+/**
+ * Generates a Vue :key value for an iteration item
+ * @param {*} item - The current iteration item
+ * @param {number} index - The current iteration index
+ * @param {string|Function|null} keyConfig - Key configuration from iterate.key
+ * @returns {*} The key value to use for Vue's :key
+ */
+var generateIterationKey = function generateIterationKey(item, index, keyConfig) {
+  var key;
+
+  // Handle function
+  if (isFunction_default()(keyConfig)) {
+    key = keyConfig(item, index);
+  }
+  // Handle string path
+  else if (typeof keyConfig === "string") {
+    key = get_default()(item, keyConfig);
+  }
+
+  // Fall back to index if key is null/undefined
+  if (isNil_default()(key)) {
+    return index;
+  }
+  return key;
+};
+;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=script&lang=js
+
+
+/* harmony default export */ var formGroupIteratevue_type_script_lang_js = ({
+  name: "FormGroupIterate",
+  // Note: FormGroup component is not imported to avoid circular dependency.
+  // It will be resolved at runtime since formGroup registers formGroupIterate.
+  props: {
+    iterate: {
+      type: Object,
+      required: true
+    },
+    fields: {
+      type: Array,
+      default: function _default() {
+        return [];
+      }
+    },
+    group: {
+      type: Object,
+      default: function _default() {
+        return {};
+      }
+    },
+    tag: {
+      type: String,
+      default: "fieldset"
+    },
+    model: {
+      type: Object,
+      default: function _default() {
+        return {};
+      }
+    },
+    options: {
+      type: Object,
+      default: function _default() {
+        return {};
+      }
+    },
+    errors: {
+      type: Array,
+      default: function _default() {
+        return [];
+      }
+    },
+    eventBus: {
+      type: Object,
+      default: function _default() {
+        return {};
+      }
+    }
+  },
+  computed: {
+    wrapperTag: function wrapperTag() {
+      // Allow customization via iterate.wrapperTag, default to div
+      return this.iterate && this.iterate.wrapperTag || "div";
+    },
+    wrapperClasses: function wrapperClasses() {
+      // Priority 1: group.styleClasses (field-level, passed via :group="field")
+      // Priority 2: iterate.wrapperClass (config-level, for backward compat)
+      if (this.group && this.group.styleClasses) {
+        return this.group.styleClasses;
+      }
+      if (this.iterate && this.iterate.wrapperClass) {
+        return this.iterate.wrapperClass;
+      }
+      return "";
+    },
+    resolvedItems: function resolvedItems() {
+      if (!this.iterate || !this.iterate.items) {
+        return [];
+      }
+      return resolveIterationItems(this.iterate.items, this.model, this.options);
+    }
+  },
+  methods: {
+    getIterationKey: function getIterationKey(item, index) {
+      if (!this.iterate) {
+        return index;
+      }
+      return generateIterationKey(item, index, this.iterate.key);
+    },
+    getItemGroup: function getItemGroup(item) {
+      // Merge group with itemClass from iterate config
+      var merged = _objectSpread2({}, this.group);
+      if (this.iterate && this.iterate.itemClass) {
+        // If itemClass is a function, call it with the item model
+        if (typeof this.iterate.itemClass === "function") {
+          merged.styleClasses = this.iterate.itemClass(item);
+        } else {
+          merged.styleClasses = this.iterate.itemClass;
+        }
+      }
+      return merged;
+    }
+  }
+});
+;// ./src/formGroupIterate.vue?vue&type=script&lang=js
+ /* harmony default export */ var src_formGroupIteratevue_type_script_lang_js = (formGroupIteratevue_type_script_lang_js); 
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroupIterate.vue?vue&type=style&index=0&id=55a2af4e&prod&lang=scss
+// extracted by mini-css-extract-plugin
+
+;// ./src/formGroupIterate.vue?vue&type=style&index=0&id=55a2af4e&prod&lang=scss
+
+;// ./src/formGroupIterate.vue
+
+
+
+;
+
+
+/* normalize component */
+
+var formGroupIterate_component = normalizeComponent(
+  src_formGroupIteratevue_type_script_lang_js,
+  formGroupIteratevue_type_template_id_55a2af4e_render,
+  formGroupIteratevue_type_template_id_55a2af4e_staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* harmony default export */ var formGroupIterate = (formGroupIterate_component.exports);
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=script&lang=js
+
 
 
 
@@ -19991,7 +20267,8 @@ var component = normalizeComponent(
 /* harmony default export */ var formGroupvue_type_script_lang_js = ({
   name: "FormGroup",
   components: {
-    fieldContent: fieldContent
+    fieldContent: fieldContent,
+    formGroupIterate: formGroupIterate
   },
   mixins: [formMixin],
   props: {
@@ -20160,8 +20437,8 @@ var component = normalizeComponent(
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_16c5b4ca_render,
-  formGroupvue_type_template_id_16c5b4ca_staticRenderFns,
+  formGroupvue_type_template_id_11e3bc1e_render,
+  formGroupvue_type_template_id_11e3bc1e_staticRenderFns,
   false,
   null,
   null,

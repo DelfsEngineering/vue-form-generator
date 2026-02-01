@@ -1,10 +1,10 @@
 <template>
-	<div class="form-group-iterate">
+	<component :is="wrapperTag" :class="wrapperClasses">
 		<form-group
 			v-for="(item, index) in resolvedItems"
 			:key="getIterationKey(item, index)"
 			:fields="fields"
-			:group="group"
+			:group="getItemGroup(item)"
 			:tag="tag"
 			:model="item"
 			:options="options"
@@ -16,7 +16,7 @@
 				<slot :name="slot" v-bind="slotProps" />
 			</template>
 		</form-group>
-	</div>
+	</component>
 </template>
 
 <script>
@@ -24,10 +24,8 @@ import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
 
 export default {
 	name: "FormGroupIterate",
-	// Note: FormGroup component uses a lazy function to avoid circular dependency
-	components: {
-		FormGroup: () => import("./formGroup.vue")
-	},
+	// Note: FormGroup component is not imported to avoid circular dependency.
+	// It will be resolved at runtime since formGroup registers formGroupIterate.
 	props: {
 		iterate: {
 			type: Object,
@@ -75,6 +73,21 @@ export default {
 		}
 	},
 	computed: {
+		wrapperTag() {
+			// Allow customization via iterate.wrapperTag, default to div
+			return (this.iterate && this.iterate.wrapperTag) || "div";
+		},
+		wrapperClasses() {
+			// Priority 1: group.styleClasses (field-level, passed via :group="field")
+			// Priority 2: iterate.wrapperClass (config-level, for backward compat)
+			if (this.group && this.group.styleClasses) {
+				return this.group.styleClasses;
+			}
+			if (this.iterate && this.iterate.wrapperClass) {
+				return this.iterate.wrapperClass;
+			}
+			return "";
+		},
 		resolvedItems() {
 			if (!this.iterate || !this.iterate.items) {
 				return [];
@@ -88,38 +101,26 @@ export default {
 				return index;
 			}
 			return generateIterationKey(item, index, this.iterate.key);
+		},
+		getItemGroup(item) {
+			// Merge group with itemClass from iterate config
+			const merged = { ...this.group };
+			if (this.iterate && this.iterate.itemClass) {
+				// If itemClass is a function, call it with the item model
+				if (typeof this.iterate.itemClass === "function") {
+					merged.styleClasses = this.iterate.itemClass(item);
+				} else {
+					merged.styleClasses = this.iterate.itemClass;
+				}
+			}
+			return merged;
 		}
 	}
 };
 </script>
 
 <style lang="scss">
-.form-group-iterate {
-	// Wrapper container for iterated groups
-	> fieldset {
-		background-color: #e3f2fd;
-		padding: 20px;
-		margin-bottom: 15px;
-		border-radius: 8px;
-		border: 1px solid #bbdefb;
-
-		// Nested group-iterate styling
-		.form-group-iterate {
-			> fieldset {
-				background-color: #fff3e0;
-				border: 1px solid #ffcc80;
-				padding: 15px;
-				margin-top: 10px;
-
-				// Third level nesting (if needed)
-				.form-group-iterate {
-					> fieldset {
-						background-color: #f1f8e9;
-						border: 1px solid #c5e1a5;
-					}
-				}
-			}
-		}
-	}
-}
+// Styling for iterated groups
+// Target by field type in parent, e.g.:
+// .field-group-iterate > fieldset { ... }
 </style>

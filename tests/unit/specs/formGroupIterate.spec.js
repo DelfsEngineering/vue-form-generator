@@ -309,7 +309,8 @@ describe("formGroupIterate.vue", () => {
 			});
 
 			const formGroupWrapper = wrapper.find(formGroup);
-			expect(formGroupWrapper.props("group")).to.equal(group);
+			// Check that group properties are passed (may be a merged object, not exact reference)
+			expect(formGroupWrapper.props("group")).to.deep.include(group);
 		});
 
 		it("should pass tag property", () => {
