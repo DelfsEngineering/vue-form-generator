@@ -19601,8 +19601,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=a45973da
-var formGroupvue_type_template_id_a45973da_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=f84a6db2
+var formGroupvue_type_template_id_f84a6db2_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19665,11 +19665,11 @@ var formGroupvue_type_template_id_a45973da_render = function render() {
       "errors": _vm.errors,
       "eventBus": _vm.eventBus
     })] : field.iterate ? [_vm._l(_vm.getFieldItems(field), function (item, itemIdx) {
-      return [_vm.itemVisible(field, item) ? [field.type === 'group' ? _c('form-group', _vm._b({
+      return [_vm.itemVisible(field, item, itemIdx) ? [field.type === 'group' ? _c('form-group', _vm._b({
         key: _vm.getFieldIterationKey(field, item, itemIdx, index),
         attrs: {
           "fields": field.fields,
-          "group": _vm.getIteratedField(field, item),
+          "group": _vm.getIteratedField(field, item, itemIdx),
           "tag": _vm.getGroupTag(field),
           "model": item,
           "options": _vm.options,
@@ -19722,7 +19722,7 @@ var formGroupvue_type_template_id_a45973da_render = function render() {
     }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_a45973da_staticRenderFns = [];
+var formGroupvue_type_template_id_f84a6db2_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -20226,13 +20226,13 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       return field.visible;
     },
     // Check visible per-item (for iterated fields)
-    itemVisible: function itemVisible(field, item) {
+    itemVisible: function itemVisible(field, item, index) {
       if (!field.visible) {
         return true; // No visible property = show all items
       }
       if (isFunction_default()(field.visible)) {
-        // Call visible function with ITEM model (not root model)
-        return field.visible.call(this, item, field, this);
+        // Call visible function with ITEM model and INDEX
+        return field.visible.call(this, item, index, field, this);
       }
       return field.visible;
     },
@@ -20262,11 +20262,11 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       // No iteration, use field index
       return fieldIdx;
     },
-    getIteratedField: function getIteratedField(field, item) {
+    getIteratedField: function getIteratedField(field, item, index) {
       // If field has iterate and styleClasses is a function, evaluate it per item
       if (field.iterate && field.styleClasses && typeof field.styleClasses === "function") {
         return _objectSpread2(_objectSpread2({}, field), {}, {
-          styleClasses: field.styleClasses(item)
+          styleClasses: field.styleClasses(item, index)
         });
       }
       return field;
@@ -20330,8 +20330,8 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_a45973da_render,
-  formGroupvue_type_template_id_a45973da_staticRenderFns,
+  formGroupvue_type_template_id_f84a6db2_render,
+  formGroupvue_type_template_id_f84a6db2_staticRenderFns,
   false,
   null,
   null,

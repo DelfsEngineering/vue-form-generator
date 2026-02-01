@@ -55,12 +55,12 @@
 				<!-- Iterated fields: check visible per-item, render multiple -->
 				<template v-else-if="field.iterate">
 					<template v-for="(item, itemIdx) in getFieldItems(field)">
-						<template v-if="itemVisible(field, item)">
+						<template v-if="itemVisible(field, item, itemIdx)">
 							<form-group
 								v-if="field.type === 'group'"
 								:key="getFieldIterationKey(field, item, itemIdx, index)"
 								:fields="field.fields"
-								:group="getIteratedField(field, item)"
+								:group="getIteratedField(field, item, itemIdx)"
 								:tag="getGroupTag(field)"
 								:model="item"
 								:options="options"
@@ -231,14 +231,14 @@ export default {
 		},
 
 		// Check visible per-item (for iterated fields)
-		itemVisible(field, item) {
+		itemVisible(field, item, index) {
 			if (!field.visible) {
 				return true; // No visible property = show all items
 			}
 
 			if (isFunction(field.visible)) {
-				// Call visible function with ITEM model (not root model)
-				return field.visible.call(this, item, field, this);
+				// Call visible function with ITEM model and INDEX
+				return field.visible.call(this, item, index, field, this);
 			}
 
 			return field.visible;
@@ -272,12 +272,12 @@ export default {
 			return fieldIdx;
 		},
 
-		getIteratedField(field, item) {
+		getIteratedField(field, item, index) {
 			// If field has iterate and styleClasses is a function, evaluate it per item
 			if (field.iterate && field.styleClasses && typeof field.styleClasses === "function") {
 				return {
 					...field,
-					styleClasses: field.styleClasses(item)
+					styleClasses: field.styleClasses(item, index)
 				};
 			}
 			return field;

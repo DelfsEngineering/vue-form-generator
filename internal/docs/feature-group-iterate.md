@@ -190,7 +190,55 @@ If you need a wrapper container (e.g., for flexbox/grid layout), wrap the iterat
 - **Item styling:** Use `styleClasses` on the iterated field
 - **Container styling:** Use an outer `type: "group"` with `styleClasses`
 - **Tailwind/utility CSS:** Works perfectly with this approach
-- **Conditional item styling:** Use functions for `styleClasses` (see examples below)
+- **Conditional item styling:** Use functions for `styleClasses` (receives item and index)
+
+### Dynamic `styleClasses` with Index
+
+**Function Signature:**
+```javascript
+styleClasses: (item, index) => string | string[]
+```
+
+**Examples:**
+
+**Zebra striping (alternate row colors):**
+```javascript
+{
+  type: "group",
+  iterate: { items: "rows" },
+  styleClasses: (item, index) => index % 2 === 0 ? "bg-gray-50" : "bg-white",
+  fields: [...]
+}
+```
+
+**First item special styling:**
+```javascript
+{
+  type: "group",
+  iterate: { items: "items" },
+  styleClasses: (item, index) => {
+    let classes = "item-card";
+    if (index === 0) classes += " first-item border-blue-500";
+    return classes;
+  },
+  fields: [...]
+}
+```
+
+**Combined item and position logic:**
+```javascript
+{
+  type: "group",
+  iterate: { items: "tasks" },
+  styleClasses: (item, index) => {
+    let classes = "p-4 border";
+    if (item.priority === "high") classes += " border-red-500";
+    if (index < 3) classes += " font-bold";  // Emphasize top 3
+    return classes;
+  },
+  fields: [...]
+}
+```
  
  ## Items Source
  `iterate.items` can be:
@@ -218,16 +266,28 @@ Vue list rendering requires stable keys:
 {
   type: "group",
   iterate: { items: "tasks" },
-  visible: (item) => item.isActive,  // ← Receives EACH item
+  visible: (item, index) => item.isActive,  // ← Receives item and index
   fields: [
     { type: "input", model: "title" }
   ]
 }
 ```
 
+**Function Signature:**
+```javascript
+visible: (item, index, field, vueComponent) => boolean
+```
+
+**Parameters:**
+- **`item`** - The current iteration item (required)
+- **`index`** - The 0-based iteration index (optional)
+- `field` - The field configuration object (rarely used)
+- `vueComponent` - The Vue component instance (rarely used)
+
 **Behavior:**
 - The `visible` function is called **once per item**
 - Receives the **item model** (not root model)
+- **Index** allows position-based logic
 - Only items where `visible` returns `true` are rendered
 
 ### Control Entire Collection Visibility
@@ -260,15 +320,35 @@ To show/hide the entire iterated group (all items at once), **wrap in an outer g
 }
 ```
 
-**Complex visibility logic:**
+**Show only first N items:**
+```javascript
+{
+  type: "group",
+  iterate: { items: "photos" },
+  visible: (item, index) => index < 10,  // First 10 items only
+  fields: [...]
+}
+```
+
+**Complex logic with item and index:**
 ```javascript
 {
   type: "group",
   iterate: { items: "tasks" },
-  visible: (item) => {
-    // Show if high priority OR completed
-    return item.priority === "high" || item.completed;
+  visible: (item, index) => {
+    // Show high priority OR first 3 items
+    return item.priority === "high" || index < 3;
   },
+  fields: [...]
+}
+```
+
+**Zebra striping (even/odd rows):**
+```javascript
+{
+  type: "group",
+  iterate: { items: "items" },
+  visible: (item, index) => index % 2 === 0,  // Only even rows
   fields: [...]
 }
 ```

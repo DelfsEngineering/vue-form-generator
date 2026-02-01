@@ -307,6 +307,60 @@ describe("formGroup.vue", () => {
 				expect(groups.at(0).classes()).to.include("high-priority");
 				expect(groups.at(1).classes()).to.include("normal");
 			});
+
+			it("should pass index as second parameter to styleClasses function", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							styleClasses: (item, index) => (index % 2 === 0 ? "even-row" : "odd-row"),
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "A" }, { title: "B" }, { title: "C" }]
+					}
+				});
+
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.at(0).classes()).to.include("even-row"); // index 0
+				expect(groups.at(1).classes()).to.include("odd-row"); // index 1
+				expect(groups.at(2).classes()).to.include("even-row"); // index 2
+			});
+
+			it("should use both item and index in styleClasses", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							styleClasses: (item, index) => {
+								let classes = "item-card";
+								if (item.priority === "high") classes += " priority-high";
+								if (index === 0) classes += " first-item";
+								return classes;
+							},
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ title: "A", priority: "high" }, // high + first
+							{ title: "B", priority: "low" } // neither
+						]
+					}
+				});
+
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.at(0).classes()).to.include("item-card");
+				expect(groups.at(0).classes()).to.include("priority-high");
+				expect(groups.at(0).classes()).to.include("first-item");
+
+				expect(groups.at(1).classes()).to.include("item-card");
+				expect(groups.at(1).classes()).to.not.include("priority-high");
+				expect(groups.at(1).classes()).to.not.include("first-item");
+			});
 		});
 
 		describe("per-item visibility", () => {
@@ -373,6 +427,51 @@ describe("formGroup.vue", () => {
 				});
 
 				// Should render 2 items (high priority + completed)
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(2);
+			});
+
+			it("should pass index as second parameter to visible function", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							visible: (item, index) => index < 2, // Only first 2 items
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [{ title: "A" }, { title: "B" }, { title: "C" }, { title: "D" }]
+					}
+				});
+
+				// Should only render first 2 items
+				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
+				expect(groups.length).to.equal(2);
+			});
+
+			it("should use index with item in visible logic", () => {
+				wrapper = createWrapper({
+					fields: [
+						{
+							type: "group",
+							iterate: { items: "items" },
+							visible: (item, index) => item.isActive && index % 2 === 0, // Active items at even positions
+							fields: [{ type: "input", model: "title" }]
+						}
+					],
+					model: {
+						items: [
+							{ title: "A", isActive: true }, // index 0 - even, active ✓
+							{ title: "B", isActive: true }, // index 1 - odd ✗
+							{ title: "C", isActive: true }, // index 2 - even, active ✓
+							{ title: "D", isActive: false } // index 3 - even, not active ✗
+						]
+					}
+				});
+
+				// Should render items at index 0 and 2
 				const groups = wrapper.findAll("fieldset").filter((w, i) => i > 0);
 				expect(groups.length).to.equal(2);
 			});
