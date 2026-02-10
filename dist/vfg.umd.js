@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.2.2
+ * vue-form-generator 3.3.0
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -22948,8 +22948,8 @@ var fieldErrorSummary_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldErrorSummary = (fieldErrorSummary_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=template&id=c773d55e
-var fieldTextAreavue_type_template_id_c773d55e_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=template&id=009fcae8
+var fieldTextAreavue_type_template_id_009fcae8_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('textarea', _vm._b({
@@ -22964,6 +22964,7 @@ var fieldTextAreavue_type_template_id_c773d55e_render = function render() {
       value: 'input',
       expression: "'input'"
     }],
+    ref: "textarea",
     staticClass: "form-control",
     class: _vm.fieldClasses,
     attrs: {
@@ -22988,7 +22989,7 @@ var fieldTextAreavue_type_template_id_c773d55e_render = function render() {
     }
   }, 'textarea', _vm.controlAttrs, false));
 };
-var fieldTextAreavue_type_template_id_c773d55e_staticRenderFns = [];
+var fieldTextAreavue_type_template_id_009fcae8_staticRenderFns = [];
 
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldTextArea.vue?vue&type=script&lang=js
 
@@ -23012,11 +23013,38 @@ var fieldTextAreavue_type_template_id_c773d55e_staticRenderFns = [];
       return attrs;
     }
   },
+  watch: {
+    value: function value() {
+      var _this = this;
+      // Keep textarea height in sync with content (opt-in).
+      this.$nextTick(function () {
+        return _this.applyAutoExpand();
+      });
+    }
+  },
   methods: {
     isMinimalMode: function isMinimalMode() {
       var fieldLegacy = get_default()(this.schema || {}, "legacy");
       var resolvedLegacy = typeof fieldLegacy !== "undefined" ? fieldLegacy : get_default()(this.formOptions || {}, "legacy", true);
       return resolvedLegacy === false;
+    },
+    applyAutoExpand: function applyAutoExpand() {
+      if (get_default()(this.fieldOptions, "autoExpand") !== true) return;
+      var el = this.$refs.textarea;
+      if (!el) return;
+
+      // Allow shrinking by resetting to auto first.
+      el.style.height = "auto";
+      var scrollHeight = el.scrollHeight || 0;
+      var maxHeight = get_default()(this.fieldOptions, "maxHeight", null);
+      if (typeof maxHeight === "number" && isFinite(maxHeight) && maxHeight > 0) {
+        var clamped = Math.min(scrollHeight, maxHeight);
+        el.style.height = "".concat(clamped, "px");
+        el.style.overflowY = scrollHeight > maxHeight ? "auto" : "hidden";
+      } else {
+        el.style.height = "".concat(scrollHeight, "px");
+        el.style.overflowY = "hidden";
+      }
     }
   }
 });
@@ -23032,8 +23060,8 @@ var fieldTextAreavue_type_template_id_c773d55e_staticRenderFns = [];
 ;
 var fieldTextArea_component = normalizeComponent(
   core_fieldTextAreavue_type_script_lang_js,
-  fieldTextAreavue_type_template_id_c773d55e_render,
-  fieldTextAreavue_type_template_id_c773d55e_staticRenderFns,
+  fieldTextAreavue_type_template_id_009fcae8_render,
+  fieldTextAreavue_type_template_id_009fcae8_staticRenderFns,
   false,
   null,
   null,

@@ -94,6 +94,9 @@ module.exports = {
 		}
 	},
 	configureWebpack: {
+		// Some environments can hit source-map-support recursion during mochapack startup
+		// when the bundle is large. Disabling source maps for unit tests keeps output stable.
+		...(process.env.NODE_ENV === "test" ? { devtool: false } : {}),
 		node: false
 	}
 };

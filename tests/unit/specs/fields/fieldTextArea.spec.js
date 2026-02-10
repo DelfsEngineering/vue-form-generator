@@ -100,4 +100,59 @@ describe("fieldTextArea.vue", () => {
 			expect(input.classes()).to.include("another-class");
 		});
 	});
+
+	describe("autoExpand", () => {
+		it("does nothing by default", async () => {
+			const schema = {
+				type: "textarea",
+				model: "desc",
+				fieldOptions: { rows: 2 }
+			};
+			const model = { desc: "Hello" };
+			const wrapper = createField({ schema, model });
+			const textarea = wrapper.find("textarea").element;
+
+			await wrapper.vm.$nextTick();
+			expect(textarea.style.height).to.equal("");
+			expect(textarea.style.overflowY).to.equal("");
+		});
+
+		it("grows to scrollHeight when enabled", async () => {
+			const schema = {
+				type: "textarea",
+				model: "desc",
+				fieldOptions: { autoExpand: true, rows: 2 }
+			};
+			const model = { desc: "Hello" };
+			const wrapper = createField({ schema, model });
+			const textarea = wrapper.find("textarea").element;
+
+			Object.defineProperty(textarea, "scrollHeight", { value: 120, configurable: true });
+			wrapper.setProps({ model: { desc: "Hello\nWorld" } });
+			await wrapper.vm.$nextTick();
+			await wrapper.vm.$nextTick();
+
+			expect(textarea.style.height).to.equal("120px");
+			expect(textarea.style.overflowY).to.equal("hidden");
+		});
+
+		it("clamps to maxHeight and enables scrolling", async () => {
+			const schema = {
+				type: "textarea",
+				model: "desc",
+				fieldOptions: { autoExpand: true, maxHeight: 80, rows: 2 }
+			};
+			const model = { desc: "Hello" };
+			const wrapper = createField({ schema, model });
+			const textarea = wrapper.find("textarea").element;
+
+			Object.defineProperty(textarea, "scrollHeight", { value: 200, configurable: true });
+			wrapper.setProps({ model: { desc: "Hello\nWorld\nMore\nLines" } });
+			await wrapper.vm.$nextTick();
+			await wrapper.vm.$nextTick();
+
+			expect(textarea.style.height).to.equal("80px");
+			expect(textarea.style.overflowY).to.equal("auto");
+		});
+	});
 });
