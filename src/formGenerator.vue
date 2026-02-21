@@ -3,6 +3,7 @@
 		<form-group
 			:tag="tag"
 			:fields="fields"
+			path="root"
 			:model="model"
 			:options="optionsWithLegacy"
 			:errors="errors"
@@ -26,7 +27,7 @@
 
 			<template slot="element" slot-scope="slotProps">
 				<form-element
-					:key="fieldKey(slotProps.field)"
+					:key="fieldKey(slotProps.field, slotProps.fieldPath)"
 					:field="slotProps.field"
 					:model="slotProps.model"
 					:options="slotProps.options"
@@ -218,10 +219,12 @@ export default {
 	},
 
 	methods: {
-		fieldKey(field) {
+		fieldKey(field, fieldPath = "") {
 			const prefix = objGet(this.optionsWithLegacy, "fieldIdPrefix", "");
 			const inputType = objGet(field, "inputType", objGet(field, "fieldOptions.inputType", ""));
-			return [slugifyFormID(field, prefix), field.type || "", inputType || ""].join("|");
+			const preferredId = slugifyFormID(field, prefix);
+			const fallbackId = preferredId || fieldPath || "";
+			return [fallbackId, field.type || "", inputType || ""].join("|");
 		},
 		isMinimalForField(field) {
 			const fieldLegacy = objGet(field, "legacy");

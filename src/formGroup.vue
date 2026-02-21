@@ -11,6 +11,7 @@
 						:key="index"
 						:fields="field.fields"
 						:group="field"
+						:path="getFieldPath(index)"
 						:tag="getGroupTag(field)"
 						:model="model"
 						:options="options"
@@ -33,6 +34,7 @@
 							<slot
 								name="element"
 								:field="slotProps.field"
+								:field-path="slotProps.fieldPath"
 								:model="slotProps.model"
 								:options="slotProps.options"
 								:errors="slotProps.errors"
@@ -45,6 +47,7 @@
 						v-else
 						name="element"
 						:field="field"
+						:field-path="getFieldPath(index)"
 						:model="model"
 						:options="options"
 						:errors="errors"
@@ -61,6 +64,7 @@
 								:key="getFieldIterationKey(field, item, itemIdx, index)"
 								:fields="field.fields"
 								:group="getIteratedField(field, item, itemIdx)"
+								:path="getIteratedFieldPath(index, itemIdx)"
 								:tag="getGroupTag(field)"
 								:model="item"
 								:options="options"
@@ -83,6 +87,7 @@
 									<slot
 										name="element"
 										:field="slotProps.field"
+										:field-path="slotProps.fieldPath"
 										:model="slotProps.model"
 										:options="slotProps.options"
 										:errors="slotProps.errors"
@@ -99,6 +104,7 @@
 								v-else
 								name="element"
 								:field="field"
+								:field-path="getIteratedFieldPath(index, itemIdx)"
 								:model="item"
 								:options="options"
 								:errors="errors"
@@ -139,6 +145,10 @@ export default {
 			default() {
 				return {};
 			}
+		},
+		path: {
+			type: String,
+			default: "root"
 		},
 		tag: {
 			type: String,
@@ -250,6 +260,12 @@ export default {
 			} else {
 				return this.tag;
 			}
+		},
+		getFieldPath(fieldIdx) {
+			return `${this.path}.fields[${fieldIdx}]`;
+		},
+		getIteratedFieldPath(fieldIdx, itemIdx) {
+			return `${this.path}.fields[${fieldIdx}].iterate[${itemIdx}]`;
 		},
 
 		// Iteration support methods
