@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.3.0
+ * vue-form-generator 3.3.1
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -19284,7 +19284,7 @@ var es_iterator_for_each = __webpack_require__(7588);
 var es_object_to_string = __webpack_require__(26099);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-collections.for-each.js
 var web_dom_collections_for_each = __webpack_require__(23500);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=1d55a9ce
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=6ddb7345
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
@@ -19294,6 +19294,7 @@ var render = function render() {
     attrs: {
       "tag": _vm.tag,
       "fields": _vm.fields,
+      "path": "root",
       "model": _vm.model,
       "options": _vm.optionsWithLegacy,
       "errors": _vm.errors,
@@ -19338,7 +19339,7 @@ var render = function render() {
       key: "element",
       fn: function fn(slotProps) {
         return [_c('form-element', {
-          key: _vm.fieldKey(slotProps.field),
+          key: _vm.fieldKey(slotProps.field, slotProps.fieldPath),
           attrs: {
             "field": slotProps.field,
             "model": slotProps.model,
@@ -19601,8 +19602,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=f84a6db2
-var formGroupvue_type_template_id_f84a6db2_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=48db2448
+var formGroupvue_type_template_id_48db2448_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19620,6 +19621,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
       attrs: {
         "fields": field.fields,
         "group": field,
+        "path": _vm.getFieldPath(index),
         "tag": _vm.getGroupTag(field),
         "model": _vm.model,
         "options": _vm.options,
@@ -19646,6 +19648,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
         fn: function fn(slotProps) {
           return [_vm._t("element", null, {
             "field": slotProps.field,
+            "fieldPath": slotProps.fieldPath,
             "model": slotProps.model,
             "options": slotProps.options,
             "errors": slotProps.errors,
@@ -19660,6 +19663,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
       }
     }) : _vm._t("element", null, {
       "field": field,
+      "fieldPath": _vm.getFieldPath(index),
       "model": _vm.model,
       "options": _vm.options,
       "errors": _vm.errors,
@@ -19670,6 +19674,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
         attrs: {
           "fields": field.fields,
           "group": _vm.getIteratedField(field, item, itemIdx),
+          "path": _vm.getIteratedFieldPath(index, itemIdx),
           "tag": _vm.getGroupTag(field),
           "model": item,
           "options": _vm.options,
@@ -19696,6 +19701,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
           fn: function fn(slotProps) {
             return [_vm._t("element", null, {
               "field": slotProps.field,
+              "fieldPath": slotProps.fieldPath,
               "model": slotProps.model,
               "options": slotProps.options,
               "errors": slotProps.errors,
@@ -19710,6 +19716,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
         }
       }) : _vm._t("element", null, {
         "field": field,
+        "fieldPath": _vm.getIteratedFieldPath(index, itemIdx),
         "model": item,
         "options": _vm.options,
         "errors": _vm.errors,
@@ -19722,7 +19729,7 @@ var formGroupvue_type_template_id_f84a6db2_render = function render() {
     }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_f84a6db2_staticRenderFns = [];
+var formGroupvue_type_template_id_48db2448_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -20138,6 +20145,10 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
         return {};
       }
     },
+    path: {
+      type: String,
+      default: "root"
+    },
     tag: {
       type: String,
       default: "fieldset",
@@ -20243,6 +20254,14 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
         return this.tag;
       }
     },
+    getFieldPath: function getFieldPath(fieldIdx) {
+      var _context;
+      return concat_default()(_context = "".concat(this.path, ".fields[")).call(_context, fieldIdx, "]");
+    },
+    getIteratedFieldPath: function getIteratedFieldPath(fieldIdx, itemIdx) {
+      var _context2, _context3;
+      return concat_default()(_context2 = concat_default()(_context3 = "".concat(this.path, ".fields[")).call(_context3, fieldIdx, "].iterate[")).call(_context2, itemIdx, "]");
+    },
     // Iteration support methods
     getFieldItems: function getFieldItems(field) {
       // If field has iterate property, resolve items array
@@ -20255,9 +20274,9 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
     getFieldIterationKey: function getFieldIterationKey(field, item, itemIdx, fieldIdx) {
       // If field has iterate, generate key for this item
       if (field.iterate) {
-        var _context;
+        var _context4;
         var key = field.iterate.key ? generateIterationKey(item, itemIdx, field.iterate.key) : itemIdx;
-        return concat_default()(_context = "".concat(fieldIdx, "-")).call(_context, key);
+        return concat_default()(_context4 = "".concat(fieldIdx, "-")).call(_context4, key);
       }
       // No iteration, use field index
       return fieldIdx;
@@ -20284,13 +20303,13 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       return "unusable field configuration";
     },
     invalidFieldMessage: function invalidFieldMessage(field, index) {
-      var _context2;
+      var _context5;
       var reason = this.invalidFieldReason(field);
       this.logInvalidField(reason, field, index);
-      return concat_default()(_context2 = "Invalid field at index ".concat(index, ": ")).call(_context2, reason, ". Each field should be an object with a \"type\".");
+      return concat_default()(_context5 = "Invalid field at index ".concat(index, ": ")).call(_context5, reason, ". Each field should be an object with a \"type\".");
     },
     logInvalidField: function logInvalidField(reason, field, index) {
-      var _context3;
+      var _context6;
       if (!this.showInvalidWarnings) {
         return;
       }
@@ -20298,7 +20317,7 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
         return;
       }
       this.$set(this.warnedInvalidFields, index, true);
-      console.warn(concat_default()(_context3 = "[vue-form-generator] Invalid field at index ".concat(index, ": ")).call(_context3, reason, ". Ensure each entry is an object with a \"type\" property."), field);
+      console.warn(concat_default()(_context6 = "[vue-form-generator] Invalid field at index ".concat(index, ": ")).call(_context6, reason, ". Ensure each entry is an object with a \"type\" property."), field);
     }
   },
   watch: {
@@ -20330,8 +20349,8 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_f84a6db2_render,
-  formGroupvue_type_template_id_f84a6db2_staticRenderFns,
+  formGroupvue_type_template_id_48db2448_render,
+  formGroupvue_type_template_id_48db2448_staticRenderFns,
   false,
   null,
   null,
@@ -20750,9 +20769,12 @@ var formElement_component = normalizeComponent(
   },
   methods: {
     fieldKey: function fieldKey(field) {
+      var fieldPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
       var prefix = get_default()(this.optionsWithLegacy, "fieldIdPrefix", "");
       var inputType = get_default()(field, "inputType", get_default()(field, "fieldOptions.inputType", ""));
-      return [slugifyFormID(field, prefix), field.type || "", inputType || ""].join("|");
+      var preferredId = slugifyFormID(field, prefix);
+      var fallbackId = preferredId || fieldPath || "";
+      return [fallbackId, field.type || "", inputType || ""].join("|");
     },
     isMinimalForField: function isMinimalForField(field) {
       var fieldLegacy = get_default()(field, "legacy");
@@ -20879,10 +20901,10 @@ var formElement_component = normalizeComponent(
 });
 ;// ./src/formGenerator.vue?vue&type=script&lang=js
  /* harmony default export */ var src_formGeneratorvue_type_script_lang_js = (formGeneratorvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=1d55a9ce&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-22.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-22.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-22.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-22.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=6ddb7345&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/formGenerator.vue?vue&type=style&index=0&id=1d55a9ce&prod&lang=scss
+;// ./src/formGenerator.vue?vue&type=style&index=0&id=6ddb7345&prod&lang=scss
 
 ;// ./src/formGenerator.vue
 
