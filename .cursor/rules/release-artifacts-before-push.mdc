@@ -1,0 +1,14 @@
+---
+description: Ensure dist artifacts are rebuilt before push/release
+alwaysApply: true
+---
+
+# Release Build Requirement
+
+For any change that affects runtime library behavior, do not push a release/version bump unless distributable artifacts are rebuilt and included.
+
+- If source under `src/` changes behavior consumed by package users, run `npm run build` before push.
+- Confirm `dist/` reflects the source fix (spot-check expected strings/symbols in built files when relevant).
+- When bumping package version, ensure `package.json`, `package-lock.json`, and updated `dist/*` are committed together.
+- If build output is missing from the commit, treat release as incomplete and fix before pushing.
+

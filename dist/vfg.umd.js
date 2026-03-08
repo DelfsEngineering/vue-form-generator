@@ -1,6 +1,6 @@
 
 /**
- * vue-form-generator 3.3.1
+ * vue-form-generator 3.3.2
  * https://github.com/vue-generators/vue-form-generator/
  * Released under the MIT License.
  */
@@ -6571,6 +6571,33 @@ module.exports = setToString;
 
 /***/ }),
 
+/***/ 32883:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var NATIVE_SYMBOL = __webpack_require__(19846);
+var fails = __webpack_require__(98828);
+var getOwnPropertySymbolsModule = __webpack_require__(87170);
+var toObject = __webpack_require__(39298);
+
+// V8 ~ Chrome 38 and 39 `Object.getOwnPropertySymbols` fails on primitives
+// https://bugs.chromium.org/p/v8/issues/detail?id=3443
+var FORCED = !NATIVE_SYMBOL || fails(function () { getOwnPropertySymbolsModule.f(1); });
+
+// `Object.getOwnPropertySymbols` method
+// https://tc39.es/ecma262/#sec-object.getownpropertysymbols
+$({ target: 'Object', stat: true, forced: FORCED }, {
+  getOwnPropertySymbols: function getOwnPropertySymbols(it) {
+    var $getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
+    return $getOwnPropertySymbols ? $getOwnPropertySymbols(toObject(it)) : [];
+  }
+});
+
+
+/***/ }),
+
 /***/ 33067:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -10795,33 +10822,6 @@ var classof = __webpack_require__(73948);
 module.exports = TO_STRING_TAG_SUPPORT ? {}.toString : function toString() {
   return '[object ' + classof(this) + ']';
 };
-
-
-/***/ }),
-
-/***/ 55264:
-/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
-
-"use strict";
-
-var $ = __webpack_require__(11091);
-var NATIVE_SYMBOL = __webpack_require__(19846);
-var fails = __webpack_require__(98828);
-var getOwnPropertySymbolsModule = __webpack_require__(87170);
-var toObject = __webpack_require__(39298);
-
-// V8 ~ Chrome 38 and 39 `Object.getOwnPropertySymbols` fails on primitives
-// https://bugs.chromium.org/p/v8/issues/detail?id=3443
-var FORCED = !NATIVE_SYMBOL || fails(function () { getOwnPropertySymbolsModule.f(1); });
-
-// `Object.getOwnPropertySymbols` method
-// https://tc39.es/ecma262/#sec-object.getownpropertysymbols
-$({ target: 'Object', stat: true, forced: FORCED }, {
-  getOwnPropertySymbols: function getOwnPropertySymbols(it) {
-    var $getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
-    return $getOwnPropertySymbols ? $getOwnPropertySymbols(toObject(it)) : [];
-  }
-});
 
 
 /***/ }),
@@ -18425,7 +18425,7 @@ __webpack_require__(23674);
 __webpack_require__(13313);
 __webpack_require__(10751);
 __webpack_require__(49721);
-__webpack_require__(55264);
+__webpack_require__(32883);
 
 
 /***/ }),
@@ -19302,7 +19302,7 @@ var es_iterator_for_each = __webpack_require__(7588);
 var es_object_to_string = __webpack_require__(26099);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/web.dom-collections.for-each.js
 var web_dom_collections_for_each = __webpack_require__(23500);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=6ddb7345
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=template&id=10938e66
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
@@ -20839,19 +20839,37 @@ var formElement_component = normalizeComponent(
         _this2.clearValidationErrors();
         var fieldsValidated = 0;
         var formErrors = [];
-        _this2.eventBus.$on("field-deregistering", function () {
+        var settled = false;
+        var restoreFieldValidatedListener = function restoreFieldValidatedListener() {
+          if (get_default()(_this2.options, "validateAfterChanged", false)) {
+            _this2.eventBus.$off("field-validated", _this2.onFieldValidated);
+            _this2.eventBus.$on("field-validated", _this2.onFieldValidated);
+          }
+        };
+        var cleanup = function cleanup() {
+          _this2.eventBus.$off("field-validated", counter);
+          _this2.eventBus.$off("field-deregistering", onFieldDeregistering);
+          restoreFieldValidatedListener();
+        };
+        var onFieldDeregistering = function onFieldDeregistering() {
+          if (settled) {
+            return;
+          }
+          settled = true;
           // console.warn("Fields were deleted during validation process");
+          cleanup();
           _this2.eventBus.$emit("fields-validation-terminated", formErrors);
           reject(formErrors);
-        });
-        var _counter = function counter(isValid, fieldErrors, uid) {
+        };
+        var counter = function counter(isValid, fieldErrors, uid) {
+          if (settled) {
+            return;
+          }
           fieldsValidated++;
           _this2.fillErrors(fieldErrors, formErrors, uid);
           if (fieldsValidated === _this2.totalNumberOfFields) {
-            _this2.eventBus.$off("field-validated", _counter);
-            if (get_default()(_this2.options, "validateAfterChanged", false)) {
-              _this2.eventBus.$on("field-validated", _this2.onFieldValidated);
-            }
+            settled = true;
+            cleanup();
             _this2.errors = formErrors;
             _this2.watcherTickId++; // Invalidate pending watcher callbacks
             var _isValid = formErrors.length === 0;
@@ -20877,7 +20895,8 @@ var formElement_component = normalizeComponent(
         if (get_default()(_this2.options, "validateAfterChanged", false)) {
           _this2.eventBus.$off("field-validated", _this2.onFieldValidated);
         }
-        _this2.eventBus.$on("field-validated", _counter);
+        _this2.eventBus.$on("field-deregistering", onFieldDeregistering);
+        _this2.eventBus.$on("field-validated", counter);
         _this2.eventBus.$emit("validate-fields", _this2);
       });
     },
@@ -20919,10 +20938,10 @@ var formElement_component = normalizeComponent(
 });
 ;// ./src/formGenerator.vue?vue&type=script&lang=js
  /* harmony default export */ var src_formGeneratorvue_type_script_lang_js = (formGeneratorvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=6ddb7345&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGenerator.vue?vue&type=style&index=0&id=10938e66&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/formGenerator.vue?vue&type=style&index=0&id=6ddb7345&prod&lang=scss
+;// ./src/formGenerator.vue?vue&type=style&index=0&id=10938e66&prod&lang=scss
 
 ;// ./src/formGenerator.vue
 
@@ -22781,8 +22800,8 @@ var fieldSelect_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldSelect = (fieldSelect_component.exports);
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=template&id=35a7b1ac
-var fieldSubmitvue_type_template_id_35a7b1ac_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=template&id=592f8915
+var fieldSubmitvue_type_template_id_592f8915_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _c('input', {
@@ -22807,7 +22826,7 @@ var fieldSubmitvue_type_template_id_35a7b1ac_render = function render() {
     }
   });
 };
-var fieldSubmitvue_type_template_id_35a7b1ac_staticRenderFns = [];
+var fieldSubmitvue_type_template_id_592f8915_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/lodash/isEmpty.js
 var isEmpty = __webpack_require__(62193);
@@ -22819,6 +22838,11 @@ var isEmpty_default = /*#__PURE__*/__webpack_require__.n(isEmpty);
 /* harmony default export */ var fieldSubmitvue_type_script_lang_js = ({
   name: "FieldSubmit",
   mixins: [abstractField],
+  data: function data() {
+    return {
+      onValidationTerminated: null
+    };
+  },
   methods: {
     onClick: function onClick($event) {
       var _this = this;
@@ -22826,28 +22850,40 @@ var isEmpty_default = /*#__PURE__*/__webpack_require__.n(isEmpty);
         // prevent a <form /> from having it's submit event triggered
         // when we have to validate data first
         $event.preventDefault();
-        this.eventBus.$emit("fields-validation-trigger");
-        this.eventBus.$on("fields-validation-terminated", function (formErrors) {
+        if (this.onValidationTerminated) {
+          this.eventBus.$off("fields-validation-terminated", this.onValidationTerminated);
+        }
+        this.onValidationTerminated = function (formErrors) {
+          _this.eventBus.$off("fields-validation-terminated", _this.onValidationTerminated);
+          _this.onValidationTerminated = null;
           if (!isEmpty_default()(formErrors) && isFunction_default()(_this.fieldOptions.onValidationError)) {
             _this.fieldOptions.onValidationError(_this.model, _this.schema, formErrors, $event);
           } else if (isFunction_default()(_this.fieldOptions.onSubmit)) {
             _this.fieldOptions.onSubmit(_this.model, _this.schema, $event);
           }
-        });
+        };
+        this.eventBus.$on("fields-validation-terminated", this.onValidationTerminated);
+        this.eventBus.$emit("fields-validation-trigger");
       } else if (isFunction_default()(this.fieldOptions.onSubmit)) {
         // if we aren't validating, just pass the onSubmit handler the $event
         // so it can be handled there
         this.fieldOptions.onSubmit(this.model, this.schema, $event);
       }
     }
+  },
+  beforeDestroy: function beforeDestroy() {
+    if (this.onValidationTerminated) {
+      this.eventBus.$off("fields-validation-terminated", this.onValidationTerminated);
+      this.onValidationTerminated = null;
+    }
   }
 });
 ;// ./src/fields/core/fieldSubmit.vue?vue&type=script&lang=js
  /* harmony default export */ var core_fieldSubmitvue_type_script_lang_js = (fieldSubmitvue_type_script_lang_js); 
-;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&id=35a7b1ac&prod&lang=scss
+;// ./node_modules/mini-css-extract-plugin/dist/loader.js??clonedRuleSet-64.use[0]!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-64.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-64.use[2]!./node_modules/sass-loader/dist/cjs.js??clonedRuleSet-64.use[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&id=592f8915&prod&lang=scss
 // extracted by mini-css-extract-plugin
 
-;// ./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&id=35a7b1ac&prod&lang=scss
+;// ./src/fields/core/fieldSubmit.vue?vue&type=style&index=0&id=592f8915&prod&lang=scss
 
 ;// ./src/fields/core/fieldSubmit.vue
 
@@ -22860,8 +22896,8 @@ var isEmpty_default = /*#__PURE__*/__webpack_require__.n(isEmpty);
 
 var fieldSubmit_component = normalizeComponent(
   core_fieldSubmitvue_type_script_lang_js,
-  fieldSubmitvue_type_template_id_35a7b1ac_render,
-  fieldSubmitvue_type_template_id_35a7b1ac_staticRenderFns,
+  fieldSubmitvue_type_template_id_592f8915_render,
+  fieldSubmitvue_type_template_id_592f8915_staticRenderFns,
   false,
   null,
   null,

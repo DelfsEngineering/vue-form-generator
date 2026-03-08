@@ -6,6 +6,12 @@ import FieldSubmit from "@/fields/core/fieldSubmit.vue";
 const localVue = createLocalVue();
 let wrapper;
 
+function countEventListeners(bus, eventName) {
+	const listeners = bus._events && bus._events[eventName];
+	if (!listeners) return 0;
+	return Array.isArray(listeners) ? listeners.length : 1;
+}
+
 function createField(data, methods) {
 	const _wrapper = mount(FieldSubmit, {
 		localVue,
@@ -109,6 +115,27 @@ describe("fieldSubmit.vue", () => {
 				expect(schema.fieldOptions.onValidationError.called).to.be.true;
 				expect(schema.fieldOptions.onValidationError.calledWith(model, schema, formErrors)).to.be.true;
 				expect(schema.fieldOptions.onSubmit.called).to.be.false;
+			});
+
+			it("does not accumulate validation termination listeners across repeated clicks", () => {
+				wrapper.destroy();
+				createField({ schema, model });
+				input = wrapper.find("input");
+
+				schema.fieldOptions.validateBeforeSubmit = true;
+				schema.fieldOptions.onValidationError = undefined;
+				schema.fieldOptions.onSubmit = sinon.spy();
+				wrapper.setProps({ schema: { ...schema } });
+
+				input.trigger("click");
+				input.trigger("click");
+
+				expect(countEventListeners(wrapper.props().eventBus, "fields-validation-terminated")).to.be.equal(1);
+
+				wrapper.props().eventBus.$emit("fields-validation-terminated", []);
+
+				expect(schema.fieldOptions.onSubmit.calledOnce).to.be.true;
+				expect(countEventListeners(wrapper.props().eventBus, "fields-validation-terminated")).to.be.equal(0);
 			});
 		});
 

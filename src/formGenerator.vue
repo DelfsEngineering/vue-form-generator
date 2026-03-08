@@ -277,23 +277,43 @@ export default {
 				let fieldsValidated = 0;
 
 				let formErrors = [];
+				let settled = false;
 
-				this.eventBus.$on("field-deregistering", () => {
+				const restoreFieldValidatedListener = () => {
+					if (objGet(this.options, "validateAfterChanged", false)) {
+						this.eventBus.$off("field-validated", this.onFieldValidated);
+						this.eventBus.$on("field-validated", this.onFieldValidated);
+					}
+				};
+
+				const cleanup = () => {
+					this.eventBus.$off("field-validated", counter);
+					this.eventBus.$off("field-deregistering", onFieldDeregistering);
+					restoreFieldValidatedListener();
+				};
+
+				const onFieldDeregistering = () => {
+					if (settled) {
+						return;
+					}
+					settled = true;
 					// console.warn("Fields were deleted during validation process");
+					cleanup();
 					this.eventBus.$emit("fields-validation-terminated", formErrors);
 					reject(formErrors);
-				});
+				};
 
 				const counter = (isValid, fieldErrors, uid) => {
+					if (settled) {
+						return;
+					}
 					fieldsValidated++;
 
 					this.fillErrors(fieldErrors, formErrors, uid);
 
 					if (fieldsValidated === this.totalNumberOfFields) {
-						this.eventBus.$off("field-validated", counter);
-						if (objGet(this.options, "validateAfterChanged", false)) {
-							this.eventBus.$on("field-validated", this.onFieldValidated);
-						}
+						settled = true;
+						cleanup();
 						this.errors = formErrors;
 						this.watcherTickId++; // Invalidate pending watcher callbacks
 						let isValid = formErrors.length === 0;
@@ -318,6 +338,7 @@ export default {
 				if (objGet(this.options, "validateAfterChanged", false)) {
 					this.eventBus.$off("field-validated", this.onFieldValidated);
 				}
+				this.eventBus.$on("field-deregistering", onFieldDeregistering);
 				this.eventBus.$on("field-validated", counter);
 				this.eventBus.$emit("validate-fields", this);
 			});

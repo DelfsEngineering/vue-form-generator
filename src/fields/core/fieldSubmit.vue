@@ -18,6 +18,11 @@ import { isFunction, isEmpty } from "lodash";
 export default {
 	name: "FieldSubmit",
 	mixins: [abstractField],
+	data() {
+		return {
+			onValidationTerminated: null
+		};
+	},
 
 	methods: {
 		onClick($event) {
@@ -26,19 +31,32 @@ export default {
 				// when we have to validate data first
 				$event.preventDefault();
 
-				this.eventBus.$emit("fields-validation-trigger");
-				this.eventBus.$on("fields-validation-terminated", (formErrors) => {
+				if (this.onValidationTerminated) {
+					this.eventBus.$off("fields-validation-terminated", this.onValidationTerminated);
+				}
+
+				this.onValidationTerminated = (formErrors) => {
+					this.eventBus.$off("fields-validation-terminated", this.onValidationTerminated);
+					this.onValidationTerminated = null;
 					if (!isEmpty(formErrors) && isFunction(this.fieldOptions.onValidationError)) {
 						this.fieldOptions.onValidationError(this.model, this.schema, formErrors, $event);
 					} else if (isFunction(this.fieldOptions.onSubmit)) {
 						this.fieldOptions.onSubmit(this.model, this.schema, $event);
 					}
-				});
+				};
+				this.eventBus.$on("fields-validation-terminated", this.onValidationTerminated);
+				this.eventBus.$emit("fields-validation-trigger");
 			} else if (isFunction(this.fieldOptions.onSubmit)) {
 				// if we aren't validating, just pass the onSubmit handler the $event
 				// so it can be handled there
 				this.fieldOptions.onSubmit(this.model, this.schema, $event);
 			}
+		}
+	},
+	beforeDestroy() {
+		if (this.onValidationTerminated) {
+			this.eventBus.$off("fields-validation-terminated", this.onValidationTerminated);
+			this.onValidationTerminated = null;
 		}
 	}
 };

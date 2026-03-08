@@ -57,6 +57,9 @@
 		"@babel/runtime-corejs3": "^7.27.1",
 		"core-js": "^3.36.0"
 	},
+	"peerDependencies": {
+		"vue": "^2.7.16"
+	},
 	"devDependencies": {
 		"@babel/core": "^7.18.9",
 		"@babel/eslint-parser": "^7.27.1",
