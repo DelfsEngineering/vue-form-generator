@@ -53,7 +53,7 @@ const generateDevProjects = () => {
 module.exports = {
 	publicPath: process.env.NODE_ENV === "production" ? "" : "/",
 	outputDir: process.env.NODE_ENV === "production" ? "dist" : path.resolve("dev/projects"),
-	lintOnSave: true,
+	lintOnSave: process.env.DISABLE_ESLINT_PLUGIN ? false : true,
 	runtimeCompiler: false,
 	transpileDependencies: [],
 	productionSourceMap: false,
