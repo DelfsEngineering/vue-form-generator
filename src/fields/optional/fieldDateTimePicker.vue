@@ -60,3 +60,25 @@ export default {
 	}
 };
 </script>
+
+<style scoped>
+/* Prevent icon/addon from stretching when dateTimePicker is inside a flex container.
+   The parent .field-wrap uses display: flex with align-items: stretch, causing the
+   input-group to stretch. Without this, the addon stretches while the input stays normal. */
+.input-group.date {
+	align-self: flex-start;
+	width: 100%;
+}
+
+.input-group.date .form-control {
+	flex: 1;
+	min-width: 0;
+}
+
+.input-group.date .input-group-addon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+</style>
