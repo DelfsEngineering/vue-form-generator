@@ -244,7 +244,7 @@ export default {
 				fontSize: "12px",
 				whiteSpace: "pre-wrap",
 				wordBreak: "break-word",
-				maxHeight: "240px",
+				maxHeight: "120px",
 				overflow: "auto"
 			};
 		},

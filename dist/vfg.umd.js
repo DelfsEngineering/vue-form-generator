@@ -20925,8 +20925,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=1eeb97f6
-var formGroupvue_type_template_id_1eeb97f6_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-82.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=6ebb65a4
+var formGroupvue_type_template_id_6ebb65a4_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -21055,7 +21055,7 @@ var formGroupvue_type_template_id_1eeb97f6_render = function render() {
     }, [_vm._v(_vm._s(_vm.invalidFieldSnippet(field)))])]) : [_vm._v(_vm._s(_vm.ensureInvalidFieldLogged(field, index)))]]];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_1eeb97f6_staticRenderFns = [];
+var formGroupvue_type_template_id_6ebb65a4_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -21897,7 +21897,7 @@ function warnFieldDiagnostic(diagnostic) {
         fontSize: "12px",
         whiteSpace: "pre-wrap",
         wordBreak: "break-word",
-        maxHeight: "240px",
+        maxHeight: "120px",
         overflow: "auto"
       };
     },
@@ -22054,8 +22054,8 @@ function warnFieldDiagnostic(diagnostic) {
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_1eeb97f6_render,
-  formGroupvue_type_template_id_1eeb97f6_staticRenderFns,
+  formGroupvue_type_template_id_6ebb65a4_render,
+  formGroupvue_type_template_id_6ebb65a4_staticRenderFns,
   false,
   null,
   null,
