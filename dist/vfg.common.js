@@ -795,6 +795,55 @@ module.exports = isBuffer;
 
 /***/ }),
 
+/***/ 3701:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var uncurryThis = __webpack_require__(1907);
+var fails = __webpack_require__(98828);
+var padStart = (__webpack_require__(81164).start);
+
+var $RangeError = RangeError;
+var $isFinite = isFinite;
+var abs = Math.abs;
+var DatePrototype = Date.prototype;
+var nativeDateToISOString = DatePrototype.toISOString;
+var thisTimeValue = uncurryThis(DatePrototype.getTime);
+var getUTCDate = uncurryThis(DatePrototype.getUTCDate);
+var getUTCFullYear = uncurryThis(DatePrototype.getUTCFullYear);
+var getUTCHours = uncurryThis(DatePrototype.getUTCHours);
+var getUTCMilliseconds = uncurryThis(DatePrototype.getUTCMilliseconds);
+var getUTCMinutes = uncurryThis(DatePrototype.getUTCMinutes);
+var getUTCMonth = uncurryThis(DatePrototype.getUTCMonth);
+var getUTCSeconds = uncurryThis(DatePrototype.getUTCSeconds);
+
+// `Date.prototype.toISOString` method implementation
+// https://tc39.es/ecma262/#sec-date.prototype.toisostring
+// PhantomJS / old WebKit fails here:
+module.exports = (fails(function () {
+  return nativeDateToISOString.call(new Date(-5e13 - 1)) !== '0385-07-25T07:06:39.999Z';
+}) || !fails(function () {
+  nativeDateToISOString.call(new Date(NaN));
+})) ? function toISOString() {
+  if (!$isFinite(thisTimeValue(this))) throw new $RangeError('Invalid time value');
+  var date = this;
+  var year = getUTCFullYear(date);
+  var milliseconds = getUTCMilliseconds(date);
+  var sign = year < 0 ? '-' : year > 9999 ? '+' : '';
+  return sign + padStart(abs(year), sign ? 6 : 4, 0) +
+    '-' + padStart(getUTCMonth(date) + 1, 2, 0) +
+    '-' + padStart(getUTCDate(date), 2, 0) +
+    'T' + padStart(getUTCHours(date), 2, 0) +
+    ':' + padStart(getUTCMinutes(date), 2, 0) +
+    ':' + padStart(getUTCSeconds(date), 2, 0) +
+    '.' + padStart(milliseconds, 3, 0) +
+    'Z';
+} : nativeDateToISOString;
+
+
+/***/ }),
+
 /***/ 3825:
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
@@ -2139,6 +2188,27 @@ module.exports = function (argument, usingIterator) {
   var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
   if (aCallable(iteratorMethod)) return anObject(call(iteratorMethod, argument));
   throw new $TypeError(tryToString(argument) + ' is not iterable');
+};
+
+
+/***/ }),
+
+/***/ 10317:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+__webpack_require__(56648);
+__webpack_require__(49721);
+var path = __webpack_require__(92046);
+var apply = __webpack_require__(76024);
+
+// eslint-disable-next-line es/no-json -- safe
+if (!path.JSON) path.JSON = { stringify: JSON.stringify };
+
+// eslint-disable-next-line no-unused-vars -- required for `.length`
+module.exports = function stringify(it, replacer, space) {
+  return apply(path.JSON.stringify, null, arguments);
 };
 
 
@@ -10976,6 +11046,39 @@ module.exports = isArray;
 
 /***/ }),
 
+/***/ 56648:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var call = __webpack_require__(13930);
+var toObject = __webpack_require__(39298);
+var toPrimitive = __webpack_require__(46028);
+var toISOString = __webpack_require__(3701);
+var classof = __webpack_require__(45807);
+var fails = __webpack_require__(98828);
+
+var FORCED = fails(function () {
+  return new Date(NaN).toJSON() !== null
+    || call(Date.prototype.toJSON, { toISOString: function () { return 1; } }) !== 1;
+});
+
+// `Date.prototype.toJSON` method
+// https://tc39.es/ecma262/#sec-date.prototype.tojson
+$({ target: 'Date', proto: true, forced: FORCED }, {
+  // eslint-disable-next-line no-unused-vars -- required for `.length`
+  toJSON: function toJSON(key) {
+    var O = toObject(this);
+    var pv = toPrimitive(O, 'number');
+    return typeof pv == 'number' && !isFinite(pv) ? null :
+      (!('toISOString' in O) && classof(O) === 'Date') ? call(toISOString, O) : O.toISOString();
+  }
+});
+
+
+/***/ }),
+
 /***/ 56682:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -13459,6 +13562,31 @@ module.exports = baseRest;
 
 /***/ }),
 
+/***/ 69314:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var toIntegerOrInfinity = __webpack_require__(65482);
+var toString = __webpack_require__(90160);
+var requireObjectCoercible = __webpack_require__(74239);
+
+var $RangeError = RangeError;
+
+// `String.prototype.repeat` method implementation
+// https://tc39.es/ecma262/#sec-string.prototype.repeat
+module.exports = function repeat(count) {
+  var str = toString(requireObjectCoercible(this));
+  var result = '';
+  var n = toIntegerOrInfinity(count);
+  if (n < 0 || n === Infinity) throw new $RangeError('Wrong number of repetitions');
+  for (;n > 0; (n >>>= 1) && (str += str)) if (n & 1) result += str;
+  return result;
+};
+
+
+/***/ }),
+
 /***/ 69563:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -14875,6 +15003,18 @@ module.exports = Set;
 
 /***/ }),
 
+/***/ 76660:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var parent = __webpack_require__(10317);
+
+module.exports = parent;
+
+
+/***/ }),
+
 /***/ 77199:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -15923,6 +16063,50 @@ module.exports = nativeCreate;
 
 /***/ }),
 
+/***/ 81164:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+// https://github.com/tc39/proposal-string-pad-start-end
+var uncurryThis = __webpack_require__(1907);
+var toLength = __webpack_require__(3121);
+var toString = __webpack_require__(90160);
+var $repeat = __webpack_require__(69314);
+var requireObjectCoercible = __webpack_require__(74239);
+
+var repeat = uncurryThis($repeat);
+var stringSlice = uncurryThis(''.slice);
+var ceil = Math.ceil;
+
+// `String.prototype.{ padStart, padEnd }` methods implementation
+var createMethod = function (IS_END) {
+  return function ($this, maxLength, fillString) {
+    var S = toString(requireObjectCoercible($this));
+    var intMaxLength = toLength(maxLength);
+    var stringLength = S.length;
+    var fillStr = fillString === undefined ? ' ' : toString(fillString);
+    var fillLen, stringFiller;
+    if (intMaxLength <= stringLength || fillStr === '') return S;
+    fillLen = intMaxLength - stringLength;
+    stringFiller = repeat(fillStr, ceil(fillLen / fillStr.length));
+    if (stringFiller.length > fillLen) stringFiller = stringSlice(stringFiller, 0, fillLen);
+    return IS_END ? S + stringFiller : stringFiller + S;
+  };
+};
+
+module.exports = {
+  // `String.prototype.padStart` method
+  // https://tc39.es/ecma262/#sec-string.prototype.padstart
+  start: createMethod(false),
+  // `String.prototype.padEnd` method
+  // https://tc39.es/ecma262/#sec-string.prototype.padend
+  end: createMethod(true)
+};
+
+
+/***/ }),
+
 /***/ 81697:
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
@@ -16763,6 +16947,13 @@ module.exports = isString;
 
 // empty
 
+
+/***/ }),
+
+/***/ 85569:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = __webpack_require__(76660);
 
 /***/ }),
 
@@ -19602,8 +19793,8 @@ var slugify = function slugify() {
   .replace(/([^a-zA-Z0-9-_/./:]+)/g, "");
 };
 
-;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=48db2448
-var formGroupvue_type_template_id_48db2448_render = function render() {
+;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=template&id=1eeb97f6
+var formGroupvue_type_template_id_1eeb97f6_render = function render() {
   var _vm = this,
     _c = _vm._self._c;
   return _vm.fields ? _c(_vm.tag, {
@@ -19722,14 +19913,17 @@ var formGroupvue_type_template_id_48db2448_render = function render() {
         "errors": _vm.errors,
         "eventBus": _vm.eventBus
       })] : _vm._e()];
-    })] : _vm._e()] : _vm.showInvalidWarnings ? [_c('div', {
+    })] : _vm._e()] : [_vm.showInvalidWarnings ? _c('div', {
       key: 'invalid-' + index,
       staticClass: "vfg-field-warning",
       style: _vm.invalidFieldStyle
-    }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))])])] : _vm._e()];
+    }, [_c('strong', [_vm._v("Invalid field")]), _c('div', [_vm._v(_vm._s(_vm.invalidFieldMessage(field, index)))]), _c('pre', {
+      staticClass: "vfg-field-warning-snippet",
+      style: _vm.invalidSnippetStyle
+    }, [_vm._v(_vm._s(_vm.invalidFieldSnippet(field)))])]) : [_vm._v(_vm._s(_vm.ensureInvalidFieldLogged(field, index)))]]];
   })], 2) : _vm._e();
 };
-var formGroupvue_type_template_id_48db2448_staticRenderFns = [];
+var formGroupvue_type_template_id_1eeb97f6_staticRenderFns = [];
 
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/object/define-property.js
 var define_property = __webpack_require__(84997);
@@ -20115,7 +20309,224 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
   }
   return key;
 };
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
+var object_keys = __webpack_require__(50697);
+var object_keys_default = /*#__PURE__*/__webpack_require__.n(object_keys);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
+var map = __webpack_require__(48079);
+var map_default = /*#__PURE__*/__webpack_require__.n(map);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
+var slice = __webpack_require__(18979);
+var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
+var stringify = __webpack_require__(85569);
+var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+;// ./src/utils/schemaDiagnostics.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var REASON = {
+  NULL_ENTRY: "null_entry",
+  BAD_ENTRY_TYPE: "bad_entry_type",
+  MISSING_TYPE: "missing_type",
+  UNKNOWN_TYPE: "unknown_type",
+  BAD_VALIDATOR: "bad_validator",
+  UNUSABLE: "unusable_field"
+};
+var BUILTIN_SCHEMA_TYPES = {
+  group: true,
+  content: true
+};
+var MAX_SNIPPET_LENGTH = 2000;
+var MAX_STRING_VALUE_LENGTH = 120;
+var warnedPaths = Object.create(null);
+function resetWarnedDiagnostics() {
+  object_keys_default()(warnedPaths).forEach(function (key) {
+    delete warnedPaths[key];
+  });
+}
+
+/**
+ * Normalize a schema type to the Vue component tag formElement uses (`field-input`).
+ */
+function normalizeFieldComponentName(type) {
+  var normalized = String(type || "").replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/\s+/g, "-").toLowerCase();
+  return "field-" + normalized;
+}
+function pascalCaseTag(tag) {
+  var _context, _context2;
+  return map_default()(_context = filter_default()(_context2 = String(tag).split("-")).call(_context2, Boolean)).call(_context, function (part) {
+    return part.charAt(0).toUpperCase() + slice_default()(part).call(part, 1);
+  }).join("");
+}
+
+/**
+ * Whether a field `type` resolves to a registered Vue component (or builtin group/content).
+ * Pass the app/local Vue constructor when components were registered on createLocalVue().
+ */
+function isKnownFieldType(type) {
+  var vue = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (external_commonjs_vue_commonjs2_vue_root_Vue_default());
+  if (isNil_default()(type) || type === "") {
+    return false;
+  }
+  if (BUILTIN_SCHEMA_TYPES[type]) {
+    return true;
+  }
+  var tag = normalizeFieldComponentName(type);
+  var pascal = pascalCaseTag(tag);
+  var registries = [];
+  if (vue && vue.options && vue.options.components) {
+    registries.push(vue.options.components);
+  }
+  // Also check global Vue when a local Vue constructor was passed
+  if (vue !== (external_commonjs_vue_commonjs2_vue_root_Vue_default()) && (external_commonjs_vue_commonjs2_vue_root_Vue_default()).options && (external_commonjs_vue_commonjs2_vue_root_Vue_default()).options.components) {
+    registries.push((external_commonjs_vue_commonjs2_vue_root_Vue_default()).options.components);
+  }
+  return registries.some(function (components) {
+    return !!(components[tag] || components[pascal]);
+  });
+}
+
+/**
+ * Resolve from a live component instance (walks local components + ctor options).
+ */
+function isKnownFieldTypeForVm(type, vm) {
+  if (isNil_default()(type) || type === "") {
+    return false;
+  }
+  if (BUILTIN_SCHEMA_TYPES[type]) {
+    return true;
+  }
+  var tag = normalizeFieldComponentName(type);
+  var pascal = pascalCaseTag(tag);
+  var current = vm;
+  while (current) {
+    var local = current.$options && current.$options.components;
+    if (local && (local[tag] || local[pascal])) {
+      return true;
+    }
+    current = current.$parent;
+  }
+  var ctor = vm && vm.$root && vm.$root.constructor;
+  if (ctor && isKnownFieldType(type, ctor)) {
+    return true;
+  }
+  return isKnownFieldType(type, (external_commonjs_vue_commonjs2_vue_root_Vue_default()));
+}
+function collapseValue(value) {
+  if (typeof value === "string" && value.length > MAX_STRING_VALUE_LENGTH) {
+    return "\u2026(".concat(value.length, " chars)\u2026");
+  }
+  if (Array.isArray(value)) {
+    return map_default()(value).call(value, collapseValue);
+  }
+  if (value && _typeof(value) === "object") {
+    var out = {};
+    object_keys_default()(value).forEach(function (key) {
+      out[key] = collapseValue(value[key]);
+    });
+    return out;
+  }
+  return value;
+}
+
+/**
+ * Safe, capped JSON snippet of a single bad field entry (not the whole schema).
+ */
+function formatSnippet(field) {
+  if (field === null) {
+    return "null";
+  }
+  if (typeof field === "undefined") {
+    return "undefined";
+  }
+  if (_typeof(field) !== "object") {
+    try {
+      return stringify_default()(field);
+    } catch (e) {
+      return String(field);
+    }
+  }
+  try {
+    var snippet = stringify_default()(collapseValue(field), null, 2);
+    if (snippet.length > MAX_SNIPPET_LENGTH) {
+      snippet = slice_default()(snippet).call(snippet, 0, MAX_SNIPPET_LENGTH) + "…";
+    }
+    return snippet;
+  } catch (e) {
+    return "[unserializable field]";
+  }
+}
+function reasonCodeForField(field) {
+  var vueOrVm = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (external_commonjs_vue_commonjs2_vue_root_Vue_default());
+  if (isNil_default()(field)) {
+    return REASON.NULL_ENTRY;
+  }
+  if (_typeof(field) !== "object") {
+    return REASON.BAD_ENTRY_TYPE;
+  }
+  if (isNil_default()(field.type)) {
+    return REASON.MISSING_TYPE;
+  }
+  var known = vueOrVm && vueOrVm._isVue ? isKnownFieldTypeForVm(field.type, vueOrVm) : isKnownFieldType(field.type, vueOrVm);
+  if (!known) {
+    return REASON.UNKNOWN_TYPE;
+  }
+  return REASON.UNUSABLE;
+}
+function buildFieldDiagnostic() {
+  var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+    field = _ref.field,
+    index = _ref.index,
+    path = _ref.path,
+    reason = _ref.reason,
+    _ref$options = _ref.options,
+    options = _ref$options === void 0 ? {} : _ref$options,
+    vue = _ref.vue,
+    vm = _ref.vm;
+  var resolver = vm || vue || (external_commonjs_vue_commonjs2_vue_root_Vue_default());
+  var resolvedReason = reason || reasonCodeForField(field, resolver);
+  var isObject = field && _typeof(field) === "object";
+  return {
+    path: path || "fields[".concat(index, "]"),
+    index: index,
+    reason: resolvedReason,
+    type: isObject ? field.type : undefined,
+    model: isObject ? field.model : undefined,
+    label: isObject ? field.label : undefined,
+    snippet: formatSnippet(field),
+    devMode: !!get_default()(options, "devMode", false)
+  };
+}
+function warnFieldDiagnostic(diagnostic) {
+  var _context3;
+  if (!diagnostic || !diagnostic.path) {
+    return;
+  }
+  if (warnedPaths[diagnostic.path]) {
+    return;
+  }
+  warnedPaths[diagnostic.path] = true;
+  var message = concat_default()(_context3 = "[vue-form-generator] Invalid field at ".concat(diagnostic.path, " (")).call(_context3, diagnostic.reason, "). Ensure each entry is an object with a valid \"type\".");
+  console.warn(message, diagnostic);
+}
 ;// ./node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/formGroup.vue?vue&type=script&lang=js
+
 
 
 
@@ -20214,6 +20625,20 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
         fontSize: "13px"
       };
     },
+    invalidSnippetStyle: function invalidSnippetStyle() {
+      return {
+        margin: "8px 0 0",
+        padding: "8px",
+        background: "#fff",
+        border: "1px solid #f0d78c",
+        borderRadius: "2px",
+        fontSize: "12px",
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+        maxHeight: "240px",
+        overflow: "auto"
+      };
+    },
     showInvalidWarnings: function showInvalidWarnings() {
       return !!get_default()(this.options, "devMode", false);
     }
@@ -20224,7 +20649,7 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       return ((_this$fields$index = this.fields[index]) === null || _this$fields$index === void 0 ? void 0 : (_this$fields$index$at = _this$fields$index.attributes) === null || _this$fields$index$at === void 0 ? void 0 : _this$fields$index$at.formGroup) || ((_this$fields$index2 = this.fields[index]) === null || _this$fields$index2 === void 0 ? void 0 : _this$fields$index2.attributes) || {};
     },
     isFieldRenderable: function isFieldRenderable(field) {
-      return !isNil_default()(field) && !isNil_default()(field.type);
+      return !isNil_default()(field) && !isNil_default()(field.type) && isKnownFieldTypeForVm(field.type, this);
     },
     // Get visible prop of field (for non-iterated fields)
     fieldVisible: function fieldVisible(field) {
@@ -20291,44 +20716,62 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
       return field;
     },
     invalidFieldReason: function invalidFieldReason(field) {
-      if (isNil_default()(field)) {
-        return "entry is null or undefined";
+      var code = reasonCodeForField(field, this);
+      switch (code) {
+        case REASON.NULL_ENTRY:
+          return "entry is null or undefined";
+        case REASON.BAD_ENTRY_TYPE:
+          return "entry is a ".concat(_typeof(field), ", expected an object");
+        case REASON.MISSING_TYPE:
+          return 'missing required "type" property';
+        case REASON.UNKNOWN_TYPE:
+          return "unknown field type \"".concat(field && field.type, "\" (no registered component)");
+        default:
+          return "unusable field configuration";
       }
-      if (_typeof(field) !== "object") {
-        return "entry is a ".concat(_typeof(field), ", expected an object");
-      }
-      if (isNil_default()(field.type)) {
-        return 'missing required "type" property';
-      }
-      return "unusable field configuration";
+    },
+    invalidFieldSnippet: function invalidFieldSnippet(field) {
+      return formatSnippet(field);
     },
     invalidFieldMessage: function invalidFieldMessage(field, index) {
       var _context5;
       var reason = this.invalidFieldReason(field);
+      var path = this.getFieldPath(index);
       this.logInvalidField(reason, field, index);
-      return concat_default()(_context5 = "Invalid field at index ".concat(index, ": ")).call(_context5, reason, ". Each field should be an object with a \"type\".");
+      return concat_default()(_context5 = "Invalid field at ".concat(path, ": ")).call(_context5, reason, ". Each field should be an object with a \"type\".");
+    },
+    ensureInvalidFieldLogged: function ensureInvalidFieldLogged(field, index) {
+      this.logInvalidField(this.invalidFieldReason(field), field, index);
+      return "";
     },
     logInvalidField: function logInvalidField(reason, field, index) {
-      var _context6;
-      if (!this.showInvalidWarnings) {
-        return;
-      }
       if (this.warnedInvalidFields[index]) {
         return;
       }
       this.$set(this.warnedInvalidFields, index, true);
-      console.warn(concat_default()(_context6 = "[vue-form-generator] Invalid field at index ".concat(index, ": ")).call(_context6, reason, ". Ensure each entry is an object with a \"type\" property."), field);
+      var path = this.getFieldPath(index);
+      var diagnostic = buildFieldDiagnostic({
+        field: field,
+        index: index,
+        path: path,
+        reason: reasonCodeForField(field, this),
+        options: this.options,
+        vm: this
+      });
+      warnFieldDiagnostic(diagnostic);
     }
   },
   watch: {
     fields: function fields(newVal, oldVal) {
       if (newVal !== oldVal) {
         this.warnedInvalidFields = {};
+        resetWarnedDiagnostics();
       }
     }
   },
   created: function created() {
     var _this = this;
+    resetWarnedDiagnostics();
     this.eventBus.$on("field-validated", function () {
       _this.$nextTick(function () {
         var containFieldWithError = _this.$refs.group.querySelector(".form-element." + get_default()(_this.options, "validationErrorClass", "error")) !== null;
@@ -20349,8 +20792,8 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
 ;
 var formGroup_component = normalizeComponent(
   src_formGroupvue_type_script_lang_js,
-  formGroupvue_type_template_id_48db2448_render,
-  formGroupvue_type_template_id_48db2448_staticRenderFns,
+  formGroupvue_type_template_id_1eeb97f6_render,
+  formGroupvue_type_template_id_1eeb97f6_staticRenderFns,
   false,
   null,
   null,
@@ -20955,9 +21398,6 @@ var isNumber_default = /*#__PURE__*/__webpack_require__.n(isNumber);
 // EXTERNAL MODULE: ./node_modules/lodash/defaults.js
 var defaults = __webpack_require__(84684);
 var defaults_default = /*#__PURE__*/__webpack_require__.n(defaults);
-// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
-var object_keys = __webpack_require__(50697);
-var object_keys_default = /*#__PURE__*/__webpack_require__.n(object_keys);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.constructor.js
 var es_regexp_constructor = __webpack_require__(84864);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.dot-all.js
@@ -21235,9 +21675,6 @@ object_keys_default()(validators).forEach(function (name) {
   }
 });
 /* harmony default export */ var utils_validators = (validators);
-// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
-var slice = __webpack_require__(18979);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
 ;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldCheckbox.vue?vue&type=template&id=30dfcbff
 
 
@@ -21330,10 +21767,10 @@ var es_iterator_some = __webpack_require__(13579);
 
 
 
+
 var convertValidator = function convertValidator(validator) {
   if (isString_default()(validator)) {
     if (utils_validators[validator] != null) return utils_validators[validator];else {
-      console.warn("'".concat(validator, "' is not a validator function!"));
       return null; // caller need to handle null
     }
   }
@@ -21483,13 +21920,25 @@ function attributesDirective(el, binding, vnode) {
       // only for the test
       this.disabled !== true) {
         var _validators = [];
-        if (!isArray_default()(this.schema.validator)) {
-          _validators.push(convertValidator(this.schema.validator).bind(this));
-        } else {
-          this.schema.validator.forEach(function (validator) {
-            _validators.push(convertValidator(validator).bind(_this));
-          });
-        }
+        var rawValidators = isArray_default()(this.schema.validator) ? this.schema.validator : [this.schema.validator];
+        rawValidators.forEach(function (validator) {
+          var converted = convertValidator(validator);
+          if (!isFunction_default()(converted)) {
+            var _context, _context2;
+            var diagnostic = buildFieldDiagnostic({
+              field: _this.schema,
+              index: undefined,
+              path: _this.schema.model ? "field:".concat(_this.schema.model) : "field:".concat(_this.fieldUID || "unknown"),
+              reason: REASON.BAD_VALIDATOR,
+              options: _this.formOptions,
+              vm: _this
+            });
+            diagnostic.validator = isString_default()(validator) ? validator : _typeof(validator);
+            console.warn(concat_default()(_context = concat_default()(_context2 = "[vue-form-generator] Invalid field at ".concat(diagnostic.path, " (")).call(_context2, REASON.BAD_VALIDATOR, "). '")).call(_context, validator, "' is not a validator function!"), diagnostic);
+            return;
+          }
+          _validators.push(converted.bind(_this));
+        });
         _validators.forEach(function (validator) {
           if (validateAsync) {
             results.push(validator(_this.value, _this.schema, _this.model));
@@ -21498,14 +21947,14 @@ function attributesDirective(el, binding, vnode) {
             if (result && isFunction_default()(result.then)) {
               result.then(function (err) {
                 if (err) {
-                  var _context;
-                  _this.errors = concat_default()(_context = _this.errors).call(_context, err);
+                  var _context3;
+                  _this.errors = concat_default()(_context3 = _this.errors).call(_context3, err);
                 }
               }).catch(function (err) {
                 // Treat rejected async validator as validation errors instead of unhandled promise
                 if (err) {
-                  var _context2;
-                  _this.errors = concat_default()(_context2 = _this.errors).call(_context2, err);
+                  var _context4;
+                  _this.errors = concat_default()(_context4 = _this.errors).call(_context4, err);
                 }
               });
             } else if (result) {
@@ -21571,8 +22020,8 @@ function attributesDirective(el, binding, vnode) {
       }
     },
     clearValidationErrors: function clearValidationErrors() {
-      var _context3;
-      splice_default()(_context3 = this.errors).call(_context3, 0);
+      var _context5;
+      splice_default()(_context5 = this.errors).call(_context5, 0);
     },
     setModelValueByPath: function setModelValueByPath(path, value) {
       // convert array indexes to properties
@@ -22532,9 +22981,6 @@ var fieldRadios_component = normalizeComponent(
 )
 
 /* harmony default export */ var fieldRadios = (fieldRadios_component.exports);
-// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
-var map = __webpack_require__(48079);
-var map_default = /*#__PURE__*/__webpack_require__.n(map);
 ;// ./node_modules/babel-loader/lib/index.js??clonedRuleSet-40.use[1]!./node_modules/@vue/vue-loader-v15/lib/loaders/templateLoader.js??ruleSet[1].rules[3]!./node_modules/@vue/vue-loader-v15/lib/index.js??vue-loader-options!./src/fields/core/fieldSelect.vue?vue&type=template&id=7d732d98
 
 

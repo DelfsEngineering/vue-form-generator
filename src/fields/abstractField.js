@@ -1,11 +1,11 @@
 import { get as objGet, forEach, isFunction, isString, isArray, debounce, isNil, uniqueId } from "lodash";
 import validators from "../utils/validators";
+import { REASON, buildFieldDiagnostic } from "../utils/schemaDiagnostics";
 
 const convertValidator = (validator) => {
 	if (isString(validator)) {
 		if (validators[validator] != null) return validators[validator];
 		else {
-			console.warn(`'${validator}' is not a validator function!`);
 			return null; // caller need to handle null
 		}
 	}
@@ -175,13 +175,30 @@ export default {
 				this.disabled !== true
 			) {
 				let validators = [];
-				if (!isArray(this.schema.validator)) {
-					validators.push(convertValidator(this.schema.validator).bind(this));
-				} else {
-					this.schema.validator.forEach((validator) => {
-						validators.push(convertValidator(validator).bind(this));
-					});
-				}
+				const rawValidators = isArray(this.schema.validator) ? this.schema.validator : [this.schema.validator];
+
+				rawValidators.forEach((validator) => {
+					const converted = convertValidator(validator);
+					if (!isFunction(converted)) {
+						const diagnostic = buildFieldDiagnostic({
+							field: this.schema,
+							index: undefined,
+							path: this.schema.model
+								? `field:${this.schema.model}`
+								: `field:${this.fieldUID || "unknown"}`,
+							reason: REASON.BAD_VALIDATOR,
+							options: this.formOptions,
+							vm: this
+						});
+						diagnostic.validator = isString(validator) ? validator : typeof validator;
+						console.warn(
+							`[vue-form-generator] Invalid field at ${diagnostic.path} (${REASON.BAD_VALIDATOR}). '${validator}' is not a validator function!`,
+							diagnostic
+						);
+						return;
+					}
+					validators.push(converted.bind(this));
+				});
 
 				validators.forEach((validator) => {
 					if (validateAsync) {

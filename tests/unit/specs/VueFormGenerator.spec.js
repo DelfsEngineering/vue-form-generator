@@ -155,8 +155,13 @@ describe("VueFormGenerator.vue", () => {
 		it("should emit a console warning with a hint", () => {
 			expect(warnSpy.called).to.be.true;
 			const firstArg = warnSpy.firstCall.args[0];
-			expect(firstArg).to.contain("Invalid field at index 0");
-			expect(firstArg).to.contain("type");
+			expect(firstArg).to.contain("[vue-form-generator]");
+			expect(firstArg).to.contain("root.fields[0]");
+			expect(warnSpy.firstCall.args[1]).to.include({
+				path: "root.fields[0]",
+				snippet: "null",
+				reason: "null_entry"
+			});
 		});
 	});
 
@@ -175,13 +180,20 @@ describe("VueFormGenerator.vue", () => {
 			}
 		});
 
-		it("suppresses warning UI and console when devMode is falsy (default)", async () => {
+		it("warns in console but suppresses warning UI when devMode is falsy (default)", async () => {
 			schema = { fields: [null, validField] };
 			warnSpy = sinon.spy(console, "warn");
 			wrapper = createFormGenerator({ schema });
 			await wrapper.vm.$nextTick();
 
-			expect(warnSpy.called).to.be.false;
+			expect(warnSpy.called).to.be.true;
+			const message = warnSpy.firstCall.args[0];
+			expect(message).to.contain("[vue-form-generator]");
+			expect(message).to.contain("root.fields[0]");
+			const diagnostic = warnSpy.firstCall.args[1];
+			expect(diagnostic).to.be.an("object");
+			expect(diagnostic.path).to.equal("root.fields[0]");
+			expect(diagnostic.snippet).to.equal("null");
 			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(0);
 			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
 		});
@@ -216,15 +228,194 @@ describe("VueFormGenerator.vue", () => {
 			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
 		});
 
-		it("suppresses warnings when devMode is explicitly false", async () => {
+		it("shows path and schema snippet in the warning UI when devMode is true", async () => {
+			schema = { fields: [null, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
+			await wrapper.vm.$nextTick();
+
+			const warning = wrapper.find(".vfg-field-warning");
+			expect(warning.exists()).to.be.true;
+			expect(warning.text()).to.contain("root.fields[0]");
+			expect(warning.text()).to.contain("null");
+			const snippet = warning.find(".vfg-field-warning-snippet");
+			expect(snippet.exists()).to.be.true;
+			expect(snippet.text()).to.equal("null");
+		});
+
+		it("shows schema snippet for empty-object entries in the warning UI", async () => {
+			schema = { fields: [{ label: "orphan" }, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
+			await wrapper.vm.$nextTick();
+
+			const warning = wrapper.find(".vfg-field-warning");
+			expect(warning.exists()).to.be.true;
+			expect(warning.text()).to.contain("root.fields[0]");
+			expect(warning.text()).to.contain("missing");
+			const snippet = warning.find(".vfg-field-warning-snippet");
+			expect(snippet.exists()).to.be.true;
+			expect(snippet.text()).to.contain("orphan");
+		});
+
+		it("warns in console but suppresses warning UI when devMode is explicitly false", async () => {
 			schema = { fields: [null, validField] };
 			warnSpy = sinon.spy(console, "warn");
 			wrapper = createFormGenerator({ schema, options: { devMode: false } });
 			await wrapper.vm.$nextTick();
 
-			expect(warnSpy.called).to.be.false;
+			expect(warnSpy.called).to.be.true;
+			expect(warnSpy.firstCall.args[1]).to.include({
+				path: "root.fields[0]",
+				snippet: "null"
+			});
 			expect(wrapper.findAll(".vfg-field-warning").length).to.be.equal(0);
 			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+		});
+
+		it("logs path and snippet for empty-object field entries", async () => {
+			schema = { fields: [{}, validField] };
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: false } });
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.called).to.be.true;
+			expect(warnSpy.firstCall.args[0]).to.contain("root.fields[0]");
+			expect(warnSpy.firstCall.args[1].snippet).to.equal("{}");
+			expect(warnSpy.firstCall.args[1].reason).to.equal("missing_type");
+		});
+	});
+
+	describe("unknown field types", () => {
+		let schema;
+		let warnSpy;
+		const validField = { type: "input", model: "name", fieldOptions: { inputType: "text" } };
+
+		afterEach(() => {
+			if (warnSpy && warnSpy.restore) {
+				warnSpy.restore();
+			}
+			if (wrapper) {
+				wrapper.destroy();
+			}
+		});
+
+		it("does not throw on validate when a field type is unregistered", async () => {
+			schema = {
+				fields: [{ type: "definitelyNotRegistered", model: "x", label: "Broken" }, validField]
+			};
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({
+				schema,
+				model: { name: "Ada", x: 1 },
+				options: { devMode: true }
+			});
+			await wrapper.vm.$nextTick();
+
+			const form = wrapper.find({ ref: "form" });
+			let threw = null;
+			try {
+				await form.vm.validate();
+			} catch (error) {
+				threw = error;
+			}
+
+			expect(threw).to.equal(null);
+			expect(String(threw && threw.message)).not.to.contain("clearValidationErrors");
+		});
+
+		it("warns with unknown_type reason and snippet containing the bad type", async () => {
+			schema = {
+				fields: [{ type: "definitelyNotRegistered", model: "x", label: "Broken" }, validField]
+			};
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
+			await wrapper.vm.$nextTick();
+
+			expect(warnSpy.called).to.be.true;
+			const diagnostic = warnSpy.firstCall.args[1];
+			expect(diagnostic.reason).to.equal("unknown_type");
+			expect(diagnostic.path).to.equal("root.fields[0]");
+			expect(diagnostic.snippet).to.contain("definitelyNotRegistered");
+			expect(diagnostic.type).to.equal("definitelyNotRegistered");
+		});
+
+		it("shows warning UI with schema snippet for unknown types in devMode", async () => {
+			schema = {
+				fields: [{ type: "definitelyNotRegistered", model: "x", label: "Broken" }, validField]
+			};
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({ schema, options: { devMode: true } });
+			await wrapper.vm.$nextTick();
+
+			const warning = wrapper.find(".vfg-field-warning");
+			expect(warning.exists()).to.be.true;
+			expect(warning.text()).to.contain("root.fields[0]");
+			expect(warning.find(".vfg-field-warning-snippet").text()).to.contain("definitelyNotRegistered");
+			expect(wrapper.findAll(".form-element").length).to.be.equal(1);
+		});
+
+		it("clears validation without TypeError when unknown types are present", async () => {
+			schema = {
+				fields: [{ type: "definitelyNotRegistered", model: "x" }, validField]
+			};
+			wrapper = createFormGenerator({
+				schema,
+				model: { name: "Ada", x: 1 },
+				options: { validateAfterLoad: false }
+			});
+			await wrapper.vm.$nextTick();
+
+			const form = wrapper.find({ ref: "form" });
+			expect(() => form.vm.clearValidationErrors()).to.not.throw();
+		});
+	});
+
+	describe("bad validator names", () => {
+		let schema;
+		let warnSpy;
+		const validField = { type: "input", model: "name", fieldOptions: { inputType: "text" } };
+
+		afterEach(() => {
+			if (warnSpy && warnSpy.restore) {
+				warnSpy.restore();
+			}
+			if (wrapper) {
+				wrapper.destroy();
+			}
+		});
+
+		it("does not throw on validate when a named validator is missing", async () => {
+			schema = {
+				fields: [
+					{
+						type: "input",
+						model: "name",
+						fieldOptions: { inputType: "text" },
+						validator: "notARealValidator"
+					}
+				]
+			};
+			warnSpy = sinon.spy(console, "warn");
+			wrapper = createFormGenerator({
+				schema,
+				model: { name: "Ada" },
+				options: { devMode: true }
+			});
+			await wrapper.vm.$nextTick();
+
+			const form = wrapper.find({ ref: "form" });
+			let threw = null;
+			try {
+				await form.vm.validate();
+			} catch (error) {
+				threw = error;
+			}
+			expect(threw).to.equal(null);
+			expect(warnSpy.called).to.be.true;
+			const messages = warnSpy.getCalls().map((call) => String(call.args[0]));
+			expect(messages.some((msg) => msg.includes("notARealValidator") || msg.includes("bad_validator"))).to.be
+				.true;
 		});
 	});
 

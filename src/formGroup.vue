@@ -114,11 +114,20 @@
 					</template>
 				</template>
 			</template>
-			<template v-else-if="showInvalidWarnings">
-				<div :key="'invalid-' + index" class="vfg-field-warning" :style="invalidFieldStyle">
+			<template v-else>
+				<div
+					v-if="showInvalidWarnings"
+					:key="'invalid-' + index"
+					class="vfg-field-warning"
+					:style="invalidFieldStyle"
+				>
 					<strong>Invalid field</strong>
 					<div>{{ invalidFieldMessage(field, index) }}</div>
+					<pre class="vfg-field-warning-snippet" :style="invalidSnippetStyle">{{
+						invalidFieldSnippet(field)
+					}}</pre>
 				</div>
+				<template v-else>{{ ensureInvalidFieldLogged(field, index) }}</template>
 			</template>
 		</template>
 	</fieldset>
@@ -127,6 +136,15 @@
 import formMixin from "./formMixin.js";
 import fieldContent from "./fields/core/fieldContent.vue";
 import { resolveIterationItems, generateIterationKey } from "./utils/iteration";
+import {
+	REASON,
+	reasonCodeForField,
+	buildFieldDiagnostic,
+	warnFieldDiagnostic,
+	resetWarnedDiagnostics,
+	formatSnippet,
+	isKnownFieldTypeForVm
+} from "./utils/schemaDiagnostics";
 import { get as objGet, isFunction, isNil } from "lodash";
 
 export default {
@@ -216,6 +234,20 @@ export default {
 				fontSize: "13px"
 			};
 		},
+		invalidSnippetStyle() {
+			return {
+				margin: "8px 0 0",
+				padding: "8px",
+				background: "#fff",
+				border: "1px solid #f0d78c",
+				borderRadius: "2px",
+				fontSize: "12px",
+				whiteSpace: "pre-wrap",
+				wordBreak: "break-word",
+				maxHeight: "240px",
+				overflow: "auto"
+			};
+		},
 		showInvalidWarnings() {
 			return !!objGet(this.options, "devMode", false);
 		}
@@ -225,7 +257,7 @@ export default {
 			return this.fields[index]?.attributes?.formGroup || this.fields[index]?.attributes || {};
 		},
 		isFieldRenderable(field) {
-			return !isNil(field) && !isNil(field.type);
+			return !isNil(field) && !isNil(field.type) && isKnownFieldTypeForVm(field.type, this);
 		},
 		// Get visible prop of field (for non-iterated fields)
 		fieldVisible(field) {
@@ -300,44 +332,60 @@ export default {
 		},
 
 		invalidFieldReason(field) {
-			if (isNil(field)) {
-				return "entry is null or undefined";
+			const code = reasonCodeForField(field, this);
+			switch (code) {
+				case REASON.NULL_ENTRY:
+					return "entry is null or undefined";
+				case REASON.BAD_ENTRY_TYPE:
+					return `entry is a ${typeof field}, expected an object`;
+				case REASON.MISSING_TYPE:
+					return 'missing required "type" property';
+				case REASON.UNKNOWN_TYPE:
+					return `unknown field type "${field && field.type}" (no registered component)`;
+				default:
+					return "unusable field configuration";
 			}
-			if (typeof field !== "object") {
-				return `entry is a ${typeof field}, expected an object`;
-			}
-			if (isNil(field.type)) {
-				return 'missing required "type" property';
-			}
-			return "unusable field configuration";
+		},
+		invalidFieldSnippet(field) {
+			return formatSnippet(field);
 		},
 		invalidFieldMessage(field, index) {
 			const reason = this.invalidFieldReason(field);
+			const path = this.getFieldPath(index);
 			this.logInvalidField(reason, field, index);
-			return `Invalid field at index ${index}: ${reason}. Each field should be an object with a "type".`;
+			return `Invalid field at ${path}: ${reason}. Each field should be an object with a "type".`;
+		},
+		ensureInvalidFieldLogged(field, index) {
+			this.logInvalidField(this.invalidFieldReason(field), field, index);
+			return "";
 		},
 		logInvalidField(reason, field, index) {
-			if (!this.showInvalidWarnings) {
-				return;
-			}
 			if (this.warnedInvalidFields[index]) {
 				return;
 			}
 			this.$set(this.warnedInvalidFields, index, true);
-			console.warn(
-				`[vue-form-generator] Invalid field at index ${index}: ${reason}. Ensure each entry is an object with a "type" property.`,
-				field
-			);
+			const path = this.getFieldPath(index);
+			const diagnostic = buildFieldDiagnostic({
+				field,
+				index,
+				path,
+				reason: reasonCodeForField(field, this),
+				options: this.options,
+				vm: this
+			});
+			warnFieldDiagnostic(diagnostic);
 		}
 	},
 	watch: {
 		fields(newVal, oldVal) {
 			if (newVal !== oldVal) {
 				this.warnedInvalidFields = {};
+				resetWarnedDiagnostics();
 			}
 		}
 	},
 	created() {
+		resetWarnedDiagnostics();
 		this.eventBus.$on("field-validated", () => {
 			this.$nextTick(() => {
 				let containFieldWithError =

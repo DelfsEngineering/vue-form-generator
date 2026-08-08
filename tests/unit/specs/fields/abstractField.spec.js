@@ -3,6 +3,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 
 import Vue from "vue";
+import VueFormGenerator from "@";
 import AbstractField from "@/fields/abstractField";
 const localVue = createLocalVue();
 
@@ -332,6 +333,83 @@ describe("abstractField.vue", () => {
 
 			expect(spy2.calledOnce).to.be.true;
 			expect(spy2.calledWith(field.value, schema, model)).to.be.true;
+		});
+	});
+
+	describe("check validate function with runtime-added string validator", () => {
+		let schema = {
+			type: "text",
+			label: "Name",
+			model: "name",
+			validator: "calc"
+		};
+		let model = { name: "John Doe" };
+		let customValidator;
+
+		beforeEach(() => {
+			customValidator = sinon.stub().returns([]);
+			VueFormGenerator.validators.calc = customValidator;
+			createField({ schema, model });
+		});
+
+		afterEach(() => {
+			delete VueFormGenerator.validators.calc;
+		});
+
+		it("should resolve and call the runtime-added validator", () => {
+			let res = field.validate();
+
+			expect(res).to.be.an.instanceof(Array);
+			expect(res.length).to.be.equal(0);
+			expect(customValidator.calledOnce).to.be.true;
+			expect(customValidator.calledWith(field.value, schema, model)).to.be.true;
+		});
+
+		it("should return validation errors from the runtime-added validator", () => {
+			customValidator.returns(["Custom validation error"]);
+
+			let res = field.validate();
+
+			expect(res).to.be.an.instanceof(Array);
+			expect(res.length).to.be.equal(1);
+			expect(res[0]).to.be.equal("Custom validation error");
+		});
+	});
+
+	describe("check validate function with unresolved string validator", () => {
+		let schema = {
+			type: "text",
+			label: "Name",
+			model: "name",
+			validator: "calc"
+		};
+		let model = { name: "John Doe" };
+		let warnStub;
+
+		beforeEach(() => {
+			createField({ schema, model });
+			warnStub = sinon.stub(console, "warn");
+		});
+
+		afterEach(() => {
+			warnStub.restore();
+		});
+
+		it("should warn with field identity and not throw when the validator string cannot be resolved", () => {
+			expect(() => field.validate()).to.not.throw();
+			expect(warnStub.called).to.be.true;
+			const message = warnStub.firstCall.args[0];
+			expect(message).to.contain("[vue-form-generator]");
+			expect(message).to.contain("bad_validator");
+			expect(message).to.contain("calc");
+			const diagnostic = warnStub.firstCall.args[1];
+			expect(diagnostic).to.include({
+				reason: "bad_validator",
+				type: "text",
+				model: "name"
+			});
+			expect(diagnostic.snippet).to.contain("calc");
+			expect(field.errors).to.be.an("array").that.is.empty;
 		});
 	});
 
