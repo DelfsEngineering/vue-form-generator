@@ -34,6 +34,34 @@ describe("schemaDiagnostics", () => {
 			expect(isKnownFieldType("checklist", vue)).to.be.true;
 			expect(isKnownFieldType("definitelyNotRegistered", vue)).to.be.false;
 		});
+
+		it("detects BetterForms-style camelCase registrations like fieldHtml", () => {
+			const vue = {
+				component(name) {
+					const map = {
+						fieldHtml: {},
+						fieldButton: {},
+						fieldTabs_form2: {},
+						fieldDateRangePicker: {}
+					};
+					// Mimic Vue.component getter normalization loosely via camel/pascal/kebab checks in helper
+					return map[name];
+				},
+				options: {
+					components: {
+						fieldHtml: {},
+						fieldButton: {},
+						fieldTabs_form2: {},
+						fieldDateRangePicker: {}
+					}
+				}
+			};
+			expect(isKnownFieldType("html", vue)).to.be.true;
+			expect(isKnownFieldType("button", vue)).to.be.true;
+			expect(isKnownFieldType("tabs_form2", vue)).to.be.true;
+			expect(isKnownFieldType("dateRangePicker", vue)).to.be.true;
+			expect(isKnownFieldType("definitelyNotRegistered", vue)).to.be.false;
+		});
 	});
 
 	describe("formatSnippet", () => {

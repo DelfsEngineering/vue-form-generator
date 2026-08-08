@@ -45,6 +45,44 @@ function pascalCaseTag(tag) {
 		.join("");
 }
 
+function camelCaseTag(tag) {
+	const pascal = pascalCaseTag(tag);
+	return pascal ? pascal.charAt(0).toLowerCase() + pascal.slice(1) : pascal;
+}
+
+function componentNameCandidates(type) {
+	const tag = normalizeFieldComponentName(type);
+	const pascal = pascalCaseTag(tag);
+	const camel = camelCaseTag(tag);
+	// BetterForms registers many customs as camelCase (`fieldHtml`), while VFG :is uses kebab (`field-html`).
+	return Array.from(new Set([tag, pascal, camel]));
+}
+
+function registryHasComponent(components, type) {
+	if (!components) {
+		return false;
+	}
+	return componentNameCandidates(type).some((name) => !!components[name]);
+}
+
+function vueHasComponent(vue, type) {
+	if (!vue) {
+		return false;
+	}
+	if (typeof vue.component === "function") {
+		for (const name of componentNameCandidates(type)) {
+			try {
+				if (vue.component(name)) {
+					return true;
+				}
+			} catch (e) {
+				// ignore retrieval errors from incomplete mocks
+			}
+		}
+	}
+	return registryHasComponent(vue.options && vue.options.components, type);
+}
+
 /**
  * Whether a field `type` resolves to a registered Vue component (or builtin group/content).
  * Pass the app/local Vue constructor when components were registered on createLocalVue().
@@ -57,19 +95,14 @@ export function isKnownFieldType(type, vue = Vue) {
 		return true;
 	}
 
-	const tag = normalizeFieldComponentName(type);
-	const pascal = pascalCaseTag(tag);
-	const registries = [];
-
-	if (vue && vue.options && vue.options.components) {
-		registries.push(vue.options.components);
+	if (vueHasComponent(vue, type)) {
+		return true;
 	}
 	// Also check global Vue when a local Vue constructor was passed
-	if (vue !== Vue && Vue.options && Vue.options.components) {
-		registries.push(Vue.options.components);
+	if (vue !== Vue && vueHasComponent(Vue, type)) {
+		return true;
 	}
-
-	return registries.some((components) => !!(components[tag] || components[pascal]));
+	return false;
 }
 
 /**
@@ -83,13 +116,9 @@ export function isKnownFieldTypeForVm(type, vm) {
 		return true;
 	}
 
-	const tag = normalizeFieldComponentName(type);
-	const pascal = pascalCaseTag(tag);
-
 	let current = vm;
 	while (current) {
-		const local = current.$options && current.$options.components;
-		if (local && (local[tag] || local[pascal])) {
+		if (registryHasComponent(current.$options && current.$options.components, type)) {
 			return true;
 		}
 		current = current.$parent;

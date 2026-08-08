@@ -111,6 +111,17 @@ module.exports = function (originalArray, length) {
 
 /***/ }),
 
+/***/ 1542:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+// TODO: Remove this module from `core-js@4` since it's replaced to module below
+__webpack_require__(20016);
+
+
+/***/ }),
+
 /***/ 1625:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -241,6 +252,28 @@ module.exports = function (obj) {
     done: false
   };
 };
+
+
+/***/ }),
+
+/***/ 1852:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var isDisjointFrom = __webpack_require__(41732);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+var INCORRECT = !setMethodAcceptSetLike('isDisjointFrom', function (result) {
+  return !result;
+});
+
+// `Set.prototype.isDisjointFrom` method
+// https://tc39.es/ecma262/#sec-set.prototype.isdisjointfrom
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  isDisjointFrom: isDisjointFrom
+});
 
 
 /***/ }),
@@ -672,6 +705,24 @@ var copyConstructorProperties = function (target, source) {
 
 if (IS_PURE && PureNumberNamespace) copyConstructorProperties(path[NUMBER], PureNumberNamespace);
 if (FORCED || IS_PURE) copyConstructorProperties(path[NUMBER], NativeNumber);
+
+
+/***/ }),
+
+/***/ 2911:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var tryToString = __webpack_require__(4640);
+
+var $TypeError = TypeError;
+
+// Perform ? RequireInternalSlot(M, [[SetData]])
+module.exports = function (it) {
+  if (typeof it == 'object' && 'size' in it && 'has' in it && 'add' in it && 'delete' in it && 'keys' in it) return it;
+  throw new $TypeError(tryToString(it) + ' is not a set');
+};
 
 
 /***/ }),
@@ -1178,6 +1229,33 @@ defineWellKnownSymbol('asyncIterator');
 
 /***/ }),
 
+/***/ 4002:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var has = (__webpack_require__(73881).has);
+var size = __webpack_require__(35743);
+var getSetRecord = __webpack_require__(32332);
+var iterateSimple = __webpack_require__(22190);
+var iteratorClose = __webpack_require__(40154);
+
+// `Set.prototype.isSupersetOf` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSupersetOf
+module.exports = function isSupersetOf(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) < otherRec.size) return false;
+  var iterator = otherRec.getIterator();
+  return iterateSimple(iterator, function (e) {
+    if (!has(O, e)) return iteratorClose(iterator, 'normal', false);
+  }) !== false;
+};
+
+
+/***/ }),
+
 /***/ 4055:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -1607,6 +1685,28 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 module.exports = __webpack_require__(49124);
+
+/***/ }),
+
+/***/ 6913:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var SetHelpers = __webpack_require__(73881);
+var iterate = __webpack_require__(81330);
+
+var Set = SetHelpers.Set;
+var add = SetHelpers.add;
+
+module.exports = function (set) {
+  var result = new Set();
+  iterate(set, function (it) {
+    add(result, it);
+  });
+  return result;
+};
+
 
 /***/ }),
 
@@ -2836,6 +2936,23 @@ module.exports = hashHas;
 
 /***/ }),
 
+/***/ 12802:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var defineBuiltIn = __webpack_require__(68055);
+
+module.exports = function (target, src, options) {
+  for (var key in src) {
+    if (options && options.unsafe && target[key]) target[key] = src[key];
+    else defineBuiltIn(target, key, src[key], options);
+  } return target;
+};
+
+
+/***/ }),
+
 /***/ 13222:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -3374,6 +3491,91 @@ module.exports = fails(function () {
 }) ? function (it) {
   return classof(it) === 'String' ? split(it, '') : $Object(it);
 } : $Object;
+
+
+/***/ }),
+
+/***/ 17081:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var globalThis = __webpack_require__(45951);
+var InternalMetadataModule = __webpack_require__(61548);
+var fails = __webpack_require__(98828);
+var createNonEnumerableProperty = __webpack_require__(61626);
+var iterate = __webpack_require__(24823);
+var anInstance = __webpack_require__(59596);
+var isCallable = __webpack_require__(62250);
+var isObject = __webpack_require__(46285);
+var isNullOrUndefined = __webpack_require__(87136);
+var setToStringTag = __webpack_require__(14840);
+var defineProperty = (__webpack_require__(74284).f);
+var forEach = (__webpack_require__(70726).forEach);
+var DESCRIPTORS = __webpack_require__(39447);
+var InternalStateModule = __webpack_require__(64932);
+
+var setInternalState = InternalStateModule.set;
+var internalStateGetterFor = InternalStateModule.getterFor;
+
+module.exports = function (CONSTRUCTOR_NAME, wrapper, common) {
+  var IS_MAP = CONSTRUCTOR_NAME.indexOf('Map') !== -1;
+  var IS_WEAK = CONSTRUCTOR_NAME.indexOf('Weak') !== -1;
+  var ADDER = IS_MAP ? 'set' : 'add';
+  var NativeConstructor = globalThis[CONSTRUCTOR_NAME];
+  var NativePrototype = NativeConstructor && NativeConstructor.prototype;
+  var exported = {};
+  var Constructor;
+
+  if (!DESCRIPTORS || !isCallable(NativeConstructor)
+    || !(IS_WEAK || NativePrototype.forEach && !fails(function () { new NativeConstructor().entries().next(); }))
+  ) {
+    // create collection constructor
+    Constructor = common.getConstructor(wrapper, CONSTRUCTOR_NAME, IS_MAP, ADDER);
+    InternalMetadataModule.enable();
+  } else {
+    Constructor = wrapper(function (target, iterable) {
+      setInternalState(anInstance(target, Prototype), {
+        type: CONSTRUCTOR_NAME,
+        collection: new NativeConstructor()
+      });
+      if (!isNullOrUndefined(iterable)) iterate(iterable, target[ADDER], { that: target, AS_ENTRIES: IS_MAP });
+    });
+
+    var Prototype = Constructor.prototype;
+
+    var getInternalState = internalStateGetterFor(CONSTRUCTOR_NAME);
+
+    forEach(['add', 'clear', 'delete', 'forEach', 'get', 'has', 'set', 'keys', 'values', 'entries'], function (KEY) {
+      var IS_ADDER = KEY === 'add' || KEY === 'set';
+      if (KEY in NativePrototype && !(IS_WEAK && KEY === 'clear')) {
+        createNonEnumerableProperty(Prototype, KEY, function (a, b) {
+          var collection = getInternalState(this).collection;
+          if (!IS_ADDER && IS_WEAK && !isObject(a)) return KEY === 'get' ? undefined : false;
+          var result = collection[KEY](a === 0 ? 0 : a, b);
+          return IS_ADDER ? this : result;
+        });
+      }
+    });
+
+    IS_WEAK || defineProperty(Prototype, 'size', {
+      configurable: true,
+      get: function () {
+        return getInternalState(this).collection.size;
+      }
+    });
+  }
+
+  setToStringTag(Constructor, CONSTRUCTOR_NAME, false, true);
+
+  exported[CONSTRUCTOR_NAME] = Constructor;
+  $({ global: true, forced: true }, exported);
+
+  if (!IS_WEAK) common.setStrong(Constructor, CONSTRUCTOR_NAME, IS_MAP);
+
+  return Constructor;
+};
 
 
 /***/ }),
@@ -3931,6 +4133,23 @@ module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
 
 /***/ }),
 
+/***/ 20016:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var collection = __webpack_require__(17081);
+var collectionStrong = __webpack_require__(30217);
+
+// `Set` constructor
+// https://tc39.es/ecma262/#sec-set-objects
+collection('Set', function (init) {
+  return function Set() { return init(this, arguments.length ? arguments[0] : undefined); };
+}, collectionStrong);
+
+
+/***/ }),
+
 /***/ 20034:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -4362,6 +4581,26 @@ __webpack_require__(95650);
 var getBuiltInPrototypeMethod = __webpack_require__(61747);
 
 module.exports = getBuiltInPrototypeMethod('Array', 'forEach');
+
+
+/***/ }),
+
+/***/ 22190:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var call = __webpack_require__(13930);
+
+module.exports = function (record, fn, ITERATOR_INSTEAD_OF_RECORD) {
+  var iterator = ITERATOR_INSTEAD_OF_RECORD ? record : record.iterator;
+  var next = record.next;
+  var step, result;
+  while (!(step = call(next, iterator)).done) {
+    result = fn(step.value);
+    if (result !== undefined) return result;
+  }
+};
 
 
 /***/ }),
@@ -4830,6 +5069,37 @@ defineSymbolToPrimitive();
 setToStringTag($Symbol, SYMBOL);
 
 hiddenKeys[HIDDEN] = true;
+
+
+/***/ }),
+
+/***/ 23763:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var SetHelpers = __webpack_require__(73881);
+var clone = __webpack_require__(6913);
+var getSetRecord = __webpack_require__(32332);
+var iterateSimple = __webpack_require__(22190);
+
+var add = SetHelpers.add;
+var has = SetHelpers.has;
+var remove = SetHelpers.remove;
+
+// `Set.prototype.symmetricDifference` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function symmetricDifference(other) {
+  var O = aSet(this);
+  var keysIter = getSetRecord(other).getIterator();
+  var result = clone(O);
+  iterateSimple(keysIter, function (e) {
+    if (has(O, e)) remove(result, e);
+    else add(result, e);
+  });
+  return result;
+};
 
 
 /***/ }),
@@ -5558,6 +5828,32 @@ $({ target: 'Promise', stat: true }, {
 
 /***/ }),
 
+/***/ 25905:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var fails = __webpack_require__(98828);
+var intersection = __webpack_require__(45331);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+var INCORRECT = !setMethodAcceptSetLike('intersection', function (result) {
+  return result.size === 2 && result.has(1) && result.has(2);
+}) || fails(function () {
+  // eslint-disable-next-line es/no-array-from, es/no-set, es/no-set-prototype-intersection -- testing
+  return String(Array.from(new Set([1, 2, 3]).intersection(new Set([3, 2])))) !== '3,2';
+});
+
+// `Set.prototype.intersection` method
+// https://tc39.es/ecma262/#sec-set.prototype.intersection
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  intersection: intersection
+});
+
+
+/***/ }),
+
 /***/ 25911:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -5729,6 +6025,25 @@ module.exports = function (obj) {
 "use strict";
 
 module.exports = {};
+
+
+/***/ }),
+
+/***/ 26375:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+// FF26- bug: ArrayBuffers are non-extensible, but Object.isExtensible does not report it
+var fails = __webpack_require__(98828);
+
+module.exports = fails(function () {
+  if (typeof ArrayBuffer == 'function') {
+    var buffer = new ArrayBuffer(8);
+    // eslint-disable-next-line es/no-object-isextensible, es/no-object-defineproperty -- safe
+    if (Object.isExtensible(buffer)) Object.defineProperty(buffer, 'a', { value: 8 });
+  }
+});
 
 
 /***/ }),
@@ -6244,6 +6559,220 @@ module.exports = stackHas;
 
 /***/ }),
 
+/***/ 30217:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var create = __webpack_require__(58075);
+var defineBuiltInAccessor = __webpack_require__(89251);
+var defineBuiltIns = __webpack_require__(12802);
+var bind = __webpack_require__(28311);
+var anInstance = __webpack_require__(59596);
+var isNullOrUndefined = __webpack_require__(87136);
+var iterate = __webpack_require__(24823);
+var defineIterator = __webpack_require__(60183);
+var createIterResultObject = __webpack_require__(59550);
+var setSpecies = __webpack_require__(47118);
+var DESCRIPTORS = __webpack_require__(39447);
+var fastKey = (__webpack_require__(61548).fastKey);
+var InternalStateModule = __webpack_require__(64932);
+
+var setInternalState = InternalStateModule.set;
+var internalStateGetterFor = InternalStateModule.getterFor;
+
+module.exports = {
+  getConstructor: function (wrapper, CONSTRUCTOR_NAME, IS_MAP, ADDER) {
+    var Constructor = wrapper(function (that, iterable) {
+      anInstance(that, Prototype);
+      setInternalState(that, {
+        type: CONSTRUCTOR_NAME,
+        index: create(null),
+        first: null,
+        last: null,
+        size: 0
+      });
+      if (!DESCRIPTORS) that.size = 0;
+      if (!isNullOrUndefined(iterable)) iterate(iterable, that[ADDER], { that: that, AS_ENTRIES: IS_MAP });
+    });
+
+    var Prototype = Constructor.prototype;
+
+    var getInternalState = internalStateGetterFor(CONSTRUCTOR_NAME);
+
+    var define = function (that, key, value) {
+      var state = getInternalState(that);
+      var entry = getEntry(that, key);
+      var previous, index;
+      // change existing entry
+      if (entry) {
+        entry.value = value;
+      // create new entry
+      } else {
+        state.last = entry = {
+          index: index = fastKey(key, true),
+          key: key,
+          value: value,
+          previous: previous = state.last,
+          next: null,
+          removed: false
+        };
+        if (!state.first) state.first = entry;
+        if (previous) previous.next = entry;
+        if (DESCRIPTORS) state.size++;
+        else that.size++;
+        // add to index
+        if (index !== 'F') state.index[index] = entry;
+      } return that;
+    };
+
+    var getEntry = function (that, key) {
+      var state = getInternalState(that);
+      // fast case
+      var index = fastKey(key);
+      var entry;
+      if (index !== 'F') return state.index[index];
+      // frozen object case
+      for (entry = state.first; entry; entry = entry.next) {
+        if (entry.key === key) return entry;
+      }
+    };
+
+    defineBuiltIns(Prototype, {
+      // `{ Map, Set }.prototype.clear()` methods
+      // https://tc39.es/ecma262/#sec-map.prototype.clear
+      // https://tc39.es/ecma262/#sec-set.prototype.clear
+      clear: function clear() {
+        var that = this;
+        var state = getInternalState(that);
+        var entry = state.first;
+        while (entry) {
+          entry.removed = true;
+          if (entry.previous) entry.previous = entry.previous.next = null;
+          entry = entry.next;
+        }
+        state.first = state.last = null;
+        state.index = create(null);
+        if (DESCRIPTORS) state.size = 0;
+        else that.size = 0;
+      },
+      // `{ Map, Set }.prototype.delete(key)` methods
+      // https://tc39.es/ecma262/#sec-map.prototype.delete
+      // https://tc39.es/ecma262/#sec-set.prototype.delete
+      'delete': function (key) {
+        var that = this;
+        var state = getInternalState(that);
+        var entry = getEntry(that, key);
+        if (entry) {
+          var next = entry.next;
+          var prev = entry.previous;
+          delete state.index[entry.index];
+          entry.removed = true;
+          if (prev) prev.next = next;
+          if (next) next.previous = prev;
+          if (state.first === entry) state.first = next;
+          if (state.last === entry) state.last = prev;
+          if (DESCRIPTORS) state.size--;
+          else that.size--;
+        } return !!entry;
+      },
+      // `{ Map, Set }.prototype.forEach(callbackfn, thisArg = undefined)` methods
+      // https://tc39.es/ecma262/#sec-map.prototype.foreach
+      // https://tc39.es/ecma262/#sec-set.prototype.foreach
+      forEach: function forEach(callbackfn /* , that = undefined */) {
+        var state = getInternalState(this);
+        var boundFunction = bind(callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+        var entry;
+        while (entry = entry ? entry.next : state.first) {
+          boundFunction(entry.value, entry.key, this);
+          // revert to the last existing entry
+          while (entry && entry.removed) entry = entry.previous;
+        }
+      },
+      // `{ Map, Set}.prototype.has(key)` methods
+      // https://tc39.es/ecma262/#sec-map.prototype.has
+      // https://tc39.es/ecma262/#sec-set.prototype.has
+      has: function has(key) {
+        return !!getEntry(this, key);
+      }
+    });
+
+    defineBuiltIns(Prototype, IS_MAP ? {
+      // `Map.prototype.get(key)` method
+      // https://tc39.es/ecma262/#sec-map.prototype.get
+      get: function get(key) {
+        var entry = getEntry(this, key);
+        return entry && entry.value;
+      },
+      // `Map.prototype.set(key, value)` method
+      // https://tc39.es/ecma262/#sec-map.prototype.set
+      set: function set(key, value) {
+        return define(this, key === 0 ? 0 : key, value);
+      }
+    } : {
+      // `Set.prototype.add(value)` method
+      // https://tc39.es/ecma262/#sec-set.prototype.add
+      add: function add(value) {
+        return define(this, value = value === 0 ? 0 : value, value);
+      }
+    });
+    if (DESCRIPTORS) defineBuiltInAccessor(Prototype, 'size', {
+      configurable: true,
+      get: function () {
+        return getInternalState(this).size;
+      }
+    });
+    return Constructor;
+  },
+  setStrong: function (Constructor, CONSTRUCTOR_NAME, IS_MAP) {
+    var ITERATOR_NAME = CONSTRUCTOR_NAME + ' Iterator';
+    var getInternalCollectionState = internalStateGetterFor(CONSTRUCTOR_NAME);
+    var getInternalIteratorState = internalStateGetterFor(ITERATOR_NAME);
+    // `{ Map, Set }.prototype.{ keys, values, entries, @@iterator }()` methods
+    // https://tc39.es/ecma262/#sec-map.prototype.entries
+    // https://tc39.es/ecma262/#sec-map.prototype.keys
+    // https://tc39.es/ecma262/#sec-map.prototype.values
+    // https://tc39.es/ecma262/#sec-map.prototype-@@iterator
+    // https://tc39.es/ecma262/#sec-set.prototype.entries
+    // https://tc39.es/ecma262/#sec-set.prototype.keys
+    // https://tc39.es/ecma262/#sec-set.prototype.values
+    // https://tc39.es/ecma262/#sec-set.prototype-@@iterator
+    defineIterator(Constructor, CONSTRUCTOR_NAME, function (iterated, kind) {
+      setInternalState(this, {
+        type: ITERATOR_NAME,
+        target: iterated,
+        state: getInternalCollectionState(iterated),
+        kind: kind,
+        last: null
+      });
+    }, function () {
+      var state = getInternalIteratorState(this);
+      var kind = state.kind;
+      var entry = state.last;
+      // revert to the last existing entry
+      while (entry && entry.removed) entry = entry.previous;
+      // get next entry
+      if (!state.target || !(state.last = entry = entry ? entry.next : state.state.first)) {
+        // or finish the iteration
+        state.target = null;
+        return createIterResultObject(undefined, true);
+      }
+      // return step by kind
+      if (kind === 'keys') return createIterResultObject(entry.key, false);
+      if (kind === 'values') return createIterResultObject(entry.value, false);
+      return createIterResultObject([entry.key, entry.value], false);
+    }, IS_MAP ? 'entries' : 'values', !IS_MAP, true);
+
+    // `{ Map, Set }.prototype[@@species]` accessors
+    // https://tc39.es/ecma262/#sec-get-map-@@species
+    // https://tc39.es/ecma262/#sec-get-set-@@species
+    setSpecies(CONSTRUCTOR_NAME);
+  }
+};
+
+
+/***/ }),
+
 /***/ 30294:
 /***/ (function(module) {
 
@@ -6559,6 +7088,54 @@ __webpack_require__(59671);
 __webpack_require__(50359);
 
 module.exports = parent;
+
+
+/***/ }),
+
+/***/ 32332:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aCallable = __webpack_require__(82159);
+var anObject = __webpack_require__(36624);
+var call = __webpack_require__(13930);
+var toIntegerOrInfinity = __webpack_require__(65482);
+var getIteratorDirect = __webpack_require__(93316);
+
+var INVALID_SIZE = 'Invalid size';
+var $RangeError = RangeError;
+var $TypeError = TypeError;
+var max = Math.max;
+
+var SetRecord = function (set, intSize) {
+  this.set = set;
+  this.size = max(intSize, 0);
+  this.has = aCallable(set.has);
+  this.keys = aCallable(set.keys);
+};
+
+SetRecord.prototype = {
+  getIterator: function () {
+    return getIteratorDirect(anObject(call(this.keys, this.set)));
+  },
+  includes: function (it) {
+    return call(this.has, this.set, it);
+  }
+};
+
+// `GetSetRecord` abstract operation
+// https://tc39.es/proposal-set-methods/#sec-getsetrecord
+module.exports = function (obj) {
+  anObject(obj);
+  var numSize = +obj.size;
+  // NOTE: If size is undefined, then numSize will be NaN
+  // eslint-disable-next-line no-self-compare -- NaN check
+  if (numSize !== numSize) throw new $TypeError(INVALID_SIZE);
+  var intSize = toIntegerOrInfinity(numSize);
+  if (intSize < 0) throw new $RangeError(INVALID_SIZE);
+  return new SetRecord(obj, intSize);
+};
 
 
 /***/ }),
@@ -7106,6 +7683,18 @@ var min = Math.min;
 module.exports = function (index, length) {
   var integer = toIntegerOrInfinity(index);
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
+};
+
+
+/***/ }),
+
+/***/ 35743:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = function (set) {
+  return set.size;
 };
 
 
@@ -8495,6 +9084,62 @@ module.exports = !fails(function () {
 
 /***/ }),
 
+/***/ 41655:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var add = (__webpack_require__(73881).add);
+var clone = __webpack_require__(6913);
+var getSetRecord = __webpack_require__(32332);
+var iterateSimple = __webpack_require__(22190);
+
+// `Set.prototype.union` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function union(other) {
+  var O = aSet(this);
+  var keysIter = getSetRecord(other).getIterator();
+  var result = clone(O);
+  iterateSimple(keysIter, function (it) {
+    add(result, it);
+  });
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 41732:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var has = (__webpack_require__(73881).has);
+var size = __webpack_require__(35743);
+var getSetRecord = __webpack_require__(32332);
+var iterateSet = __webpack_require__(81330);
+var iterateSimple = __webpack_require__(22190);
+var iteratorClose = __webpack_require__(40154);
+
+// `Set.prototype.isDisjointFrom` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isDisjointFrom
+module.exports = function isDisjointFrom(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) <= otherRec.size) return iterateSet(O, function (e) {
+    if (otherRec.includes(e)) return false;
+  }, true) !== false;
+  var iterator = otherRec.getIterator();
+  return iterateSimple(iterator, function (e) {
+    if (has(O, e)) return iteratorClose(iterator, 'normal', false);
+  }) !== false;
+};
+
+
+/***/ }),
+
 /***/ 41799:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -9042,6 +9687,45 @@ module.exports = parent;
 
 /***/ }),
 
+/***/ 45331:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var SetHelpers = __webpack_require__(73881);
+var size = __webpack_require__(35743);
+var getSetRecord = __webpack_require__(32332);
+var iterateSet = __webpack_require__(81330);
+var iterateSimple = __webpack_require__(22190);
+
+var Set = SetHelpers.Set;
+var add = SetHelpers.add;
+var has = SetHelpers.has;
+
+// `Set.prototype.intersection` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function intersection(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  var result = new Set();
+
+  if (size(O) > otherRec.size) {
+    iterateSimple(otherRec.getIterator(), function (e) {
+      if (has(O, e)) add(result, e);
+    });
+  } else {
+    iterateSet(O, function (e) {
+      if (otherRec.includes(e)) add(result, e);
+    });
+  }
+
+  return result;
+};
+
+
+/***/ }),
+
 /***/ 45779:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -9440,6 +10124,30 @@ function toSource(func) {
 }
 
 module.exports = toSource;
+
+
+/***/ }),
+
+/***/ 47491:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var size = __webpack_require__(35743);
+var iterate = __webpack_require__(81330);
+var getSetRecord = __webpack_require__(32332);
+
+// `Set.prototype.isSubsetOf` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSubsetOf
+module.exports = function isSubsetOf(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) > otherRec.size) return false;
+  return iterate(O, function (e) {
+    if (!otherRec.includes(e)) return false;
+  }, true) !== false;
+};
 
 
 /***/ }),
@@ -10021,6 +10729,13 @@ module.exports = Object.hasOwn || function hasOwn(it, key) {
   return hasOwnProperty(toObject(it), key);
 };
 
+
+/***/ }),
+
+/***/ 49763:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = __webpack_require__(86450);
 
 /***/ }),
 
@@ -11203,6 +11918,31 @@ module.exports = function (argument) {
 
 /***/ }),
 
+/***/ 57005:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var fails = __webpack_require__(98828);
+var isObject = __webpack_require__(46285);
+var classof = __webpack_require__(45807);
+var ARRAY_BUFFER_NON_EXTENSIBLE = __webpack_require__(26375);
+
+// eslint-disable-next-line es/no-object-isextensible -- safe
+var $isExtensible = Object.isExtensible;
+var FAILS_ON_PRIMITIVES = fails(function () { $isExtensible(1); });
+
+// `Object.isExtensible` method
+// https://tc39.es/ecma262/#sec-object.isextensible
+module.exports = (FAILS_ON_PRIMITIVES || ARRAY_BUFFER_NON_EXTENSIBLE) ? function isExtensible(it) {
+  if (!isObject(it)) return false;
+  if (ARRAY_BUFFER_NON_EXTENSIBLE && classof(it) === 'ArrayBuffer') return false;
+  return $isExtensible ? $isExtensible(it) : true;
+} : $isExtensible;
+
+
+/***/ }),
+
 /***/ 57119:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -11531,6 +12271,28 @@ module.exports = {
   IteratorPrototype: IteratorPrototype,
   BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
 };
+
+
+/***/ }),
+
+/***/ 57809:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var isSubsetOf = __webpack_require__(47491);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+var INCORRECT = !setMethodAcceptSetLike('isSubsetOf', function (result) {
+  return result;
+});
+
+// `Set.prototype.isSubsetOf` method
+// https://tc39.es/ecma262/#sec-set.prototype.issubsetof
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  isSubsetOf: isSubsetOf
+});
 
 
 /***/ }),
@@ -11916,6 +12678,13 @@ module.exports = {
   filterReject: createMethod(7)
 };
 
+
+/***/ }),
+
+/***/ 59261:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = __webpack_require__(79157);
 
 /***/ }),
 
@@ -12315,6 +13084,104 @@ module.exports = toInteger;
 
 /***/ }),
 
+/***/ 61548:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var uncurryThis = __webpack_require__(1907);
+var hiddenKeys = __webpack_require__(38530);
+var isObject = __webpack_require__(46285);
+var hasOwn = __webpack_require__(49724);
+var defineProperty = (__webpack_require__(74284).f);
+var getOwnPropertyNamesModule = __webpack_require__(24443);
+var getOwnPropertyNamesExternalModule = __webpack_require__(25407);
+var isExtensible = __webpack_require__(57005);
+var uid = __webpack_require__(6499);
+var FREEZING = __webpack_require__(75681);
+
+var REQUIRED = false;
+var METADATA = uid('meta');
+var id = 0;
+
+var setMetadata = function (it) {
+  defineProperty(it, METADATA, { value: {
+    objectID: 'O' + id++, // object ID
+    weakData: {}          // weak collections IDs
+  } });
+};
+
+var fastKey = function (it, create) {
+  // return a primitive with prefix
+  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!hasOwn(it, METADATA)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMetadata(it);
+  // return object ID
+  } return it[METADATA].objectID;
+};
+
+var getWeakData = function (it, create) {
+  if (!hasOwn(it, METADATA)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMetadata(it);
+  // return the store of weak collections IDs
+  } return it[METADATA].weakData;
+};
+
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZING && REQUIRED && isExtensible(it) && !hasOwn(it, METADATA)) setMetadata(it);
+  return it;
+};
+
+var enable = function () {
+  meta.enable = function () { /* empty */ };
+  REQUIRED = true;
+  var getOwnPropertyNames = getOwnPropertyNamesModule.f;
+  var splice = uncurryThis([].splice);
+  var test = {};
+  test[METADATA] = 1;
+
+  // prevent exposing of metadata key
+  if (getOwnPropertyNames(test).length) {
+    getOwnPropertyNamesModule.f = function (it) {
+      var result = getOwnPropertyNames(it);
+      for (var i = 0, length = result.length; i < length; i++) {
+        if (result[i] === METADATA) {
+          splice(result, i, 1);
+          break;
+        }
+      } return result;
+    };
+
+    $({ target: 'Object', stat: true, forced: true }, {
+      getOwnPropertyNames: getOwnPropertyNamesExternalModule.f
+    });
+  }
+};
+
+var meta = module.exports = {
+  enable: enable,
+  fastKey: fastKey,
+  getWeakData: getWeakData,
+  onFreeze: onFreeze
+};
+
+hiddenKeys[METADATA] = true;
+
+
+/***/ }),
+
 /***/ 61626:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -12637,6 +13504,22 @@ function isEmpty(value) {
 }
 
 module.exports = isEmpty;
+
+
+/***/ }),
+
+/***/ 62222:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = function (methodName, numArgs) {
+  return numArgs === 1 ? function (object, arg) {
+    return object[methodName](arg);
+  } : function (object, arg1, arg2) {
+    return object[methodName](arg1, arg2);
+  };
+};
 
 
 /***/ }),
@@ -13157,6 +14040,40 @@ __webpack_require__(91866);
 __webpack_require__(72736);
 __webpack_require__(17286);
 __webpack_require__(16761);
+
+
+/***/ }),
+
+/***/ 65953:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var aSet = __webpack_require__(2911);
+var SetHelpers = __webpack_require__(73881);
+var clone = __webpack_require__(6913);
+var size = __webpack_require__(35743);
+var getSetRecord = __webpack_require__(32332);
+var iterateSet = __webpack_require__(81330);
+var iterateSimple = __webpack_require__(22190);
+
+var has = SetHelpers.has;
+var remove = SetHelpers.remove;
+
+// `Set.prototype.difference` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function difference(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  var result = clone(O);
+  if (size(O) <= otherRec.size) iterateSet(O, function (e) {
+    if (otherRec.includes(e)) remove(result, e);
+  });
+  else iterateSimple(otherRec.getIterator(), function (e) {
+    if (has(O, e)) remove(result, e);
+  });
+  return result;
+};
 
 
 /***/ }),
@@ -13743,6 +14660,28 @@ module.exports = function (argument, usingIterator) {
   if (aCallable(iteratorMethod)) return anObject(call(iteratorMethod, argument));
   throw new $TypeError(tryToString(argument) + ' is not iterable');
 };
+
+
+/***/ }),
+
+/***/ 70106:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var isSupersetOf = __webpack_require__(4002);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+var INCORRECT = !setMethodAcceptSetLike('isSupersetOf', function (result) {
+  return !result;
+});
+
+// `Set.prototype.isSupersetOf` method
+// https://tc39.es/ecma262/#sec-set.prototype.issupersetof
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  isSupersetOf: isSupersetOf
+});
 
 
 /***/ }),
@@ -14519,6 +15458,46 @@ module.exports = !DESCRIPTORS && !fails(function () {
 
 /***/ }),
 
+/***/ 73709:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var union = __webpack_require__(41655);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+// `Set.prototype.union` method
+// https://tc39.es/ecma262/#sec-set.prototype.union
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('union') }, {
+  union: union
+});
+
+
+/***/ }),
+
+/***/ 73881:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var getBuiltIn = __webpack_require__(85582);
+var caller = __webpack_require__(62222);
+
+var Set = getBuiltIn('Set');
+var SetPrototype = Set.prototype;
+
+module.exports = {
+  Set: Set,
+  add: caller('add', 1),
+  has: caller('has', 1),
+  remove: caller('delete', 1),
+  proto: SetPrototype
+};
+
+
+/***/ }),
+
 /***/ 73904:
 /***/ (function(module) {
 
@@ -14834,6 +15813,21 @@ module.exports = eq;
 
 /***/ }),
 
+/***/ 75681:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var fails = __webpack_require__(98828);
+
+module.exports = !fails(function () {
+  // eslint-disable-next-line es/no-object-isextensible, es/no-object-preventextensions -- required for testing
+  return Object.isExtensible(Object.preventExtensions({}));
+});
+
+
+/***/ }),
+
 /***/ 75817:
 /***/ (function(module) {
 
@@ -15029,6 +16023,28 @@ module.exports = Set;
 var parent = __webpack_require__(10317);
 
 module.exports = parent;
+
+
+/***/ }),
+
+/***/ 76951:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var difference = __webpack_require__(65953);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+var INCORRECT = !setMethodAcceptSetLike('difference', function (result) {
+  return result.size === 0;
+});
+
+// `Set.prototype.difference` method
+// https://tc39.es/ecma262/#sec-set.prototype.difference
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  difference: difference
+});
 
 
 /***/ }),
@@ -15739,6 +16755,19 @@ module.exports = function (exec) {
 
 /***/ }),
 
+/***/ 79157:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var parent = __webpack_require__(79378);
+__webpack_require__(12560);
+
+module.exports = parent;
+
+
+/***/ }),
+
 /***/ 79192:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -15807,6 +16836,29 @@ module.exports = function (argument) {
   if (isCallable(argument)) return argument;
   throw new $TypeError(tryToString(argument) + ' is not a function');
 };
+
+
+/***/ }),
+
+/***/ 79378:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+__webpack_require__(99363);
+__webpack_require__(86024);
+__webpack_require__(1542);
+__webpack_require__(76951);
+__webpack_require__(25905);
+__webpack_require__(1852);
+__webpack_require__(57809);
+__webpack_require__(70106);
+__webpack_require__(92657);
+__webpack_require__(73709);
+__webpack_require__(7057);
+var path = __webpack_require__(92046);
+
+module.exports = path.Set;
 
 
 /***/ }),
@@ -16125,6 +17177,20 @@ module.exports = {
 
 /***/ }),
 
+/***/ 81330:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var iterateSimple = __webpack_require__(22190);
+
+module.exports = function (set, fn, interruptible) {
+  return interruptible ? iterateSimple(set.keys(), fn, true) : set.forEach(fn);
+};
+
+
+/***/ }),
+
 /***/ 81697:
 /***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
 
@@ -16306,6 +17372,18 @@ function createBaseFor(fromRight) {
 }
 
 module.exports = createBaseFor;
+
+
+/***/ }),
+
+/***/ 83269:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = function () {
+  return false;
+};
 
 
 /***/ }),
@@ -18325,6 +19403,24 @@ module.exports = function (key) {
 
 /***/ }),
 
+/***/ 92657:
+/***/ (function(__unused_webpack_module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(11091);
+var symmetricDifference = __webpack_require__(23763);
+var setMethodAcceptSetLike = __webpack_require__(83269);
+
+// `Set.prototype.symmetricDifference` method
+// https://tc39.es/ecma262/#sec-set.prototype.symmetricdifference
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('symmetricDifference') }, {
+  symmetricDifference: symmetricDifference
+});
+
+
+/***/ }),
+
 /***/ 92796:
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
@@ -18425,6 +19521,24 @@ function cloneBuffer(buffer, isDeep) {
 }
 
 module.exports = cloneBuffer;
+
+
+/***/ }),
+
+/***/ 93316:
+/***/ (function(module) {
+
+"use strict";
+
+// `GetIteratorDirect(obj)` abstract operation
+// https://tc39.es/proposal-iterator-helpers/#sec-getiteratordirect
+module.exports = function (obj) {
+  return {
+    iterator: obj,
+    next: obj.next,
+    done: false
+  };
+};
 
 
 /***/ }),
@@ -20327,6 +21441,88 @@ var generateIterationKey = function generateIterationKey(item, index, keyConfig)
   }
   return key;
 };
+// EXTERNAL MODULE: ./node_modules/core-js-pure/full/get-iterator-method.js
+var get_iterator_method = __webpack_require__(99029);
+// EXTERNAL MODULE: ./node_modules/core-js-pure/full/array/is-array.js
+var is_array = __webpack_require__(31564);
+// EXTERNAL MODULE: ./node_modules/core-js-pure/full/instance/slice.js
+var slice = __webpack_require__(64908);
+// EXTERNAL MODULE: ./node_modules/core-js-pure/full/array/from.js
+var from = __webpack_require__(8980);
+;// ./node_modules/@babel/runtime-corejs3/helpers/esm/arrayLikeToArray.js
+function _arrayLikeToArray(r, a) {
+  (null == a || a > r.length) && (a = r.length);
+  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+  return n;
+}
+
+;// ./node_modules/@babel/runtime-corejs3/helpers/esm/unsupportedIterableToArray.js
+
+
+
+function _unsupportedIterableToArray(r, a) {
+  if (r) {
+    var _context;
+    if ("string" == typeof r) return _arrayLikeToArray(r, a);
+    var t = slice(_context = {}.toString.call(r)).call(_context, 8, -1);
+    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+  }
+}
+
+;// ./node_modules/@babel/runtime-corejs3/helpers/esm/createForOfIteratorHelper.js
+
+
+
+
+function _createForOfIteratorHelper(r, e) {
+  var t = "undefined" != typeof symbol && get_iterator_method(r) || r["@@iterator"];
+  if (!t) {
+    if (is_array(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) {
+      t && (r = t);
+      var _n = 0,
+        F = function F() {};
+      return {
+        s: F,
+        n: function n() {
+          return _n >= r.length ? {
+            done: !0
+          } : {
+            done: !1,
+            value: r[_n++]
+          };
+        },
+        e: function e(r) {
+          throw r;
+        },
+        f: F
+      };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+  var o,
+    a = !0,
+    u = !1;
+  return {
+    s: function s() {
+      t = t.call(r);
+    },
+    n: function n() {
+      var r = t.next();
+      return a = r.done, r;
+    },
+    e: function e(r) {
+      u = !0, o = r;
+    },
+    f: function f() {
+      try {
+        a || null == t["return"] || t["return"]();
+      } finally {
+        if (u) throw o;
+      }
+    }
+  };
+}
+
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var object_keys = __webpack_require__(50697);
 var object_keys_default = /*#__PURE__*/__webpack_require__.n(object_keys);
@@ -20334,12 +21530,23 @@ var object_keys_default = /*#__PURE__*/__webpack_require__.n(object_keys);
 var map = __webpack_require__(48079);
 var map_default = /*#__PURE__*/__webpack_require__.n(map);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
-var slice = __webpack_require__(18979);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+var instance_slice = __webpack_require__(18979);
+var instance_slice_default = /*#__PURE__*/__webpack_require__.n(instance_slice);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js
+var array_from = __webpack_require__(49763);
+var array_from_default = /*#__PURE__*/__webpack_require__.n(array_from);
+// EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/set.js
+var core_js_stable_set = __webpack_require__(59261);
+var core_js_stable_set_default = /*#__PURE__*/__webpack_require__.n(core_js_stable_set);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
 var stringify = __webpack_require__(85569);
 var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.some.js
+var es_iterator_some = __webpack_require__(13579);
 ;// ./src/utils/schemaDiagnostics.js
+
+
+
 
 
 
@@ -20389,8 +21596,53 @@ function normalizeFieldComponentName(type) {
 function pascalCaseTag(tag) {
   var _context, _context2;
   return map_default()(_context = filter_default()(_context2 = String(tag).split("-")).call(_context2, Boolean)).call(_context, function (part) {
-    return part.charAt(0).toUpperCase() + slice_default()(part).call(part, 1);
+    return part.charAt(0).toUpperCase() + instance_slice_default()(part).call(part, 1);
   }).join("");
+}
+function camelCaseTag(tag) {
+  var pascal = pascalCaseTag(tag);
+  return pascal ? pascal.charAt(0).toLowerCase() + instance_slice_default()(pascal).call(pascal, 1) : pascal;
+}
+function componentNameCandidates(type) {
+  var tag = normalizeFieldComponentName(type);
+  var pascal = pascalCaseTag(tag);
+  var camel = camelCaseTag(tag);
+  // BetterForms registers many customs as camelCase (`fieldHtml`), while VFG :is uses kebab (`field-html`).
+  return array_from_default()(new (core_js_stable_set_default())([tag, pascal, camel]));
+}
+function registryHasComponent(components, type) {
+  if (!components) {
+    return false;
+  }
+  return componentNameCandidates(type).some(function (name) {
+    return !!components[name];
+  });
+}
+function vueHasComponent(vue, type) {
+  if (!vue) {
+    return false;
+  }
+  if (typeof vue.component === "function") {
+    var _iterator = _createForOfIteratorHelper(componentNameCandidates(type)),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var name = _step.value;
+        try {
+          if (vue.component(name)) {
+            return true;
+          }
+        } catch (e) {
+          // ignore retrieval errors from incomplete mocks
+        }
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+  }
+  return registryHasComponent(vue.options && vue.options.components, type);
 }
 
 /**
@@ -20405,19 +21657,14 @@ function isKnownFieldType(type) {
   if (BUILTIN_SCHEMA_TYPES[type]) {
     return true;
   }
-  var tag = normalizeFieldComponentName(type);
-  var pascal = pascalCaseTag(tag);
-  var registries = [];
-  if (vue && vue.options && vue.options.components) {
-    registries.push(vue.options.components);
+  if (vueHasComponent(vue, type)) {
+    return true;
   }
   // Also check global Vue when a local Vue constructor was passed
-  if (vue !== (external_commonjs_vue_commonjs2_vue_root_Vue_default()) && (external_commonjs_vue_commonjs2_vue_root_Vue_default()).options && (external_commonjs_vue_commonjs2_vue_root_Vue_default()).options.components) {
-    registries.push((external_commonjs_vue_commonjs2_vue_root_Vue_default()).options.components);
+  if (vue !== (external_commonjs_vue_commonjs2_vue_root_Vue_default()) && vueHasComponent((external_commonjs_vue_commonjs2_vue_root_Vue_default()), type)) {
+    return true;
   }
-  return registries.some(function (components) {
-    return !!(components[tag] || components[pascal]);
-  });
+  return false;
 }
 
 /**
@@ -20430,12 +21677,9 @@ function isKnownFieldTypeForVm(type, vm) {
   if (BUILTIN_SCHEMA_TYPES[type]) {
     return true;
   }
-  var tag = normalizeFieldComponentName(type);
-  var pascal = pascalCaseTag(tag);
   var current = vm;
   while (current) {
-    var local = current.$options && current.$options.components;
-    if (local && (local[tag] || local[pascal])) {
+    if (registryHasComponent(current.$options && current.$options.components, type)) {
       return true;
     }
     current = current.$parent;
@@ -20483,7 +21727,7 @@ function formatSnippet(field) {
   try {
     var snippet = stringify_default()(collapseValue(field), null, 2);
     if (snippet.length > MAX_SNIPPET_LENGTH) {
-      snippet = slice_default()(snippet).call(snippet, 0, MAX_SNIPPET_LENGTH) + "…";
+      snippet = instance_slice_default()(snippet).call(snippet, 0, MAX_SNIPPET_LENGTH) + "…";
     }
     return snippet;
   } catch (e) {
@@ -21735,7 +22979,7 @@ var fieldCheckboxvue_type_template_id_30dfcbff_render = function render() {
             $$i < 0 && (_vm.value = concat_default()($$a).call($$a, [$$v]));
           } else {
             var _context;
-            $$i > -1 && (_vm.value = concat_default()(_context = slice_default()($$a).call($$a, 0, $$i)).call(_context, slice_default()($$a).call($$a, $$i + 1)));
+            $$i > -1 && (_vm.value = concat_default()(_context = instance_slice_default()($$a).call($$a, 0, $$i)).call(_context, instance_slice_default()($$a).call($$a, $$i + 1)));
           }
         } else {
           _vm.value = $$c;
@@ -21760,8 +23004,6 @@ var forEach_default = /*#__PURE__*/__webpack_require__.n(forEach);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/values.js
 var values = __webpack_require__(57119);
 var values_default = /*#__PURE__*/__webpack_require__.n(values);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.some.js
-var es_iterator_some = __webpack_require__(13579);
 ;// ./src/fields/abstractField.js
 
 
@@ -24551,16 +25793,12 @@ var fieldRangeSlidervue_type_template_id_586cb214_render = function render() {
 };
 var fieldRangeSlidervue_type_template_id_586cb214_staticRenderFns = [];
 
-// EXTERNAL MODULE: ./node_modules/core-js-pure/full/array/is-array.js
-var is_array = __webpack_require__(31564);
 ;// ./node_modules/@babel/runtime-corejs3/helpers/esm/arrayWithHoles.js
 
 function _arrayWithHoles(r) {
   if (is_array(r)) return r;
 }
 
-// EXTERNAL MODULE: ./node_modules/core-js-pure/full/get-iterator-method.js
-var get_iterator_method = __webpack_require__(99029);
 ;// ./node_modules/@babel/runtime-corejs3/helpers/esm/iterableToArrayLimit.js
 
 
@@ -24590,30 +25828,6 @@ function _iterableToArrayLimit(r, l) {
       }
     }
     return a;
-  }
-}
-
-// EXTERNAL MODULE: ./node_modules/core-js-pure/full/instance/slice.js
-var instance_slice = __webpack_require__(64908);
-// EXTERNAL MODULE: ./node_modules/core-js-pure/full/array/from.js
-var from = __webpack_require__(8980);
-;// ./node_modules/@babel/runtime-corejs3/helpers/esm/arrayLikeToArray.js
-function _arrayLikeToArray(r, a) {
-  (null == a || a > r.length) && (a = r.length);
-  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
-  return n;
-}
-
-;// ./node_modules/@babel/runtime-corejs3/helpers/esm/unsupportedIterableToArray.js
-
-
-
-function _unsupportedIterableToArray(r, a) {
-  if (r) {
-    var _context;
-    if ("string" == typeof r) return _arrayLikeToArray(r, a);
-    var t = instance_slice(_context = {}.toString.call(r)).call(_context, 8, -1);
-    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
   }
 }
 
@@ -25111,7 +26325,7 @@ var fieldSwitchvue_type_template_id_ec8704f8_render = function render() {
             $$i < 0 && (_vm.value = concat_default()($$a).call($$a, [$$v]));
           } else {
             var _context;
-            $$i > -1 && (_vm.value = concat_default()(_context = slice_default()($$a).call($$a, 0, $$i)).call(_context, slice_default()($$a).call($$a, $$i + 1)));
+            $$i > -1 && (_vm.value = concat_default()(_context = instance_slice_default()($$a).call($$a, 0, $$i)).call(_context, instance_slice_default()($$a).call($$a, $$i + 1)));
           }
         } else {
           _vm.value = $$c;
